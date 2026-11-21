@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # PostgreSQL 16 Database Service
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: tripwire-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tripwire}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tripwire_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-tripwire}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tripwire} -d ${POSTGRES_DB:-tripwire}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tripwire-network
+
+  # ============================================================================
+  # Tripwire Teams Application Service (Node 20 + pg-boss + Slack Bolt)
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tripwire-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3000}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tripwire}:${POSTGRES_PASSWORD:-tripwire_secret}@db:5432/${POSTGRES_DB:-tripwire}?schema=public
+      # Slack Configuration
+      SLACK_SOCKET_MODE: ${SLACK_SOCKET_MODE:-true}
+      SLACK_BOT_TOKEN: ${SLACK_BOT_TOKEN:-}
+      SLACK_APP_TOKEN: ${SLACK_APP_TOKEN:-}
+      SLACK_SIGNING_SECRET: ${SLACK_SIGNING_SECRET:-}
+      # Google API & OAuth Configuration
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:3000/auth/google/callback}
+      # Symmetric 32-byte (64 hex characters) encryption key
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+    networks:
+      - tripwire-network
+
+volumes:
+  postgres_data:
+    name: tripwire_postgres_data
+    driver: local
+
+networks:
+  tripwire-network:
+    name: tripwire-network
+    driver: bridge

@@ -1,0 +1,182 @@
+// Tripwire Teams - Database Schema
+// Generator & Datasource configuration
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TravelMode {
+  CAR
+  TWO_WHEELER
+  TRANSIT
+}
+
+enum DecisionType {
+  REMOTE
+  OFFICE
+  INDIVIDUAL
+}
+
+// Slack Workspace installation
+model Workspace {
+  id           String        @id // Slack Team ID (e.g. T01234567)
+  name         String
+  botToken     String
+  installedAt  DateTime      @default(now())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  members      Member[]
+  plans        Plan[]
+  googleTokens GoogleToken[]
+  auditLogs    AuditLog[]
+
+  @@map("workspaces")
+}
+
+// Team Member who opted in via /tripwire setup
+model Member {
+  id              String         @id @default(cuid())
+  workspaceId     String
+  slackUserId     String         // Slack user ID (e.g. U01234567)
+  slackEmail      String?
+  homeAreaLabel   String         // Approximate neighborhood label (e.g. "HSR Layout Sector 2")
+  encryptedCoords String         // AES-256-GCM encrypted lat/lon rounded to 2 decimals
+  travelMode      TravelMode     @default(CAR)
+  maxMinutes      Int            // Commute threshold tolerance in minutes
+  consentGivenAt  DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  attendees       PlanAttendee[]
+  checks          Check[]
+
+  @@unique([workspaceId, slackUserId])
+  @@index([workspaceId])
+  @@map("members")
+}
+
+// Scheduled Office Day Plan
+model Plan {
+  id               String         @id @default(cuid())
+  workspaceId      String
+  channelId        String         // Slack Channel ID where plan was created
+  ownerSlackUserId String         // Slack user ID of the team lead who created the plan
+  officeAddress    String         // Destination office address
+  officeLat        Float          // Destination office latitude
+  officeLon        Float          // Destination office longitude
+  planDate         DateTime       // Date of the office plan
+  arriveByTime     String         // e.g. "09:30"
+  decisionTime     DateTime       // Deadline timestamp when the commute decision must be made
+  status           String         @default("PLANNED") // PLANNED, ACTIVE, COMPLETED, CANCELLED
+  calendarEventId  String?        // Associated Google Calendar event ID
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  workspace        Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  attendees        PlanAttendee[]
+  checks           Check[]
+  decisions        Decision[]
+
+  @@index([workspaceId])
+  @@index([channelId])
+  @@index([planDate])
+  @@map("plans")
+}
+
+// Attendance / opt-out per plan
+model PlanAttendee {
+  id         String   @id @default(cuid())
+  planId     String
+  memberId   String
+  hasSkipped Boolean  @default(false)
+  skipReason String?
+  createdAt  DateTime @default(now())
+
+  plan       Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  member     Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, memberId])
+  @@index([planId])
+  @@index([memberId])
+  @@map("plan_attendees")
+}
+
+// Commute observation checks (Routes API / weather)
+model Check {
+  id                String    @id @default(cuid())
+  planId            String
+  memberId          String
+  checkedAt         DateTime  @default(now())
+  providerTimestamp DateTime? // Timestamp from navigation/weather provider
+  durationSeconds   Int       // Live / estimated travel duration in seconds
+  baselineSeconds   Int       // Evening-before baseline travel duration in seconds
+  status            String    @default("ok")   // "ok" | "unknown" (failed/stale readings stored as unknown)
+  provenance        String    @default("live") // "live" | "simulated" (rule 1: must be labeled)
+  createdAt         DateTime  @default(now())
+
+  plan              Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  member            Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@index([memberId])
+  @@index([planId, checkedAt])
+  @@map("checks")
+}
+
+// Lead's decision on the plan
+model Decision {
+  id                   String       @id @default(cuid())
+  planId               String
+  decidedBySlackUserId String       // Slack user ID of the decision maker (team lead)
+  decision             DecisionType // REMOTE, OFFICE, INDIVIDUAL
+  reasonSummary        String       // Reason summary explaining why the decision was made
+  decidedAt            DateTime     @default(now())
+  createdAt            DateTime     @default(now())
+
+  plan                 Plan         @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@index([planId])
+  @@map("decisions")
+}
+
+// OAuth refresh tokens for Google Calendar / Meet integration
+model GoogleToken {
+  id                    String    @id @default(cuid())
+  workspaceId           String
+  slackUserId           String
+  encryptedRefreshToken String    // Encrypted OAuth refresh token
+  email                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  workspace             Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, slackUserId])
+  @@index([workspaceId])
+  @@map("google_tokens")
+}
+
+// Audit log for compliance & debugging (Rule 6: external actions written here)
+model AuditLog {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  actionType       String   // e.g. "CALENDAR_CONVERT_REMOTE", "SLACK_RECOMMENDATION_POSTED", "DATA_DELETED"
+  actorSlackUserId String   // Slack user who triggered the action or "SYSTEM"
+  targetEntity     String   // e.g. "plan:cuid123", "member:cuid456"
+  detailsJson      String?  @db.Text // JSON string containing audit payload
+  createdAt        DateTime @default(now())
+
+  workspace        Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([actionType])
+  @@index([createdAt])
+  @@map("audit_log")
+}

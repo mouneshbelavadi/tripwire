@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tripwire Teams — Automated Office-Day Commute Tripwires for Hybrid Teams</title>
+  <meta name="description" content="The Slack app that makes the office-day call when commute disruption hits — and automatically converts your calendar event to remote with Google Meet.">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <span class="brand-icon">⚡</span>
+        <span>Tripwire</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#invariants">Core Invariants</a></li>
+          <li><a href="#data-collection">What Data We Collect</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/security">Security</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="/slack/install" class="btn btn-slack btn-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+          </svg>
+          Add to Slack
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="badge badge-live">Hybrid Work Orchestration for Slack</span>
+      </div>
+
+      <h1 class="hero-title">
+        Never commute alone to an empty office again.
+      </h1>
+
+      <p class="hero-value-prop">
+        The Slack app that makes the office-day call when commute disruption hits — and automatically converts your calendar event to remote with Google Meet.
+      </p>
+
+      <div class="hero-ctas">
+        <a href="/slack/install" class="btn btn-slack btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+          </svg>
+          Add to Slack
+        </a>
+        <a href="#how-it-works" class="btn btn-secondary btn-lg">
+          How It Works
+        </a>
+      </div>
+
+      <div class="hero-trust-bar">
+        <div class="trust-item">
+          <span>✓</span>
+          <span>Zero GPS tracking</span>
+        </div>
+        <div class="trust-item">
+          <span>✓</span>
+          <span>2-consecutive fresh check invariant</span>
+        </div>
+        <div class="trust-item">
+          <span>✓</span>
+          <span>Instant <code>/tripwire forget</code> purge</span>
+        </div>
+      </div>
+
+      <!-- High-Fidelity Visual Decision Preview Card -->
+      <div class="hero-preview-wrapper">
+        <div class="slack-mock-card">
+          <div class="slack-window-header">
+            <div class="slack-window-channel">
+              <span>#</span>
+              <span>core-engineering</span>
+            </div>
+            <div class="slack-window-status">
+              <span>Decision Deadline: 07:30 IST</span>
+            </div>
+          </div>
+
+          <div class="slack-message-body">
+            <div class="slack-message-header">
+              <div class="slack-bot-avatar">⚡</div>
+              <div>
+                <div class="slack-bot-meta">
+                  <span class="slack-bot-name">Tripwire</span>
+                  <span class="slack-bot-tag">APP</span>
+                  <span class="slack-message-timestamp">07:25 AM</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="slack-alert-box">
+              <div class="slack-alert-title">
+                <span>⚠️</span>
+                <span>Office Day Alert: Remote Recommended for Thursday</span>
+              </div>
+              <p class="slack-alert-summary">
+                Severe corridor disruption detected on Outer Ring Road & Silk Board (+46m delay spike) combined with 80% heavy rain forecast.
+              </p>
+            </div>
+
+            <div class="slack-stats-grid">
+              <div class="slack-stat-pill">
+                <div class="slack-stat-label">Team Impact</div>
+                <div class="slack-stat-value">4 of 6 Affected (67%)</div>
+              </div>
+              <div class="slack-stat-pill">
+                <div class="slack-stat-label">Corridor Status</div>
+                <div class="slack-stat-value">+42m vs Baseline</div>
+              </div>
+              <div class="slack-stat-pill">
+                <div class="slack-stat-label">Invariant Verification</div>
+                <div class="slack-stat-value" style="color:var(--color-success);">2 Fresh Checks Passed</div>
+              </div>
+            </div>
+
+            <div style="background-color:#F8FAFC;border:1px dashed #CBD5E1;border-radius:6px;padding:12px;margin-bottom:20px;font-size:13px;color:#475569;">
+              📅 <strong>Google Calendar Action:</strong> Clicking below updates <em>"Thursday Sprint Planning & Onsite"</em> to Remote and attaches Google Meet conference link for all 6 attendees.
+            </div>
+
+            <div class="slack-action-row">
+              <button class="btn-slack-cta" onclick="alert('In Slack, clicking this updates your Google Calendar event to remote and notifies the channel!')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+                Make it Remote with Google Meet
+              </button>
+              <button class="btn-slack-dismiss" onclick="alert('Plan remains intact as an office day.')">
+                Keep Office Plan
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: The 3-Step Walkthrough -->
+  <section id="how-it-works" class="section section-alt">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Simple & Deterministic</div>
+        <h2 class="section-title">How Tripwire Works</h2>
+        <p class="section-description">
+          Hybrid teams waste hours in morning traffic uncertainty. Tripwire replaces awkward channel polls with an automated 3-step consensus engine.
+        </p>
+      </div>
+
+      <div class="steps-grid">
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-num">STEP 01</div>
+          <h3 class="step-title">Team leads plan an office day in Slack</h3>
+          <p class="step-body">
+            Using the <code>/tripwire plan</code> command, the lead picks the date, target office arrival time, and a morning decision cutoff (e.g., 07:30 AM). Tripwire connects to the team's Google Calendar event.
+          </p>
+          <div class="step-code-preview">/tripwire plan
+Date: Tomorrow (Thursday)
+Office: RMZ Ecoworld, Outer Ring Rd
+Arrival: 09:30 AM | Decision: 07:30 AM</div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-num">STEP 02</div>
+          <h3 class="step-title">Tripwire monitors corridors & weather</h3>
+          <p class="step-body">
+            We query predicted and live traffic corridors using approximate neighborhood areas (~1 km resolution). No GPS tracking. No battery drain. We also check Open-Meteo for heavy precipitation.
+          </p>
+          <div class="step-code-preview">Checking 6 commute corridors...
+Live duration vs. 24h baseline:
+• Indiranagar -> Tech Park: +38m
+• HSR Layout -> Tech Park: +45m
+Rain probability: 80%</div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-num">STEP 03</div>
+          <h3 class="step-title">Two consecutive checks trigger the remote call</h3>
+          <p class="step-body">
+            If disruption exceeds threshold on <strong>two consecutive source-fresh checks</strong>, the lead gets an actionable Slack card. One click updates the Google Calendar invite to remote with Google Meet.
+          </p>
+          <div class="step-code-preview">✓ Check 1 verified (07:15)
+✓ Check 2 verified (07:25)
+[ Make it Remote with Google Meet ]
+-> Updated Calendar for 6 attendees</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: The 4 Core Invariants -->
+  <section id="invariants" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">System Invariants</div>
+        <h2 class="section-title">Engineered For Zero Flapping & Absolute Trust</h2>
+        <p class="section-description">
+          Automations fail when they cry wolf or guess blindly. Tripwire is governed by mathematical system invariants that guarantee reliable decisions.
+        </p>
+      </div>
+
+      <div class="invariants-grid">
+        <div class="invariant-card">
+          <div class="invariant-icon">🔄</div>
+          <h3 class="invariant-title">Two Consecutive Fresh Checks</h3>
+          <p class="invariant-text">
+            A single traffic blip never triggers a remote call. Disruption must be confirmed across two consecutive checks within a 10-minute freshness window before a recommendation is posted.
+          </p>
+        </div>
+
+        <div class="invariant-card">
+          <div class="invariant-icon">❓</div>
+          <h3 class="invariant-title">"Unknown" Is Never "Fine"</h3>
+          <p class="invariant-text">
+            If an API fails or returns stale data, it is marked as <code>unknown</code>. It never resets a pending breach silently. If more than 30% of team readings are unknown, Tripwire outputs <em>"cannot assess"</em> instead of guessing.
+          </p>
+        </div>
+
+        <div class="invariant-card">
+          <div class="invariant-icon">👤</div>
+          <h3 class="invariant-title">Single Decision Maker</h3>
+          <p class="invariant-text">
+            No endless emoji voting or consensus gridlock. Only the plan owner who initiated the office day holds the button to confirm the remote switch or keep the office day.
+          </p>
+        </div>
+
+        <div class="invariant-card">
+          <div class="invariant-icon">🛡️</div>
+          <h3 class="invariant-title">Privacy by Design (No GPS)</h3>
+          <p class="invariant-text">
+            Home locations are stored only as a general neighborhood label rounded to 2 decimal places (~1 km) and encrypted at rest with AES-256-GCM. Leads only see aggregates (e.g. "4 of 7 affected"), never home maps.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: What Data We Collect -->
+  <section id="data-collection" class="section section-alt">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Honest Privacy</div>
+        <h2 class="section-title">What Data We Collect (And What We Don't)</h2>
+        <p class="section-description">
+          We believe workplace tools should never monitor your private life. Here is our full, transparent data ledger.
+        </p>
+      </div>
+
+      <div class="data-table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data Point</th>
+              <th>Status</th>
+              <th>How Tripwire Uses It</th>
+              <th>Storage & Protection</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="data-item-name">Approximate Home Neighborhood</span></td>
+              <td><span class="tag-collected">✓ Stored</span></td>
+              <td>Converted to rounded coordinates (~1 km radius) to query commute corridors.</td>
+              <td>AES-256-GCM encrypted at rest. Never shown to colleagues or managers.</td>
+            </tr>
+            <tr>
+              <td><span class="data-item-name">Commute Mode & Limit</span></td>
+              <td><span class="tag-collected">✓ Stored</span></td>
+              <td>Your preferred travel mode (Car, Two-Wheeler, Transit) and max tolerable minutes.</td>
+              <td>Stored in PostgreSQL with workspace isolation.</td>
+            </tr>
+            <tr>
+              <td><span class="data-item-name">Slack User ID & Email</span></td>
+              <td><span class="tag-collected">✓ Stored</span></td>
+              <td>To post interactive cards and match attendee emails to the Google Calendar event.</td>
+              <td>Purged immediately on <code>/tripwire forget</code>.</td>
+            </tr>
+            <tr>
+              <td><span class="data-item-name">Real-Time GPS Tracking</span></td>
+              <td><span class="tag-never">✕ NEVER</span></td>
+              <td>We do not track live devices, mobile apps, or continuous movement.</td>
+              <td>Zero background geolocation. We never know where you are.</td>
+            </tr>
+            <tr>
+              <td><span class="data-item-name">Exact Street Address</span></td>
+              <td><span class="tag-never">✕ NEVER</span></td>
+              <td>Tripwire never asks for or stores house numbers, apartment names, or exact streets.</td>
+              <td>Truncated to 2 decimal coordinates (~1 km bounding area).</td>
+            </tr>
+            <tr>
+              <td><span class="data-item-name">Slack Messages & Chats</span></td>
+              <td><span class="tag-never">✕ NEVER</span></td>
+              <td>Tripwire only listens to its own slash commands and explicit mentions.</td>
+              <td>No channel message logging or scanning. Ever.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3 class="callout-title">The One-Command Privacy Purge</h3>
+        <p class="callout-subtitle">
+          Want to remove your details at any time? Simply run <code>/tripwire forget</code> in Slack. Tripwire immediately and permanently deletes your home coordinates, commute settings, and history from our database.
+        </p>
+        <div style="display:flex;justify-content:center;gap:16px;">
+          <a href="/privacy" class="btn btn-secondary">Read Full Privacy Policy →</a>
+          <a href="/security" class="btn btn-secondary">Review Security Architecture →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="section">
+    <div class="container" style="text-align:center;">
+      <h2 class="section-title">Ready to eliminate wasted morning commutes?</h2>
+      <p class="section-description" style="margin-bottom:32px;">
+        Install Tripwire Teams to your Slack workspace in 2 minutes. Free for hybrid teams.
+      </p>
+      <a href="/slack/install" class="btn btn-slack btn-lg">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+        </svg>
+        Add to Slack
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="brand">
+            <span class="brand-icon">⚡</span>
+            <span>Tripwire</span>
+          </a>
+          <p class="footer-tagline">
+            Automated office-day commute tripwires and Google Calendar fallback synchronization for hybrid engineering teams.
+          </p>
+        </div>
+
+        <div class="footer-nav">
+          <div class="footer-nav-col">
+            <div class="footer-nav-title">Product</div>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#invariants">Core Invariants</a>
+            <a href="#data-collection">Data Transparency</a>
+            <a href="/slack/install">Add to Slack</a>
+          </div>
+
+          <div class="footer-nav-col">
+            <div class="footer-nav-title">Privacy & Security</div>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/security">Security Architecture</a>
+            <a href="/health">System Health</a>
+          </div>
+
+          <div class="footer-nav-col">
+            <div class="footer-nav-title">Integrations</div>
+            <a href="https://api.slack.com" target="_blank" rel="noopener">Slack Bolt</a>
+            <a href="https://developers.google.com/maps/documentation/routes" target="_blank" rel="noopener">Google Routes API</a>
+            <a href="https://developers.google.com/calendar" target="_blank" rel="noopener">Google Calendar API</a>
+            <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Tripwire Teams. All rights reserved.</div>
+        <div>Engineered with Privacy by Design & Zero GPS Tracking.</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

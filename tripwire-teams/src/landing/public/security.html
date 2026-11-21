@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Architecture & Compliance — Tripwire Teams</title>
+  <meta name="description" content="Technical security architecture, multi-tenant isolation, log scrubbing, AES-256-GCM encryption, and invariant verification in Tripwire Teams.">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <span class="brand-icon">⚡</span>
+        <span>Tripwire</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#invariants">Core Invariants</a></li>
+          <li><a href="/#data-collection">Data Transparency</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/security" style="color:var(--text-primary);font-weight:600;">Security</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="/slack/install" class="btn btn-slack btn-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+          </svg>
+          Add to Slack
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Document Header -->
+  <main class="container doc-page">
+    <div class="doc-header">
+      <div class="badge badge-live" style="margin-bottom:16px;">Security Architecture</div>
+      <h1 class="doc-title">Security Architecture & Compliance</h1>
+      <div class="doc-meta">
+        <span>Last updated: November 2026</span>
+        <span>·</span>
+        <span>Cryptographic Protections & Defense-in-Depth</span>
+      </div>
+    </div>
+
+    <!-- Document Content -->
+    <article class="doc-content">
+      <p>
+        This document provides a transparent, plain-English overview of the security architecture, data protections, and isolation mechanisms implemented in <strong>Tripwire Teams</strong>.
+      </p>
+
+      <h2>1. Core Security Principles</h2>
+      <p>
+        Tripwire Teams is built around defense-in-depth and strict data minimization:
+      </p>
+      <ul>
+        <li><strong>Never Log Secrets or Coordinates:</strong> API keys, bot tokens, OAuth tokens, personal emails, and coordinates are programmatically scrubbed before any log is written.</li>
+        <li><strong>Absolute Multi-Tenant Isolation:</strong> Every database interaction is scoped to an authenticated workspace tenant. No workspace can ever inspect or alter data belonging to another workspace.</li>
+        <li><strong>Cryptographic Protection at Rest:</strong> Sensitive fields are encrypted using authenticated industry-standard ciphers.</li>
+        <li><strong>Idempotence & Auditability:</strong> Every external action (modifying Google Calendar, posting into Slack, deleting user data) creates an immutable audit log record.</li>
+      </ul>
+
+      <h2>2. Data Encryption at Rest (AES-256-GCM)</h2>
+      <p>
+        All sensitive data stored in the database is protected with authenticated encryption:
+      </p>
+      <ul>
+        <li><strong>Algorithm:</strong> <strong>AES-256-GCM</strong> (Galois/Counter Mode), providing both high-grade confidentiality and cryptographic tamper verification.</li>
+        <li><strong>Protected Fields:</strong> Coarse home coordinates, Google OAuth access tokens, Google refresh tokens, and Slack bot tokens.</li>
+        <li><strong>Key Management:</strong> Primary encryption keys are passed via secure environment variables (<code>ENCRYPTION_KEY</code>), rotated according to operational runbooks, and never committed to source control.</li>
+        <li><strong>Data in Transit:</strong> All communications between Slack, the application server, Google APIs (Routes, Geocoding, Calendar), and PostgreSQL are encrypted over <strong>TLS 1.3 / HTTPS</strong>.</li>
+      </ul>
+
+      <h2>3. Strict Workspace Tenant Isolation</h2>
+      <p>
+        Tripwire Teams serves multiple Slack workspaces from a shared database architecture while enforcing rigid tenant boundaries:
+      </p>
+      <ul>
+        <li><strong>Tenant Scoping:</strong> All database tables (<code>workspaces</code>, <code>members</code>, <code>plans</code>, <code>plan_attendees</code>, <code>checks</code>, <code>decisions</code>, <code>google_tokens</code>, <code>audit_log</code>) are partitioned by <code>workspace_id</code>.</li>
+        <li><strong>Query Interception:</strong> Database query wrappers (<code>workspaceIsolation.ts</code>) automatically inject and enforce <code>workspace_id</code> parameters into every <code>WHERE</code> clause.</li>
+        <li><strong>Foreign Access Rejection:</strong> If an application query or API request specifies a foreign workspace identifier, the system immediately aborts with a <code>TenantIsolationError</code> before the database responds.</li>
+        <li><strong>Post-Query Assertions:</strong> Verification assertions inspect returned rows to verify that zero foreign records leak across tenant boundaries.</li>
+      </ul>
+
+      <h2>4. Automated Log Scrubber & Redaction</h2>
+      <p>
+        Under <strong>Rule 8 ("Never log secrets, tokens or coordinates")</strong>, all logging output passes through an automated log scrubber (<code>logScrubber.ts</code>):
+      </p>
+      <ul>
+        <li><strong>Slack Tokens:</strong> Strips bot tokens (<code>xoxb-</code>), app tokens (<code>xapp-</code>), user tokens (<code>xoxp-</code>), and refresh tokens (<code>xoxr-</code>).</li>
+        <li><strong>Google Credentials:</strong> Strips Google API keys (<code>AIza...</code>) and OAuth access tokens (<code>ya29...</code>).</li>
+        <li><strong>Authorization Headers:</strong> Strips HTTP Bearer tokens and generic JWT strings.</li>
+        <li><strong>Geographic Coordinates:</strong> Masks latitude/longitude pairs (e.g. <code>12.9716, 77.5946</code> becomes <code>[COORDINATES_REDACTED]</code>).</li>
+        <li><strong>Personal Emails:</strong> Redacts user email addresses to prevent PII exposure in log monitoring tools.</li>
+      </ul>
+
+      <h2>5. Slash Command Rate Limiting</h2>
+      <p>
+        To protect backend resources and prevent abuse of Slack slash commands (e.g., rapid-fire <code>/tripwire setup</code> or <code>/tripwire skip</code> spam):
+      </p>
+      <ul>
+        <li>An in-memory <strong>sliding window rate limiter</strong> tracks commands per user.</li>
+        <li><strong>Limit:</strong> Up to <strong>10 commands per minute</strong> per user.</li>
+        <li>Any request exceeding this threshold is rejected with an informative <code>RateLimitExceededError</code> detailing the required wait time before retrying.</li>
+        <li>Expired timestamps are garbage-collected automatically to prevent memory leaks.</li>
+      </ul>
+
+      <h2>6. Immutable Audit Logging</h2>
+      <p>
+        All privileged or state-changing actions are recorded to the <code>audit_log</code> table:
+      </p>
+      <ul>
+        <li><strong>Google Calendar event updates</strong> (<code>CALENDAR_UPDATE</code>)</li>
+        <li><strong>Team lead remote/office decisions</strong> (<code>DECISION_CLICK</code>)</li>
+        <li><strong>User personal data deletions</strong> via <code>/tripwire forget</code> (<code>MEMBER_FORGET</code>)</li>
+        <li><strong>Data retention maintenance purges</strong> (<code>RETENTION_PURGE</code>)</li>
+        <li><strong>Slack notification broadcasts</strong> (<code>SLACK_POST</code>)</li>
+      </ul>
+      <p>
+        Every audit record includes a precise timestamp, workspace identifier, action type, actor Slack user ID, target entity, and sanitized metadata.
+      </p>
+
+      <h2>7. Honest Enterprise Gap Analysis ("What is NOT Yet Done")</h2>
+      <p>
+        While Tripwire Teams implements rigorous foundational security, we believe in radical transparency regarding enterprise capabilities that are <strong>not yet built</strong>:
+      </p>
+
+      <div class="data-table-card" style="margin-bottom:28px;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th>Current State</th>
+              <th>Enterprise Roadmap</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Enterprise SSO / SAML</strong></td>
+              <td>Relies on Slack & Google OAuth.</td>
+              <td>Dedicated SAML 2.0 / Okta / Azure AD integration for administrative controls is not yet supported.</td>
+            </tr>
+            <tr>
+              <td><strong>SOC-2 Type II</strong></td>
+              <td>Built following SOC-2 principles.</td>
+              <td>We have not yet undergone formal third-party SOC-2 Type II audit certification.</td>
+            </tr>
+            <tr>
+              <td><strong>Custom Data Residency</strong></td>
+              <td>Hosted in primary PostgreSQL region.</td>
+              <td>Region-specific data pinning (e.g., EU-only or US-only database residency) is not currently available.</td>
+            </tr>
+            <tr>
+              <td><strong>Customer-Managed Keys (BYOK)</strong></td>
+              <td>Managed via secure environment variables.</td>
+              <td>Bring-Your-Own-Key via AWS KMS, GCP KMS, or HashiCorp Vault is planned for future enterprise tiers.</td>
+            </tr>
+            <tr>
+              <td><strong>Granular RBAC</strong></td>
+              <td>Binary roles: Plan Owner and Attendees.</td>
+              <td>Custom administrative roles (e.g., Compliance Officer, Read-Only Auditor) are not yet configurable.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>8. Reporting Security Vulnerabilities</h2>
+      <p>
+        We welcome responsible security disclosures. If you discover a potential vulnerability, please report it directly to your organization's security administrator or email our security team with reproduction steps. We will acknowledge receipt within 24 hours and provide an estimated remediation timeline.
+      </p>
+
+      <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border-subtle);display:flex;gap:16px;">
+        <a href="/" class="btn btn-secondary">← Back to Homepage</a>
+        <a href="/privacy" class="btn btn-secondary">Read Privacy Policy →</a>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="brand">
+            <span class="brand-icon">⚡</span>
+            <span>Tripwire</span>
+          </a>
+          <p class="footer-tagline">
+            Automated office-day commute tripwires and Google Calendar fallback synchronization for hybrid engineering teams.
+          </p>
+        </div>
+
+        <div class="footer-nav">
+          <div class="footer-nav-col">
+            <div class="footer-nav-title">Product</div>
+            <a href="/#how-it-works">How It Works</a>
+            <a href="/#invariants">Core Invariants</a>
+            <a href="/#data-collection">Data Transparency</a>
+          </div>
+
+          <div class="footer-nav-col">
+            <div class="footer-nav-title">Privacy & Security</div>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/security">Security Architecture</a>
+            <a href="/health">System Health</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Tripwire Teams. All rights reserved.</div>
+        <div>Engineered with Privacy by Design & Zero GPS Tracking.</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

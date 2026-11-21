@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Tripwire Teams</title>
+  <meta name="description" content="Plain-English privacy policy for Tripwire Teams. Learn about our Privacy by Design principles, ~1 km coordinate truncation, and zero GPS tracking.">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="/" class="brand">
+        <span class="brand-icon">⚡</span>
+        <span>Tripwire</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links">
+          <li><a href="/#how-it-works">How It Works</a></li>
+          <li><a href="/#invariants">Core Invariants</a></li>
+          <li><a href="/#data-collection">Data Transparency</a></li>
+          <li><a href="/privacy" style="color:var(--text-primary);font-weight:600;">Privacy</a></li>
+          <li><a href="/security">Security</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="/slack/install" class="btn btn-slack btn-sm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+          </svg>
+          Add to Slack
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Document Header -->
+  <main class="container doc-page">
+    <div class="doc-header">
+      <div class="badge badge-live" style="margin-bottom:16px;">Privacy by Design</div>
+      <h1 class="doc-title">Privacy Policy for Tripwire Teams</h1>
+      <div class="doc-meta">
+        <span>Last updated: November 2026</span>
+        <span>·</span>
+        <span>Plain-English Transparency Standard</span>
+      </div>
+    </div>
+
+    <!-- Document Content -->
+    <article class="doc-content">
+      <p>
+        Tripwire Teams is designed from the ground up around <strong>Privacy by Design</strong>. We believe you should never have to surrender your personal privacy, live whereabouts, or home address just to coordinate hybrid work with your team.
+      </p>
+
+      <p>
+        This document explains in clear, plain English what data we collect, why we need it, who has access to it, and how you have complete control over it.
+      </p>
+
+      <h2>1. What Data We Collect</h2>
+      <p>
+        When you choose to opt in using <code>/tripwire setup</code>, we collect only the minimum information necessary to calculate whether your commute will be unusually difficult on an office day:
+      </p>
+
+      <ul>
+        <li>
+          <strong>Approximate Home Area (Rounded to ~1 km):</strong>
+          We do <strong>NOT</strong> collect your exact home address, apartment number, or building name. Any location you provide is converted into geographic coordinates and immediately <strong>rounded to 2 decimal places</strong> (approximately a 1-kilometer radius, roughly the size of a whole neighborhood). This coarse coordinate is stored using <strong>AES-256-GCM encryption at rest</strong>.
+        </li>
+        <li>
+          <strong>Travel Mode:</strong> Your preferred way of getting to work (such as driving or transit).
+        </li>
+        <li>
+          <strong>Personal Commute Threshold:</strong> The maximum minutes you are comfortable commuting (for example, "45 minutes") before a trip feels unreasonable.
+        </li>
+        <li>
+          <strong>Slack Identifier & Email Address:</strong> Your Slack User ID (e.g., <code>U12345678</code>), workspace identifier, and email address, used solely to identify your participation on the team's Google Calendar event.
+        </li>
+        <li>
+          <strong>Commute Checks:</strong> Automated travel time calculations retrieved from Google Routes API before scheduled decision times.
+        </li>
+      </ul>
+
+      <div class="doc-box">
+        <h3 style="margin-top:0;margin-bottom:8px;">What We NEVER Collect</h3>
+        <ul style="margin-bottom:0;">
+          <li><strong>NO real-time GPS tracking:</strong> We do not run on your mobile device, track your speed, or monitor your live location.</li>
+          <li><strong>NO movement history:</strong> We do not track where you go on weekends, evenings, or working hours.</li>
+          <li><strong>NO personal calendar details:</strong> We only inspect or modify the specific office event linked to the plan.</li>
+          <li><strong>NO channel chat monitoring:</strong> We do not read or record conversations in your Slack channels.</li>
+        </ul>
+      </div>
+
+      <h2>2. Why We Collect It</h2>
+      <p>
+        We collect this data for a single purpose: <strong>to estimate commute times before anyone leaves home</strong>, so your team lead can decide whether to switch an in-person office day to remote when severe traffic, disruptions, or heavy rain make traveling miserable.
+      </p>
+      <p>
+        By using an approximate 1 km neighborhood center rather than your doorstep, Google Routes API produces a commute estimate that is virtually identical to your actual trip, without anyone ever storing where your front door is.
+      </p>
+
+      <h2>3. Who Can See Your Data</h2>
+      <ul>
+        <li>
+          <strong>The Automated System Only:</strong> Individual coordinates and travel preferences are processed exclusively by our automated backend worker.
+        </li>
+        <li>
+          <strong>The Team Lead Sees AGGREGATES ONLY:</strong> The team lead who creates the plan and makes the decision <strong>cannot see your home area, coordinates, or individual travel times</strong>. In channel notifications, the lead sees only high-level summary metrics, such as:
+          <blockquote><em>"4 of 7 attendees affected by severe traffic delays (commutes 35%+ above baseline)."</em></blockquote>
+          Individual names and locations are hidden by default.
+        </li>
+        <li>
+          <strong>Your Teammates:</strong> Teammates cannot see your setup details, home neighborhood, or whether you personally were flagged.
+        </li>
+        <li>
+          <strong>Third Parties:</strong> We do not sell, rent, or share personal data with advertisers or data brokers. Origin coordinates (rounded to 1 km) and destination office coordinates are sent via secure HTTPS to the Google Routes API solely to calculate route durations.
+        </li>
+      </ul>
+
+      <h2>4. How to Delete Your Data (<code>/tripwire forget</code>)</h2>
+      <p>
+        You have unconditional control over your data at all times:
+      </p>
+      <ol>
+        <li>
+          <strong>Immediate Personal Deletion:</strong> Type <code>/tripwire forget</code> in Slack at any time. This immediately and permanently deletes your member record, approximate home location, commute threshold, travel mode, and attendee associations from our database.
+        </li>
+        <li>
+          <strong>Skipping a Day:</strong> If you are on leave, sick, or working from home on a specific day, type <code>/tripwire skip</code>. You will be excluded from that day's checks without deleting your profile.
+        </li>
+        <li>
+          <strong>Workspace Uninstallation:</strong> If your workspace administrator uninstalls the Tripwire Teams Slack app, or if Slack tokens are revoked (<code>tokens_revoked</code>), all database records for that workspace (plans, checks, attendee records, and tokens) are purged completely.
+        </li>
+      </ol>
+
+      <h2>5. Data Retention Policy</h2>
+      <p>
+        We keep data only as long as strictly necessary:
+      </p>
+
+      <div class="data-table-card" style="margin-bottom:28px;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Data Type</th>
+              <th>Retention Period</th>
+              <th>Deletion Mechanism</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Commute Duration Checks</strong></td>
+              <td><strong>30 days</strong></td>
+              <td>Automated daily retention cleanup job permanently deletes records older than 30 days.</td>
+            </tr>
+            <tr>
+              <td><strong>Member Profiles</strong></td>
+              <td>Until deleted by user</td>
+              <td>Deleted immediately upon <code>/tripwire forget</code> or workspace uninstallation.</td>
+            </tr>
+            <tr>
+              <td><strong>Audit Logs</strong></td>
+              <td>90 days</td>
+              <td>Kept for security and compliance audits; sanitized of all coordinates, emails, and credentials.</td>
+            </tr>
+            <tr>
+              <td><strong>Google OAuth Tokens</strong></td>
+              <td>Until disconnected</td>
+              <td>Disconnected immediately upon lead request or workspace uninstall.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>6. Questions and Privacy Inquiries</h2>
+      <p>
+        If you have questions about Tripwire Teams' privacy practices, or if you would like to request an audit of your data, contact your workspace administrator or reach out through your organization's internal support channels.
+      </p>
+
+      <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border-subtle);display:flex;gap:16px;">
+        <a href="/" class="btn btn-secondary">← Back to Homepage</a>
+        <a href="/security" class="btn btn-secondary">Review Security Architecture →</a>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="brand">
+            <span class="brand-icon">⚡</span>
+            <span>Tripwire</span>
+          </a>
+          <p class="footer-tagline">
+            Automated office-day commute tripwires and Google Calendar fallback synchronization for hybrid engineering teams.
+          </p>
+        </div>
+
+        <div class="footer-nav">
+          <div class="footer-nav-col">
+            <div class="footer-nav-title">Product</div>
+            <a href="/#how-it-works">How It Works</a>
+            <a href="/#invariants">Core Invariants</a>
+            <a href="/#data-collection">Data Transparency</a>
+          </div>
+
+          <div class="footer-nav-col">
+            <div class="footer-nav-title">Privacy & Security</div>
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/security">Security Architecture</a>
+            <a href="/health">System Health</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 Tripwire Teams. All rights reserved.</div>
+        <div>Engineered with Privacy by Design & Zero GPS Tracking.</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
