@@ -225,6 +225,59 @@ export function seedInitialData(db: DatabaseSync): void {
         ('part_arjun', ?, 'user_arjun', 'Arjun', 'HSR Layout', 12.9121, 77.6446, 3600, NULL, NULL)
     `).run(pactId, pactId);
   }
+
+  // Seed 2 realistic past pacts if they do not exist
+  const existingWf = db.prepare('SELECT id FROM pacts WHERE id = ?').get('pact_past_whitefield');
+  if (!existingWf) {
+    const twoDaysAgo = new Date(Date.now() - 2 * 86400 * 1000);
+    const twoDaysAgoIso = twoDaysAgo.toISOString();
+    const past1Id = 'pact_past_whitefield';
+
+    db.prepare(`
+      INSERT INTO pacts (
+        id, team_id, title, version, status,
+        destination_name, destination_place_id, destination_lat, destination_lon, destination_address,
+        decision_deadline_utc, decision_deadline_ist, fallback_text, created_by, created_at, updated_at
+      ) VALUES (
+        ?, ?, 'Whitefield Client Sync', 1, 'completed',
+        'Prestige Shantiniketan, Whitefield', 'ChIJ_whitefield_psn_01', 12.9899, 77.7289, 'Whitefield Main Rd, Bengaluru',
+        ?, '09:30 IST · 19 Nov 2026', 'Switch to Google Meet and reschedule onsite to Friday', 'user_maya', ?, ?
+      )
+    `).run(past1Id, teamId, twoDaysAgoIso, twoDaysAgoIso, twoDaysAgoIso);
+
+    db.prepare(`
+      INSERT INTO participants (id, pact_id, user_id, user_name, neighbourhood, origin_lat, origin_lon, max_duration_s, approval_version, approved_at)
+      VALUES
+        ('part_maya_wf', ?, 'user_maya', 'Maya', 'Indiranagar', 12.9784, 77.6408, 3600, 1, ?),
+        ('part_arjun_wf', ?, 'user_arjun', 'Arjun', 'HSR Layout', 12.9121, 77.6446, 4200, 1, ?)
+    `).run(past1Id, twoDaysAgoIso, past1Id, twoDaysAgoIso);
+  }
+
+  const existingKm = db.prepare('SELECT id FROM pacts WHERE id = ?').get('pact_past_koramangala');
+  if (!existingKm) {
+    const oneDayAgo = new Date(Date.now() - 1 * 86400 * 1000);
+    const oneDayAgoIso = oneDayAgo.toISOString();
+    const past2Id = 'pact_past_koramangala';
+
+    db.prepare(`
+      INSERT INTO pacts (
+        id, team_id, title, version, status,
+        destination_name, destination_place_id, destination_lat, destination_lon, destination_address,
+        decision_deadline_utc, decision_deadline_ist, fallback_text, created_by, created_at, updated_at
+      ) VALUES (
+        ?, ?, 'Koramangala Standup', 1, 'completed',
+        'Third Wave Coffee, Koramangala 4th Block', 'ChIJ_koramangala_twc_02', 12.9345, 77.6265, '80 Feet Rd, Koramangala 4th Block, Bengaluru',
+        ?, '10:00 IST · 20 Nov 2026', 'Switch to Slack huddle and work from home', 'user_arjun', ?, ?
+      )
+    `).run(past2Id, teamId, oneDayAgoIso, oneDayAgoIso, oneDayAgoIso);
+
+    db.prepare(`
+      INSERT INTO participants (id, pact_id, user_id, user_name, neighbourhood, origin_lat, origin_lon, max_duration_s, approval_version, approved_at)
+      VALUES
+        ('part_maya_km', ?, 'user_maya', 'Maya', 'Indiranagar', 12.9784, 77.6408, 2700, 1, ?),
+        ('part_arjun_km', ?, 'user_arjun', 'Arjun', 'HSR Layout', 12.9121, 77.6446, 2700, 1, ?)
+    `).run(past2Id, oneDayAgoIso, past2Id, oneDayAgoIso);
+  }
 }
 
 /**

@@ -291,11 +291,12 @@ Failed or ambiguous attempts remain spent to avoid budget overruns.
 | Endpoint | Method | Purpose |
 |---|---|---|
 | `/api/health` | `GET` | Health check returning mode (`LIVE`/`SIMULATION`), budget usage, worker lease state, and provider configuration status. |
-| `/api/pacts` | `GET` | Lists all pacts for the active team. |
+| `/api/pacts` | `GET` | Lists all pacts for the active team (both active and past plans). |
 | `/api/pacts/:id` | `GET` | Retrieves full details for a pact, including participants and approval states. |
-| `/api/pacts` | `POST` | Creates a new pact draft. |
-| `/api/pacts/:id` | `PUT` | Updates an existing pact (advances version, resets approvals). |
+| `/api/pacts` | `POST` | Creates a brand new pact with UUID, Maya & Arjun participants, and attached watches. |
+| `/api/pacts/:id` | `PUT` | Updates an existing pact (advances version, resets prior approvals). |
 | `/api/pacts/:id/approve` | `POST` | Records the active user's approval for the current pact version. |
+| `/api/pacts/:id/complete` | `POST` | Marks the pact completed, moves it to Past Plans, and disables watches. |
 | `/api/simulation/check-live` | `POST` | Dispatches real live SerpApi Directions checks for all pact participants, evaluates rules, and records credit usage. |
 | `/api/simulation/state/set` | `POST` | Switches demo states (`draft`, `armed`, `confirming`, `alert`, `stale`, `budget_paused`) for UI visual testing. |
 | `/api/chat/messages` | `GET` | Retrieves recent messages for team channel `#bellandur-office-pact`. |
@@ -331,6 +332,62 @@ npm start
 
 # Run unit invariants test (Python)
 npm run test:python
+```
+
+---
+
+## 10. End-to-End User Walkthrough on Localhost
+
+Here is the exact step-by-step workflow of how users interact with the application on `http://localhost:3000`:
+
+### Step 1: Launch the Application
+- Double click `run.bat` or run `npm start` in the terminal.
+- Your browser opens to `http://localhost:3000`.
+- The top header displays:
+  - Application badge: `Tripwire: Office Pact · BEYOND 9TO5 · Bengaluru`
+  - Mode indicator: **`LIVE MODE`** (green token) powered by real SerpApi queries.
+  - Budget tracker: **`BUDGET: X/40 CREDITS`** tracking live Google Maps queries.
+  - Session selector: Switch between **Maya (Indiranagar)** and **Arjun (HSR Layout)** in the top right.
+
+### Step 2: Browse Active and Past Plans
+- In the left sidebar (`224px`), observe the segmented filter tabs:
+  - **`Active (1)`**: Shows active agreements (e.g., `Bellandur Office Meetup`).
+  - **`Past (2)`**: Click to view archived plans from previous days (`Whitefield Client Sync`, `Koramangala Standup`).
+  - **`All (3)`**: Displays all agreements in one comprehensive view.
+- Click any past plan to inspect its historical commute conditions, approved thresholds, and concluded status.
+
+### Step 3: Create a Brand-New Pact
+- In the left sidebar, click **`+ New`**.
+- The **`Create New Office Pact`** dialog opens:
+  - Enter a meeting title (e.g., `"Koramangala Tech Sync"`).
+  - Select destination (or click `Change Place` to search verified Bangalore coworking venues).
+  - Configure individual commute thresholds for Maya (e.g., `60 min`) and Arjun (e.g., `60 min`).
+  - Set the decision deadline (e.g., `09:30 IST`).
+  - Set the remote fallback action (e.g., `"Switch to Google Meet"`).
+- Click **`Create Pact (v1)`**: A new plan is created in `draft` status with version `v1` without modifying or overwriting any existing plan!
+
+### Step 4: Bilateral Agreement & Arming
+- **Maya's Turn:** Acting as Maya, review the condition in the 5-second legibility triad and click **`Approve v1 (as Maya)`**.
+  - The status updates to `APPROVALS (1/2 approved)`.
+- **Arjun's Turn:** Use the session switcher in the top right to switch to **Arjun (HSR Layout)**.
+  - Notice the action button updates to **`Approve v1 (as Arjun)`**.
+  - Click approve. With both parties approved, the status transitions to **`ARMED`** (indicated with a solid green pill and decision line).
+
+### Step 5: Execute Live SerpApi Commute Checks
+- Under the evidence section, click **`⚡ Run Live Commute Check (SerpApi)`**.
+- Real Google Maps Directions queries dispatch with `no_cache=true`:
+  - Maya's route (Indiranagar $\to$ Bellandur): ~30 min driving ($\le 60$ min limit).
+  - Arjun's route (HSR Layout $\to$ Bellandur): ~15 min driving ($\le 60$ min limit).
+- The budget increments transactionally in the header, and both routes confirm within limits.
+
+### Step 6: Collaborate in Team Chat
+- In the right sidebar (`336px`), participate in `#bellandur-office-pact`.
+- Type a message in the composer (e.g., *"Outer Ring Road looks clear today!"*) and click **Send**.
+- Switch users to see the message instantly in Arjun's view.
+
+### Step 7: Conclude and Archive a Plan
+- When the meeting or day concludes, click **`Complete Pact`**.
+- The pact transitions to `COMPLETED` and automatically moves into the **`Past Plans`** tab, disabling background polling watches while preserving the full audit trail.
 ```
 
 ---

@@ -132,6 +132,66 @@
   color: var(--ink-muted);
 }
 
+/* Filter Tabs / Segmented Pills */
+.pact-filter-tabs {
+  display: flex;
+  background: var(--paper-inset, #F0EFEA);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  padding: 2px;
+  gap: 2px;
+  margin-bottom: var(--space-3);
+}
+
+.tab-pill {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: calc(var(--radius-control) - 2px);
+  border: 1px solid transparent;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.tab-pill:hover {
+  color: var(--ink);
+  background: rgba(32, 40, 36, 0.04);
+}
+
+.tab-pill.active {
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-weight: 600;
+  border-color: var(--rule);
+  box-shadow: 0 1px 2px rgba(32, 40, 36, 0.05);
+}
+
+.tab-pill-count {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 9999px;
+  background: var(--paper);
+  color: var(--ink-muted);
+  border: 1px solid var(--rule);
+  line-height: 10px;
+}
+
+.tab-pill.active .tab-pill-count {
+  background: var(--pact-green-wash);
+  color: var(--pact-green);
+  border-color: var(--pact-green);
+}
+
 .pact-item {
   padding: var(--space-3);
   border-radius: var(--radius-control);
@@ -139,7 +199,7 @@
   background: var(--paper-raised);
   margin-bottom: var(--space-2);
   cursor: pointer;
-  transition: border-color 140ms ease;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
 .pact-item:hover {
@@ -149,6 +209,7 @@
 .pact-item.active {
   border-color: var(--pact-green);
   background: var(--pact-green-wash);
+  box-shadow: inset 3px 0 0 0 var(--pact-green);
 }
 
 .pact-item-header {
@@ -199,6 +260,49 @@
   background: var(--caution-wash);
   color: var(--caution-ink);
   border: 1px solid var(--caution-ink);
+}
+
+.status-pill.completed, .status-pill.closed {
+  background: var(--paper-sunken);
+  color: var(--ink-muted);
+  border: 1px solid var(--rule-strong);
+}
+
+.pact-item.past-item {
+  opacity: 0.85;
+}
+
+.pact-item.past-item:hover {
+  opacity: 1;
+}
+
+.empty-sidebar-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-4) var(--space-2);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius-control);
+  background: var(--paper-inset, #F0EFEA);
+  margin-top: var(--space-2);
+}
+
+.empty-state-title {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.empty-state-desc {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-3);
+  max-width: 180px;
 }
 
 /* Primary Workspace */
@@ -500,6 +604,11 @@
 
 .pending-indicator {
   color: var(--caution-ink);
+}
+
+.archived-indicator {
+  color: var(--ink-secondary);
+  font-style: italic;
 }
 
 .button-group {

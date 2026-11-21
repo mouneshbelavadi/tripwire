@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { getDb } from '../db.js';
 import { WatchScheduler } from '../scheduler/watchScheduler.js';
 
@@ -20,7 +21,7 @@ export interface PactDetails {
   team_id: string;
   title: string;
   version: number;
-  status: 'draft' | 'awaiting_approval' | 'armed' | 'paused' | 'closed';
+  status: 'draft' | 'awaiting_approval' | 'armed' | 'paused' | 'closed' | 'completed';
   destination_name: string;
   destination_place_id: string;
   destination_lat: number;
@@ -36,6 +37,23 @@ export interface PactDetails {
   all_approved: boolean;
   can_current_user_approve: boolean;
   is_current_user_approved: boolean;
+  consecutive_breaches?: number;
+  is_alert_active?: boolean;
+  latest_source_at?: number | null;
+}
+
+export interface CreatePactInput {
+  team_id?: string;
+  title?: string;
+  destination_name?: string;
+  destination_place_id?: string;
+  destination_lat?: number;
+  destination_lon?: number;
+  destination_address?: string;
+  decision_deadline_utc?: string;
+  decision_deadline_ist?: string;
+  fallback_text?: string;
+  participant_limits?: { user_id: string; max_duration_s: number }[];
 }
 
 export class PactService {
@@ -91,7 +109,7 @@ export class PactService {
     const currentUserPart = participants.find((p) => p.user_id === requestingUserId);
     const isCurrentUserApproved = currentUserPart?.is_approved ?? false;
     const canCurrentUserApprove =
-      Boolean(currentUserPart) && !isCurrentUserApproved && pact.status !== 'closed';
+      Boolean(currentUserPart) && !isCurrentUserApproved && pact.status !== 'closed' && pact.status !== 'completed';
 
     // Query active rule state and breach status across watches for this pact
     const ruleStateRow = db
@@ -289,6 +307,140 @@ export class PactService {
       if (allApproved) {
         WatchScheduler.armPactWatches(pactId);
       }
+    } catch (err) {
+      db.exec('ROLLBACK');
+      throw err;
+    }
+
+    return this.getPactDetails(pactId, userId);
+  }
+
+  /**
+   * Creates a brand new pact with UUID, adds Maya and Arjun as participants with
+   * initial default thresholds, and attaches default watches.
+   */
+  static createPact(teamId: string, userId: string, input: CreatePactInput): PactDetails {
+    if (!this.verifyTeamMember(teamId, userId)) {
+      throw new Error(`Forbidden: User ${userId} is not a member of team ${teamId}`);
+    }
+
+    const db = getDb();
+    const pactId = 'pact_' + crypto.randomUUID();
+    const now = new Date();
+    const nowIso = now.toISOString();
+
+    const defaultDeadlineDate = new Date(now.getTime() + 4 * 3600 * 1000);
+    const deadlineUtc = input.decision_deadline_utc || defaultDeadlineDate.toISOString();
+    const deadlineIst = input.decision_deadline_ist || (
+      defaultDeadlineDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }) + ' IST'
+    );
+
+    const title = input.title?.trim() || 'Office Meetup';
+    const destinationName = input.destination_name?.trim() || 'WeWork Bellandur';
+    const destinationPlaceId = input.destination_place_id?.trim() || 'ChIJk7Q3BqcUrzsR-q3Qe-place-01';
+    const destinationLat = input.destination_lat ?? 12.9290;
+    const destinationLon = input.destination_lon ?? 77.6760;
+    const destinationAddress = input.destination_address || 'Outer Ring Rd, Bellandur, Bengaluru';
+    const fallbackText = input.fallback_text?.trim() || 'Switch to remote Google Meet / Slack huddle';
+
+    let members = db.prepare('SELECT * FROM team_members WHERE team_id = ? ORDER BY user_id ASC').all(teamId) as any[];
+    if (!members || members.length === 0) {
+      members = [
+        { user_id: 'user_maya', user_name: 'Maya', neighbourhood: 'Indiranagar', origin_lat: 12.9784, origin_lon: 77.6408 },
+        { user_id: 'user_arjun', user_name: 'Arjun', neighbourhood: 'HSR Layout', origin_lat: 12.9121, origin_lon: 77.6446 },
+      ];
+    }
+
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.prepare(`
+        INSERT INTO pacts (
+          id, team_id, title, version, status,
+          destination_name, destination_place_id, destination_lat, destination_lon, destination_address,
+          decision_deadline_utc, decision_deadline_ist, fallback_text, created_by, created_at, updated_at
+        ) VALUES (
+          ?, ?, ?, 1, 'draft',
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?
+        )
+      `).run(
+        pactId,
+        teamId,
+        title,
+        destinationName,
+        destinationPlaceId,
+        destinationLat,
+        destinationLon,
+        destinationAddress,
+        deadlineUtc,
+        deadlineIst,
+        fallbackText,
+        userId,
+        nowIso,
+        nowIso
+      );
+
+      for (const m of members) {
+        const participantId = `part_${pactId}_${m.user_id}`;
+        const limitConfig = input.participant_limits?.find((l) => l.user_id === m.user_id);
+        const maxDurationS = limitConfig?.max_duration_s ?? 3600;
+
+        db.prepare(`
+          INSERT INTO participants (
+            id, pact_id, user_id, user_name, neighbourhood, origin_lat, origin_lon, max_duration_s, approval_version, approved_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)
+        `).run(
+          participantId,
+          pactId,
+          m.user_id,
+          m.user_name,
+          m.neighbourhood,
+          m.origin_lat,
+          m.origin_lon,
+          maxDurationS
+        );
+      }
+
+      db.exec('COMMIT');
+    } catch (err) {
+      db.exec('ROLLBACK');
+      throw err;
+    }
+
+    // Attach default watches for the new pact
+    WatchScheduler.armPactWatches(pactId);
+
+    return this.getPactDetails(pactId, userId);
+  }
+
+  /**
+   * Marks a pact as completed/closed and disables active watches.
+   */
+  static closePact(pactId: string, userId: string, targetStatus: 'completed' | 'closed' = 'completed'): PactDetails {
+    const db = getDb();
+    const pact = db.prepare('SELECT * FROM pacts WHERE id = ?').get(pactId) as any;
+    if (!pact) {
+      throw new Error(`Pact not found: ${pactId}`);
+    }
+
+    if (!this.verifyTeamMember(pact.team_id, userId)) {
+      throw new Error(`Forbidden: User ${userId} is not a member of team ${pact.team_id}`);
+    }
+
+    const now = new Date().toISOString();
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.prepare(`
+        UPDATE pacts SET
+          status = ?,
+          updated_at = ?
+        WHERE id = ?
+      `).run(targetStatus, now, pactId);
+
+      // Disable any active watches for this completed pact
+      db.prepare('UPDATE watches SET enabled = 0 WHERE pact_id = ?').run(pactId);
+
+      db.exec('COMMIT');
     } catch (err) {
       db.exec('ROLLBACK');
       throw err;

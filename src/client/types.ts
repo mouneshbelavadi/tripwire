@@ -51,7 +51,7 @@ export interface PactDetails {
   team_id: string;
   title: string;
   version: number;
-  status: 'draft' | 'awaiting_approval' | 'armed' | 'paused' | 'closed';
+  status: 'draft' | 'awaiting_approval' | 'armed' | 'paused' | 'closed' | 'completed';
   destination_name: string;
   destination_place_id: string;
   destination_lat: number;

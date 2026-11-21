@@ -19,7 +19,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [latestReceipt, setLatestReceipt] = useState<any | null>(null);
   const [actionNotice, setActionNotice] = useState<string | null>(null);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState<'create' | 'edit' | null>(null);
+  const [pendingVenue, setPendingVenue] = useState<VerifiedPlace | null>(null);
   const [isVenueSearchOpen, setIsVenueSearchOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<'pact' | 'evidence' | 'chat'>('pact');
 
@@ -108,23 +109,70 @@ export default function App() {
     }
   };
 
-  const handleSavePact = async (updates: any) => {
+  const handleSavePact = async (formData: any) => {
+    if (!activeUser) return;
+    if (editorMode === 'create') {
+      const res = await fetch('/api/pacts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': activeUser.user_id,
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create pact');
+      setActionNotice(data.message || 'Pact created in draft status.');
+      setEditorMode(null);
+      setPendingVenue(null);
+      await loadData(activeUser.user_id);
+      if (data.pact?.id) {
+        setSelectedPactId(data.pact.id);
+      }
+    } else {
+      if (!selectedPactId) return;
+      const res = await fetch(`/api/pacts/${selectedPactId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': activeUser.user_id,
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+      setActionNotice(data.message);
+      setEditorMode(null);
+      setPendingVenue(null);
+      await loadData(activeUser.user_id);
+    }
+  };
+
+  const handleCompletePact = async () => {
     if (!selectedPactId || !activeUser) return;
-    const res = await fetch(`/api/pacts/${selectedPactId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-user-id': activeUser.user_id,
-      },
-      body: JSON.stringify(updates),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Update failed');
-    setActionNotice(data.message);
-    await loadData(activeUser.user_id);
+    try {
+      const res = await fetch(`/api/pacts/${selectedPactId}/complete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': activeUser.user_id,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to complete pact');
+      setActionNotice(data.message || 'Pact marked as completed and moved to Past.');
+      await loadData(activeUser.user_id);
+    } catch (err: any) {
+      setActionNotice(`Error: ${err.message}`);
+    }
   };
 
   const handleSelectVenue = async (place: VerifiedPlace) => {
+    if (editorMode) {
+      setPendingVenue(place);
+      setIsVenueSearchOpen(false);
+      return;
+    }
     if (!selectedPactId || !activeUser) return;
     await handleSavePact({
       destination_name: place.title,
@@ -133,9 +181,11 @@ export default function App() {
       destination_lat: place.gps_coordinates.latitude,
       destination_lon: place.gps_coordinates.longitude,
     });
+    setIsVenueSearchOpen(false);
   };
 
   const selectedPact = pacts.find((p) => p.id === selectedPactId) || pacts[0] || null;
+  const isCompleted = selectedPact?.status === 'completed' || selectedPact?.status === 'closed';
   const maxMinutes = selectedPact
     ? Math.max(...selectedPact.participants.map((p) => Math.round(p.max_duration_s / 60)))
     : 60;
@@ -200,7 +250,10 @@ export default function App() {
               setSelectedPactId(id);
               setActionNotice(null);
             }}
-            onNewPact={() => setIsEditorOpen(true)}
+            onNewPact={() => {
+              setPendingVenue(null);
+              setEditorMode('create');
+            }}
           />
         </div>
 
@@ -254,7 +307,9 @@ export default function App() {
                       <div className="triad-item action">
                         <span className="triad-label">Next Action</span>
                         <span className="triad-value-action">
-                          {selectedPact.can_current_user_approve
+                          {isCompleted
+                            ? 'Pact Completed · Archived in Past Plans'
+                            : selectedPact.can_current_user_approve
                             ? `Approve v${selectedPact.version} (as ${activeUser?.user_name})`
                             : latestReceipt
                             ? 'Review Breach Evidence Below'
@@ -298,7 +353,11 @@ export default function App() {
                   {/* Action Bar */}
                   <div className="approval-action-bar">
                     <div className="approval-status-message">
-                      {selectedPact.status === 'armed' ? (
+                      {isCompleted ? (
+                        <span className="archived-indicator">
+                          ✓ This agreement has concluded and is archived in Past Plans.
+                        </span>
+                      ) : selectedPact.status === 'armed' ? (
                         <span className="armed-indicator">
                           ● All participants have approved v{selectedPact.version}. Watch is actively monitoring.
                         </span>
@@ -314,22 +373,38 @@ export default function App() {
                     </div>
 
                     <div className="button-group">
-                      <button
-                        type="button"
-                        className="btn-secondary"
-                        onClick={() => setIsEditorOpen(true)}
-                      >
-                        Edit Agreement
-                      </button>
+                      {!isCompleted && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={() => {
+                              setPendingVenue(null);
+                              setEditorMode('edit');
+                            }}
+                          >
+                            Edit Agreement
+                          </button>
 
-                      {selectedPact.can_current_user_approve && (
-                        <button
-                          type="button"
-                          className="btn-primary"
-                          onClick={handleApprove}
-                        >
-                          Approve v{selectedPact.version} (as {activeUser?.user_name})
-                        </button>
+                          <button
+                            type="button"
+                            className="btn-secondary"
+                            onClick={handleCompletePact}
+                            title="Mark this pact completed and move to past"
+                          >
+                            Complete Pact
+                          </button>
+
+                          {selectedPact.can_current_user_approve && (
+                            <button
+                              type="button"
+                              className="btn-primary"
+                              onClick={handleApprove}
+                            >
+                              Approve v{selectedPact.version} (as {activeUser?.user_name})
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -374,7 +449,13 @@ export default function App() {
             <div className="empty-workspace-state">
               <h2>No Pact Selected</h2>
               <p>Create your first team agreement to start monitoring.</p>
-              <button className="btn-primary" onClick={() => setIsEditorOpen(true)}>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  setPendingVenue(null);
+                  setEditorMode('create');
+                }}
+              >
                 Create New Pact
               </button>
             </div>
@@ -394,7 +475,11 @@ export default function App() {
             Acting as <strong>{activeUser?.user_name}</strong>
           </div>
           <div className="m-action-button-slot">
-            {selectedPact.can_current_user_approve ? (
+            {isCompleted ? (
+              <span className="m-armed-pill" style={{ borderColor: 'var(--rule-strong)', color: 'var(--ink-secondary)' }}>
+                Archived
+              </span>
+            ) : selectedPact.can_current_user_approve ? (
               <button
                 type="button"
                 className="btn-primary-sm"
@@ -416,7 +501,10 @@ export default function App() {
               <button
                 type="button"
                 className="btn-secondary-sm"
-                onClick={() => setIsEditorOpen(true)}
+                onClick={() => {
+                  setPendingVenue(null);
+                  setEditorMode('edit');
+                }}
               >
                 Edit Pact
               </button>
@@ -426,12 +514,17 @@ export default function App() {
       )}
 
       {/* Pact Editor Modal */}
-      {isEditorOpen && selectedPact && (
+      {editorMode && (
         <PactEditorModal
-          pact={selectedPact}
-          onClose={() => setIsEditorOpen(false)}
+          pact={editorMode === 'edit' ? selectedPact : null}
+          mode={editorMode}
+          onClose={() => {
+            setEditorMode(null);
+            setPendingVenue(null);
+          }}
           onSave={handleSavePact}
           onOpenVenueSearch={() => setIsVenueSearchOpen(true)}
+          selectedVenue={pendingVenue}
         />
       )}
 

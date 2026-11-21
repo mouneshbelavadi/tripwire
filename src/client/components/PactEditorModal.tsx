@@ -1,29 +1,83 @@
 import { useState, useEffect, useRef } from 'react';
 import type { PactDetails } from '../types';
+import type { VerifiedPlace } from './VenueSearchModal';
 import { PreviewDecisionLine } from './DecisionLine';
 
 interface PactEditorModalProps {
-  pact: PactDetails;
+  pact: PactDetails | null;
+  mode: 'create' | 'edit';
   onClose: () => void;
   onSave: (updates: any) => Promise<void>;
   onOpenVenueSearch: () => void;
+  selectedVenue?: VerifiedPlace | null;
 }
 
-export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: PactEditorModalProps) {
-  const [title, setTitle] = useState(pact.title);
-  const [deadlineIst, setDeadlineIst] = useState(pact.decision_deadline_ist);
-  const [fallbackText, setFallbackText] = useState(pact.fallback_text);
-  const [limits, setLimits] = useState<Record<string, number>>(
-    pact.participants.reduce((acc, p) => {
-      acc[p.user_id] = Math.round(p.max_duration_s / 60);
-      return acc;
-    }, {} as Record<string, number>)
+function computeDefaultDeadline(): string {
+  const d = new Date(Date.now() + 4 * 3600 * 1000);
+  const timeStr = d.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Kolkata',
+  });
+  const dateStr = d.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  return `${timeStr} IST · ${dateStr}`;
+}
+
+export function PactEditorModal({
+  pact,
+  mode,
+  onClose,
+  onSave,
+  onOpenVenueSearch,
+  selectedVenue,
+}: PactEditorModalProps) {
+  const [title, setTitle] = useState(pact?.title || (mode === 'create' ? 'Team Meetup' : ''));
+  const [deadlineIst, setDeadlineIst] = useState(pact?.decision_deadline_ist || computeDefaultDeadline());
+  const [fallbackText, setFallbackText] = useState(
+    pact?.fallback_text || 'Switch to remote Google Meet / Slack huddle'
   );
+
+  const [destination, setDestination] = useState({
+    name: pact?.destination_name || 'WeWork Bellandur',
+    placeId: pact?.destination_place_id || 'ChIJk7Q3BqcUrzsR-q3Qe-place-01',
+    address: pact?.destination_address || 'Outer Ring Rd, Bellandur, Bengaluru',
+    lat: pact?.destination_lat ?? 12.9290,
+    lon: pact?.destination_lon ?? 77.6760,
+  });
+
+  const [limits, setLimits] = useState<Record<string, number>>(() => {
+    if (pact?.participants && pact.participants.length > 0) {
+      return pact.participants.reduce((acc, p) => {
+        acc[p.user_id] = Math.round(p.max_duration_s / 60);
+        return acc;
+      }, {} as Record<string, number>);
+    }
+    return { user_maya: 60, user_arjun: 60 };
+  });
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const firstInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Sync selected venue when changed via VenueSearchModal
+  useEffect(() => {
+    if (selectedVenue) {
+      setDestination({
+        name: selectedVenue.title,
+        placeId: selectedVenue.place_id,
+        address: selectedVenue.address,
+        lat: selectedVenue.gps_coordinates.latitude,
+        lon: selectedVenue.gps_coordinates.longitude,
+      });
+    }
+  }, [selectedVenue]);
 
   useEffect(() => {
     previousActiveElement.current = document.activeElement as HTMLElement;
@@ -48,7 +102,12 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
     setError(null);
     try {
       await onSave({
-        title,
+        title: title.trim() || 'Team Meetup',
+        destination_name: destination.name,
+        destination_place_id: destination.placeId,
+        destination_lat: destination.lat,
+        destination_lon: destination.lon,
+        destination_address: destination.address,
         decision_deadline_ist: deadlineIst,
         fallback_text: fallbackText,
         participant_limits: Object.entries(limits).map(([userId, mins]) => ({
@@ -58,13 +117,21 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
       });
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Failed to update pact');
+      setError(err.message || (mode === 'create' ? 'Failed to create pact' : 'Failed to update pact'));
       setSaving(false);
     }
   };
 
   const mayaLimit = limits['user_maya'] ?? 60;
   const arjunLimit = limits['user_arjun'] ?? 60;
+  const targetVersion = mode === 'create' ? 1 : (pact?.version ?? 0) + 1;
+
+  const participantsList = pact?.participants && pact.participants.length > 0
+    ? pact.participants
+    : [
+        { user_id: 'user_maya', user_name: 'Maya', neighbourhood: 'Indiranagar', max_duration_s: 3600 },
+        { user_id: 'user_arjun', user_name: 'Arjun', neighbourhood: 'HSR Layout', max_duration_s: 3600 },
+      ];
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -76,7 +143,9 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h3 id="modal-title">Edit Office Pact Agreement</h3>
+          <h3 id="modal-title">
+            {mode === 'create' ? 'Create New Office Pact' : 'Edit Office Pact Agreement'}
+          </h3>
           <button
             type="button"
             className="btn-close"
@@ -89,7 +158,15 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
 
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="notice-banner" role="status">
-            <strong>Rule Invariant:</strong> Any change to rules, thresholds, or destination advances the pact to <strong>v{pact.version + 1}</strong> and clears all prior approvals. Both Maya and Arjun must re-approve before monitoring arms.
+            {mode === 'create' ? (
+              <>
+                <strong>New Agreement:</strong> Creates a new pact in <strong>draft</strong> status. Both Maya and Arjun will be added as participants and must approve before monitoring arms.
+              </>
+            ) : (
+              <>
+                <strong>Rule Invariant:</strong> Any change to rules, thresholds, or destination advances the pact to <strong>v{targetVersion}</strong> and clears all prior approvals. Both Maya and Arjun must re-approve before monitoring arms.
+              </>
+            )}
           </div>
 
           {error && <div className="error-banner" role="alert">{error}</div>}
@@ -102,6 +179,7 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Outer Ring Rd Sync"
               required
             />
           </div>
@@ -109,7 +187,7 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
           <div className="form-group">
             <label>Destination Workplace</label>
             <div className="destination-row">
-              <span className="destination-name-display">{pact.destination_name}</span>
+              <span className="destination-name-display">{destination.name}</span>
               <button
                 type="button"
                 className="btn-secondary-sm"
@@ -118,12 +196,14 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
                 Change Place
               </button>
             </div>
-            <div className="destination-address-display">{pact.destination_address}</div>
+            {destination.address && (
+              <div className="destination-address-display">{destination.address}</div>
+            )}
           </div>
 
           <div className="form-group">
             <label>Per-Participant Commute Thresholds (Minutes)</label>
-            {pact.participants.map((p) => {
+            {participantsList.map((p) => {
               const currentVal = limits[p.user_id] ?? Math.round(p.max_duration_s / 60);
               return (
                 <div key={p.user_id} className="participant-threshold-input">
@@ -184,7 +264,7 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
             arjunLimit={arjunLimit}
             deadlineIst={deadlineIst}
             fallbackText={fallbackText}
-            nextVersion={pact.version + 1}
+            nextVersion={targetVersion}
           />
 
           <div className="modal-actions">
@@ -192,7 +272,13 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
               Cancel
             </button>
             <button type="submit" className="btn-primary" disabled={saving}>
-              {saving ? 'Saving...' : `Save as v${pact.version + 1}`}
+              {saving
+                ? mode === 'create'
+                  ? 'Creating...'
+                  : 'Saving...'
+                : mode === 'create'
+                ? 'Create Pact (v1)'
+                : `Save as v${targetVersion}`}
             </button>
           </div>
         </form>

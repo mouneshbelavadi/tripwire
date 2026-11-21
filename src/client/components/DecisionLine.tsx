@@ -23,6 +23,7 @@ export function DecisionLine({
   if (isAlert) stateLabel = 'ALERT TRIGGERED · 2/2 BREACHES';
   else if (isConfirming) stateLabel = 'CONFIRMING · 1/2 BREACHES';
   else if (isPaused) stateLabel = 'MONITORING PAUSED';
+  else if (status === 'completed' || status === 'closed') stateLabel = 'PACT COMPLETED · ARCHIVED';
   else if (isArmed) stateLabel = 'ARMED · WATCHING';
   else if (status === 'awaiting_approval') stateLabel = 'AWAITING APPROVALS';
 
