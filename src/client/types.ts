@@ -76,6 +76,7 @@ export interface PactDetails {
 export interface TeamMember {
   user_id: string;
   user_name: string;
+  employee_id?: string;
   neighbourhood: string;
   role: string;
 }

@@ -239,7 +239,7 @@ export function TopBar(props: TopBarProps = {}) {
             onChange={(e) => handleSwitchUser?.(e.target.value)}
             aria-label="Active session switcher"
             style={{
-              maxWidth: '160px',
+              maxWidth: '220px',
               textOverflow: 'ellipsis',
               overflow: 'hidden',
               whiteSpace: 'nowrap',
@@ -247,7 +247,7 @@ export function TopBar(props: TopBarProps = {}) {
           >
             {teamMembers.map((m) => (
               <option key={m.user_id} value={m.user_id}>
-                {m.user_name}
+                {m.user_name} {m.employee_id ? `(${m.employee_id})` : ''}
               </option>
             ))}
           </select>

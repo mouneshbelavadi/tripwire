@@ -1,6 +1,6 @@
 /**
  * Tripwire: Office Pact - Rapid Success Scenario Demo (~10s)
- * Demonstrates clean invariant evaluation, All-Clear state, and arrived onsite progression for Kabir & Ananya (Paytm).
+ * Demonstrates clean invariant evaluation, All-Clear state, and arrived onsite progression for Kabir [PAYTM-EMP-01] & Ananya [PAYTM-EMP-02] (Paytm).
  */
 
 const { exec, spawn } = require('child_process');
@@ -170,13 +170,13 @@ async function run() {
   await verifyServerHealth();
 
   // -------------------------------------------------------------------------
-  // t = 0s: Initializes bilateral agreement between Kabir & Ananya
+  // t = 0s: Initializes bilateral agreement between Kabir [PAYTM-EMP-01] & Ananya [PAYTM-EMP-02]
   // -------------------------------------------------------------------------
   const startTime = Date.now();
   console.log(`${ANSI.brightBlue}${ANSI.bold}[00:00.000] t=0s │ INITIALIZING BILATERAL AGREEMENT${ANSI.reset}`);
   console.log(`${ANSI.cyan}  ⚡ Workspace:${ANSI.reset}     Paytm (One97 Communications) ${ANSI.gray}[Corporate ID: PAYTM-CORP-01]${ANSI.reset}`);
   console.log(`${ANSI.cyan}  🏢 Destination:${ANSI.reset}   Google Anantha Bengaluru ${ANSI.gray}(Prestige Tech Park, Outer Ring Rd)${ANSI.reset}`);
-  console.log(`${ANSI.cyan}  🤝 Participants:${ANSI.reset}  Kabir (HSR Layout) & Ananya (Indiranagar)`);
+  console.log(`${ANSI.cyan}  🤝 Participants:${ANSI.reset}  Kabir [PAYTM-EMP-01] (HSR Layout) & Ananya [PAYTM-EMP-02] (Indiranagar)`);
   console.log(`${ANSI.cyan}  ⏱  Commute Limits:${ANSI.reset} 60 min ceiling each · 2 consecutive breaches tripwire rule`);
   console.log(`${ANSI.cyan}  🛡  Fallback Rule:${ANSI.reset}  "Switch to remote Google Meet and cancel cab"`);
 
@@ -239,6 +239,7 @@ async function run() {
   // -------------------------------------------------------------------------
   console.log(`\n${ANSI.brightGreen}${ANSI.bold}[00:09.000] t=9s │ INVARIANT SATISFIED: COMMUTE SAFE & ARRIVED ONSITE${ANSI.reset}`);
   console.log(`  🏢 Destination: Google Anantha Bengaluru`);
+  console.log(`  👥 Participants: Kabir [PAYTM-EMP-01] (HSR Layout) & Ananya [PAYTM-EMP-02] (Indiranagar)`);
   console.log(`  ⏱  Indiranagar: 38 min (Limit: 60m) · ZERO BREACHES`);
   console.log(`  ⏱  HSR Layout:   34 min (Limit: 60m) · ZERO BREACHES`);
   console.log(`  🎉 Status:      Team has arrived safely onsite. Proceeding with work.`);

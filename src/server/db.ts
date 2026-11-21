@@ -39,6 +39,7 @@ export function initSchema(db: DatabaseSync): void {
       origin_lon REAL NOT NULL,
       nex_user_id TEXT NOT NULL,
       nex_group_id TEXT NOT NULL,
+      employee_id TEXT,
       UNIQUE(company_id, user_id)
     );
 
@@ -197,6 +198,11 @@ export function initSchema(db: DatabaseSync): void {
   try { db.exec("ALTER TABLE team_members ADD COLUMN company_id TEXT DEFAULT 'comp_paytm';"); } catch {}
   try { db.exec("ALTER TABLE team_messages ADD COLUMN company_id TEXT DEFAULT 'comp_paytm';"); } catch {}
   try { db.exec("ALTER TABLE companies ADD COLUMN corporate_id TEXT;"); } catch {}
+  try {
+    db.exec("ALTER TABLE team_members ADD COLUMN employee_id TEXT;");
+  } catch {
+    // Column already exists
+  }
 }
 
 export function seedInitialData(db: DatabaseSync): void {
@@ -231,29 +237,31 @@ export function seedInitialData(db: DatabaseSync): void {
   // 2. Seed initial team members per corporate tenant
   const initialMembers = [
     // Paytm
-    { id: 'm_ananya', compId: 'comp_paytm', userId: 'user_ananya', name: 'Ananya', role: 'creator', hood: 'Indiranagar', lat: 12.9784, lon: 77.6408 },
-    { id: 'm_kabir', compId: 'comp_paytm', userId: 'user_kabir', name: 'Kabir', role: 'participant', hood: 'HSR Layout', lat: 12.9121, lon: 77.6446 },
+    { id: 'm_ananya', compId: 'comp_paytm', userId: 'user_ananya', name: 'Ananya', role: 'creator', hood: 'Indiranagar', lat: 12.9784, lon: 77.6408, empId: 'PAYTM-EMP-02' },
+    { id: 'm_kabir', compId: 'comp_paytm', userId: 'user_kabir', name: 'Kabir', role: 'participant', hood: 'HSR Layout', lat: 12.9121, lon: 77.6446, empId: 'PAYTM-EMP-01' },
     // Google
-    { id: 'm_siddharth', compId: 'comp_google', userId: 'user_siddharth', name: 'Siddharth', role: 'creator', hood: 'Whitefield', lat: 12.9698, lon: 77.7499 },
-    { id: 'm_pooja', compId: 'comp_google', userId: 'user_pooja', name: 'Pooja', role: 'participant', hood: 'Koramangala', lat: 12.9352, lon: 77.6245 },
+    { id: 'm_sundar', compId: 'comp_google', userId: 'user_sundar', name: 'Sundar', role: 'creator', hood: 'Whitefield', lat: 12.9698, lon: 77.7499, empId: 'GOOG-EMP-01' },
+    { id: 'm_priya', compId: 'comp_google', userId: 'user_priya', name: 'Priya', role: 'participant', hood: 'Koramangala', lat: 12.9352, lon: 77.6245, empId: 'GOOG-EMP-02' },
     // Microsoft
-    { id: 'm_vikram', compId: 'comp_microsoft', userId: 'user_vikram', name: 'Vikram', role: 'creator', hood: 'Bellandur', lat: 12.9304, lon: 77.6784 },
-    { id: 'm_neha', compId: 'comp_microsoft', userId: 'user_neha', name: 'Neha', role: 'participant', hood: 'Indiranagar', lat: 12.9784, lon: 77.6408 },
+    { id: 'm_vikram', compId: 'comp_microsoft', userId: 'user_vikram', name: 'Vikram', role: 'creator', hood: 'Bellandur', lat: 12.9304, lon: 77.6784, empId: 'MSFT-EMP-01' },
+    { id: 'm_neha', compId: 'comp_microsoft', userId: 'user_neha', name: 'Neha', role: 'participant', hood: 'Indiranagar', lat: 12.9784, lon: 77.6408, empId: 'MSFT-EMP-02' },
     // Amazon
-    { id: 'm_rahul', compId: 'comp_amazon', userId: 'user_rahul', name: 'Rahul', role: 'creator', hood: 'HSR Layout', lat: 12.9121, lon: 77.6446 },
-    { id: 'm_divya', compId: 'comp_amazon', userId: 'user_divya', name: 'Divya', role: 'participant', hood: 'Sarjapur Road', lat: 12.9166, lon: 77.6833 },
+    { id: 'm_rahul', compId: 'comp_amazon', userId: 'user_rahul', name: 'Rahul', role: 'creator', hood: 'HSR Layout', lat: 12.9121, lon: 77.6446, empId: 'AMZN-EMP-01' },
+    { id: 'm_divya', compId: 'comp_amazon', userId: 'user_divya', name: 'Divya', role: 'participant', hood: 'Sarjapur Road', lat: 12.9166, lon: 77.6833, empId: 'AMZN-EMP-02' },
     // Acme
-    { id: 'm_maya', compId: 'comp_acme', userId: 'user_maya', name: 'Maya', role: 'creator', hood: 'Indiranagar', lat: 12.9784, lon: 77.6408 },
-    { id: 'm_arjun', compId: 'comp_acme', userId: 'user_arjun', name: 'Arjun', role: 'participant', hood: 'HSR Layout', lat: 12.9121, lon: 77.6446 },
+    { id: 'm_maya', compId: 'comp_acme', userId: 'user_maya', name: 'Maya', role: 'creator', hood: 'Indiranagar', lat: 12.9784, lon: 77.6408, empId: 'ACME-EMP-01' },
+    { id: 'm_arjun', compId: 'comp_acme', userId: 'user_arjun', name: 'Arjun', role: 'participant', hood: 'HSR Layout', lat: 12.9121, lon: 77.6446, empId: 'ACME-EMP-02' },
   ];
 
   for (const m of initialMembers) {
-    const existing = db.prepare('SELECT id FROM team_members WHERE user_id = ?').get(m.userId);
+    const existing = db.prepare('SELECT id, employee_id FROM team_members WHERE user_id = ?').get(m.userId) as any;
     if (!existing) {
       db.prepare(`
-        INSERT INTO team_members (id, company_id, team_id, user_id, user_name, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id)
-        VALUES (?, ?, 'team_office_pact', ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(m.id, m.compId, m.userId, m.name, m.role, m.hood, m.lat, m.lon, `nex_${m.userId}`, 'group_office_pact');
+        INSERT INTO team_members (id, company_id, team_id, user_id, user_name, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id, employee_id)
+        VALUES (?, ?, 'team_office_pact', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(m.id, m.compId, m.userId, m.name, m.role, m.hood, m.lat, m.lon, `nex_${m.userId}`, 'group_office_pact', m.empId || null);
+    } else if (m.empId && existing.employee_id !== m.empId) {
+      db.prepare('UPDATE team_members SET employee_id = ? WHERE user_id = ?').run(m.empId, m.userId);
     }
   }
 

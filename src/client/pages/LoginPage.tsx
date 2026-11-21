@@ -28,6 +28,7 @@ export function LoginPage() {
   const [companyName, setCompanyName] = useState('Paytm (One97 Communications)');
   const [companyId, setCompanyId] = useState('PAYTM-CORP-01');
   const [userName, setUserName] = useState('');
+  const [employeeId, setEmployeeId] = useState('PAYTM-EMP-02');
   const [selectedCode, setSelectedCode] = useState('PAYTM');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,22 +37,28 @@ export function LoginPage() {
     setSelectedCode(comp.code);
     setCompanyName(comp.name);
     setCompanyId(comp.corporateId);
+    setEmployeeId(`${comp.code}-EMP-01`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!companyName.trim() || !companyId.trim() || !userName.trim()) {
-      setError('Please provide Company Name, Company ID, and your Name / ID.');
+    if (!companyName.trim() || !companyId.trim() || !userName.trim() || !employeeId.trim()) {
+      setError('Please provide Company Name, Company ID, Employee Full Name, and Employee ID.');
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const ok = await loginCompany(companyName.trim(), companyId.trim(), userName.trim());
+      const ok = await (loginCompany as (compName: string, compId?: string, uName?: string, empId?: string) => Promise<boolean>)(
+        companyName.trim(),
+        companyId.trim(),
+        userName.trim(),
+        employeeId.trim()
+      );
       if (ok) {
         navigate('/');
       } else {
-        setError('Login failed. Please verify your Company ID and Name.');
+        setError('Login failed. Please verify your Company ID, Employee Name, and Employee ID.');
       }
     } catch (err: any) {
       setError(err.message || 'Unable to authenticate with workspace');
@@ -199,7 +206,7 @@ export function LoginPage() {
           </div>
         </div>
 
-        {/* Direct Authentication Form: Company Name, Company ID, Employee Name */}
+        {/* Direct Authentication Form: Company Name, Company ID, Employee Name, Employee ID */}
         <form onSubmit={handleSubmit}>
           
           {/* 1. Company Name */}
@@ -279,8 +286,8 @@ export function LoginPage() {
             </div>
           </div>
 
-          {/* 3. Employee Name / ID */}
-          <div style={{ marginBottom: '24px' }}>
+          {/* 3. Employee Name */}
+          <div style={{ marginBottom: '16px' }}>
             <label style={{
               display: 'block',
               fontSize: '11px',
@@ -290,13 +297,13 @@ export function LoginPage() {
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
             }}>
-              3. Your Name or Employee ID
+              3. Employee Full Name
             </label>
             <input
               type="text"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              placeholder="e.g. Kabir Verma, Maya Rao, or EMP-104"
+              placeholder="e.g. Kabir Verma, Ananya Sharma, or Maya Rao"
               required
               autoFocus
               style={{
@@ -310,6 +317,51 @@ export function LoginPage() {
                 boxSizing: 'border-box',
               }}
             />
+          </div>
+
+          {/* 4. Employee ID */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '11px',
+              fontWeight: 700,
+              color: 'var(--ink-secondary, #5F6661)',
+              marginBottom: '6px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}>
+              4. Employee ID (Corporate Badge / Staff ID)
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                placeholder="e.g. PAYTM-EMP-01, EMP-104, GOOG-BLR-102"
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px 14px',
+                  fontSize: '14px',
+                  fontFamily: 'monospace',
+                  borderRadius: '6px',
+                  border: '1px solid var(--rule-strong, #BABDB6)',
+                  background: 'var(--paper, #FFFFFF)',
+                  color: 'var(--ink, #202824)',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <span style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: '11px',
+                color: 'var(--ink-secondary, #5F6661)',
+              }}>
+                Badge
+              </span>
+            </div>
           </div>
 
           {/* Submit Button */}

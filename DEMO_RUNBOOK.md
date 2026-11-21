@@ -107,9 +107,37 @@ When presenting to evaluators, clearly delineate what data is synthetic fixture 
 
 ---
 
-## 4. Rehearsal Guide: Demonstration Batch Runners
+## 4. Multi-Tenant Enterprise Authentication & Login Flow
 
-### 4.1 Demo Script 1: `succes.bat` — All-Clear & Arrived Onsite Verification (~10 Seconds)
+The Office Pact web client features a multi-tenant corporate login form (`/login`) designed for live enterprise walkthroughs. To simulate corporate single sign-on without external IdP configuration, the system collects four authentication fields:
+
+### 4.1 Authentication Form Fields
+1. **Company Legal Name:** The registered corporate entity name (e.g., `Paytm (One97 Communications)`, `Google Bengaluru`, `Acme Corp`).
+2. **Company ID (Corporate Workspace Key):** The corporate workspace identifier used to partition pacts, channels, and team rules (e.g., `PAYTM-CORP-01`, `GOOG-BLR-01`, `comp_acme`).
+3. **Employee Name:** The participant's display name for pact membership, audit trails, and consensus votes (e.g., `Kabir`, `Ananya`, `Maya`).
+4. **Employee ID (Corporate Badge / Staff ID):** The participant's corporate badge identifier ensuring unambiguous participant tracking and cryptographic audit integrity (e.g., `PAYTM-EMP-01`, `PAYTM-EMP-02`).
+
+### 4.2 Sample Corporate Demo Credentials
+
+Presenters and evaluators can switch tenants or log in as distinct participants using the following standard credentials:
+
+| Corporate Tenant | Company ID (Key) | Employee Name | Employee ID (Badge) | Corridor / Neighbourhood | Role |
+|---|---|---|---|---|---|
+| **Paytm** (`One97 Communications`) | `PAYTM-CORP-01` | **Kabir** | `PAYTM-EMP-01` | HSR Layout | Participant |
+| **Paytm** (`One97 Communications`) | `PAYTM-CORP-01` | **Ananya** | `PAYTM-EMP-02` | Indiranagar | Creator |
+| **Google** (`Google LLC`) | `GOOG-BLR-01` | **Sundar** | `GOOG-EMP-01` | Whitefield | Creator |
+| **Google** (`Google LLC`) | `GOOG-BLR-01` | **Priya** | `GOOG-EMP-02` | Koramangala | Participant |
+| **Acme** (`Acme Corp`) | `comp_acme` | **Maya** | `ACME-EMP-01` | Indiranagar | Creator |
+| **Acme** (`Acme Corp`) | `comp_acme` | **Arjun** | `ACME-EMP-02` | HSR Layout | Participant |
+
+> [!TIP]
+> The login form automatically provisions or resolves the corporate tenant and user profile in SQLite upon form submission, ensuring zero setup friction during live pitches.
+
+---
+
+## 5. Rehearsal Guide: Demonstration Batch Runners
+
+### 5.1 Demo Script 1: `succes.bat` — All-Clear & Arrived Onsite Verification (~10 Seconds)
 
 **Pitch Angle:** *"When traffic is within agreed bounds, the system provides passive assurance without noise, false alerts, or wasted commute anxiety. Once members reach the destination, it seamlessly transitions into the arrived onsite state."*
 
@@ -122,7 +150,7 @@ succes.bat
 #### Step-by-Step Pacing Timeline:
 1. **t = 0s [Initialization]:**
    - Automatically checks if server is active on `http://localhost:3000`. If offline, compiles server bundle if needed and starts the daemon minimized.
-   - Arms bilateral pact in SQLite for Paytm workspace: *Paytm & Google Anantha Strategy Meetup* (Kabir & Ananya, 60m threshold).
+   - Arms bilateral pact in SQLite for Paytm workspace: *Paytm & Google Anantha Strategy Meetup* (Kabir [PAYTM-EMP-01] & Ananya [PAYTM-EMP-02], 60m threshold).
 2. **t = 3s [Corridor Polling]:**
    - Simulates route queries for Indiranagar (12.8 km) and HSR Layout (9.6 km) corridors.
 3. **t = 6s [Invariant Evaluation]:**
@@ -135,6 +163,7 @@ succes.bat
      ```
      [00:09.000] t=9s │ INVARIANT SATISFIED: COMMUTE SAFE & ARRIVED ONSITE
        🏢 Destination: Google Anantha Bengaluru
+       👥 Participants: Kabir [PAYTM-EMP-01] (HSR Layout) & Ananya [PAYTM-EMP-02] (Indiranagar)
        ⏱  Indiranagar: 38 min (Limit: 60m) · ZERO BREACHES
        ⏱  HSR Layout:   34 min (Limit: 60m) · ZERO BREACHES
        🎉 Status:      Team has arrived safely onsite. Proceeding with work.
@@ -155,7 +184,7 @@ succes.bat
 
 ---
 
-### 4.2 Demo Script 2: `fail.bat` — Observable Breach & Selectable Fallback Options (~16 Seconds)
+### 5.2 Demo Script 2: `fail.bat` — Observable Breach & Selectable Fallback Options (~16 Seconds)
 
 **Pitch Angle:** *"A single traffic spike is noise; two consecutive fresh checks make a verified breach. Once triggered, the pact provides an actionable menu of fallback options (Google Meet, ride cancellation, meeting reschedule, or team discussion) rather than an automatic unilateral redirect, allowing the team to make an informed consensus choice."*
 
@@ -167,10 +196,10 @@ fail.bat
 
 #### Step-by-Step Pacing Timeline:
 1. **t = 0s [Phase 1: Baseline Armed State]:**
-   - Confirms server health and arms bilateral pact (`pact_paytm_google_anantha`).
+   - Confirms server health and arms bilateral pact (`pact_paytm_google_anantha`) for Kabir [PAYTM-EMP-01] and Ananya [PAYTM-EMP-02].
    - Pacing delay allows judges to observe the armed baseline state (0/2 breaches).
 2. **t = 4s [Phase 2: Traffic Spike Detected]:**
-   - Outer Ring Road congestion spikes Kabir's commute from 34m to **68m (+8m over limit)**.
+   - Outer Ring Road congestion spikes Kabir's commute ([PAYTM-EMP-01]) from 34m to **68m (+8m over limit)**.
    - **Critical Invariant Highlighted:**
      Terminal displays: `>> 1st Breach Recorded (Confirming 1/2). Single breach NEVER alerts the team or cancels plans (Hysteresis invariant).`
    - Evaluators observe that the team is **not** falsely alerted on a single measurement.
@@ -221,7 +250,7 @@ fail.bat
 
 ---
 
-## 5. Recovery & Troubleshooting Procedures
+## 6. Recovery & Troubleshooting Procedures
 
 | Symptom / Failure | Probable Cause | Immediate Remediation |
 |---|---|---|
@@ -234,12 +263,12 @@ fail.bat
 
 ---
 
-## 6. Known Limitations & Deferred Work
+## 7. Known Limitations & Deferred Work
 
 For transparency with technical evaluators, the following architectural boundaries and deferred items should be noted:
 
 1. **Authentication:**
-   - The login system (`/login`) is an enterprise identity simulation using HTTP headers (`x-company-id`, `x-user-id`).
+   - The login system (`/login`) is an enterprise identity simulation using HTTP headers (`x-company-id`, `x-user-id`) and collects Company Legal Name, Company ID, Employee Name, and Employee ID.
    - It does not implement password hashing (bcrypt), OAuth2/OIDC, or signed JWT session tokens.
 2. **Tenant Boundaries:**
    - Application queries filter by `company_id`.

@@ -3,7 +3,7 @@
  * Pacing: ~16-18 seconds for live hackathon judge presentation.
  * 
  * Timeline:
- *  t=0s:  Initializes bilateral agreement between Kabir & Ananya (Paytm workspace at Google Anantha Bengaluru). Limit: 60 min.
+ *  t=0s:  Initializes bilateral agreement between Kabir [PAYTM-EMP-01] (HSR Layout) & Ananya [PAYTM-EMP-02] (Indiranagar) (Paytm workspace at Google Anantha Bengaluru). Limit: 60 min.
  *  t=4s:  Traffic spike detected on Outer Ring Road! Commute estimate jumps to 68m (+8m over limit). Shows 1st Breach Recorded (Confirming 1/2).
  *  t=9s:  Re-check at Bellandur bottleneck: 72m (+12m over limit). Shows 2nd Consecutive Fresh Breach (2/2) Confirmed!
  *  t=14s: TRIPWIRE ALERT TRIGGERED! Invariant met. Cryptographic breach receipt generated. Actionable fallback options presented to team. Outbox delivery dispatched to team channel.
@@ -113,7 +113,7 @@ async function runScenario() {
   console.log(`\n${CYAN}${BOLD}[${getElapsed()}] [PHASE 1] Initializing Bilateral Agreement...${RESET}`);
   console.log(`  ${WHITE}Corporate Tenant:${RESET} Paytm (One97 Communications)`);
   console.log(`  ${WHITE}Destination:${RESET}      Google Anantha Bengaluru (Prestige Tech Park, Bellandur)`);
-  console.log(`  ${WHITE}Participants:${RESET}     Kabir (HSR Layout) & Ananya (Indiranagar)`);
+  console.log(`  ${WHITE}Participants:${RESET}     Kabir [PAYTM-EMP-01] (HSR Layout) & Ananya [PAYTM-EMP-02] (Indiranagar)`);
   console.log(`  ${WHITE}Agreed Limit:${RESET}     <= 60 min driving commute`);
   console.log(`  ${WHITE}Agreed Fallback:${RESET}  "Switch to remote Google Meet and cancel cab"`);
 
@@ -173,7 +173,7 @@ async function runScenario() {
   }
 
   const step1Delta = step1Res.durationMinutes - step1Res.limitMinutes;
-  console.log(`  ${WHITE}Origin Route:${RESET}     HSR Layout -> Google Anantha Bellandur (${step1Res.userName || 'Kabir'})`);
+  console.log(`  ${WHITE}Origin Route:${RESET}     HSR Layout -> Google Anantha Bellandur (${step1Res.userName ? (step1Res.userName.includes('[') ? step1Res.userName : `${step1Res.userName} [PAYTM-EMP-01]`) : 'Kabir [PAYTM-EMP-01]'})`);
   console.log(`  ${WHITE}Normal Baseline:${RESET}  42 min`);
   console.log(`  ${YELLOW}Commute Estimate:${RESET} ${step1Res.durationMinutes} min ${RED}${BOLD}(+${step1Delta} min over ${step1Res.limitMinutes}m agreed limit)${RESET}`);
   console.log(`  ${GRAY}[Deterministic Simulation Fixture] Provenance: synthetic observation injected into SQLite${RESET}`);
@@ -259,6 +259,7 @@ async function runScenario() {
   console.log(`${RED}${BOLD}======================================================================${RESET}`);
   console.log(`  ${WHITE}Cryptographic Receipt:${RESET} ${alertId}`);
   console.log(`  ${WHITE}Episode ID:${RESET}            ${receiptData?.episodeId || step2Res.ruleState?.episode_id || 'ep_active'}`);
+  console.log(`  ${WHITE}Participants:${RESET}          Kabir [PAYTM-EMP-01] (HSR Layout) & Ananya [PAYTM-EMP-02] (Indiranagar)`);
   console.log(`  ${WHITE}Invariant Fired:${RESET}       Two consecutive fresh Driving checks exceeded ${step2Res.limitMinutes}m limit`);
   console.log(`  ${WHITE}Check 1 (${check1Mins}m):${RESET}         Confirmed breach at Outer Ring Road`);
   console.log(`  ${WHITE}Check 2 (${check2Mins}m):${RESET}         Tripped alert at Bellandur bottleneck`);

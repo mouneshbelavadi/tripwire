@@ -57,6 +57,60 @@ adminRouter.get('/companies', (_req, res) => {
   }
 });
 
+// GET /api/admin/companies/:id/employees - List Employees for a Corporate Entity
+adminRouter.get('/companies/:id/employees', (req, res) => {
+  try {
+    const db = getDb();
+    try { db.exec("ALTER TABLE team_members ADD COLUMN employee_id TEXT;"); } catch {}
+    const { id } = req.params;
+
+    const company = db.prepare('SELECT * FROM companies WHERE id = ? OR UPPER(code) = ? OR UPPER(corporate_id) = ?').get(id, id.toUpperCase(), id.toUpperCase()) as any;
+    if (!company) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    const employees = db.prepare(`
+      SELECT tm.id, tm.company_id, tm.team_id, tm.user_id, tm.user_name, tm.employee_id, tm.role, tm.neighbourhood, tm.origin_lat, tm.origin_lon,
+             c.name as company_name, c.code as company_code, c.corporate_id
+      FROM team_members tm
+      LEFT JOIN companies c ON tm.company_id = c.id
+      WHERE tm.company_id = ?
+      ORDER BY tm.user_name ASC
+    `).all(company.id);
+
+    res.json({ company, employees });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/employees - List All Employees across corporate workspaces
+adminRouter.get('/employees', (req, res) => {
+  try {
+    const db = getDb();
+    try { db.exec("ALTER TABLE team_members ADD COLUMN employee_id TEXT;"); } catch {}
+    const companyId = req.query.companyId as string | undefined;
+
+    let query = `
+      SELECT tm.id, tm.company_id, tm.team_id, tm.user_id, tm.user_name, tm.employee_id, tm.role, tm.neighbourhood, tm.origin_lat, tm.origin_lon,
+             c.name as company_name, c.code as company_code, c.corporate_id
+      FROM team_members tm
+      LEFT JOIN companies c ON tm.company_id = c.id
+    `;
+    const params: any[] = [];
+    if (companyId) {
+      query += ` WHERE tm.company_id = ? OR UPPER(c.corporate_id) = ? OR UPPER(c.code) = ?`;
+      params.push(companyId, companyId.toUpperCase(), companyId.toUpperCase());
+    }
+    query += ` ORDER BY c.name ASC, tm.user_name ASC`;
+
+    const employees = db.prepare(query).all(...params);
+    res.json({ employees });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/admin/companies - Register New Corporate Entity & Generate Company ID
 adminRouter.post('/companies', (req, res) => {
   try {
@@ -87,16 +141,18 @@ adminRouter.post('/companies', (req, res) => {
     `).run(newCompId, cleanName, ticker, corporateId, corporateDomain, nowIso);
 
     // Auto-provision initial primary lead employee
+    try { db.exec("ALTER TABLE team_members ADD COLUMN employee_id TEXT;"); } catch {}
     const initialLead = (leadName && leadName.trim()) ? leadName.trim() : 'Lead Admin';
     const newUserId = 'user_' + initialLead.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
     const hood = officeLocation || 'Indiranagar';
     const lat = hood.toLowerCase().includes('hsr') ? 12.9121 : 12.9784;
     const lon = hood.toLowerCase().includes('hsr') ? 77.6446 : 77.6408;
+    const leadEmpId = `${ticker}-EMP-01`;
 
     db.prepare(`
-      INSERT INTO team_members (id, company_id, team_id, user_id, user_name, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id)
-      VALUES (?, ?, 'team_office_pact', ?, ?, 'creator', ?, ?, ?, ?, ?)
-    `).run(`m_${newUserId}`, newCompId, newUserId, initialLead, hood, lat, lon, `nex_${newUserId}`, 'group_office_pact');
+      INSERT INTO team_members (id, company_id, team_id, user_id, user_name, employee_id, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id)
+      VALUES (?, ?, 'team_office_pact', ?, ?, ?, 'creator', ?, ?, ?, ?, ?)
+    `).run(`m_${newUserId}`, newCompId, newUserId, initialLead, leadEmpId, hood, lat, lon, `nex_${newUserId}`, 'group_office_pact');
 
     res.json({
       success: true,
@@ -111,6 +167,7 @@ adminRouter.post('/companies', (req, res) => {
       leadEmployee: {
         user_id: newUserId,
         user_name: initialLead,
+        employee_id: leadEmpId,
         role: 'creator',
       },
       message: `Corporate entity '${cleanName}' registered with Company ID: ${corporateId}`,
@@ -124,7 +181,8 @@ adminRouter.post('/companies', (req, res) => {
 adminRouter.post('/employees', (req, res) => {
   try {
     const db = getDb();
-    const { companyId, name, role, neighbourhood, originLat, originLon } = req.body;
+    try { db.exec("ALTER TABLE team_members ADD COLUMN employee_id TEXT;"); } catch {}
+    const { companyId, name, employeeId, role, neighbourhood, originLat, originLon } = req.body;
 
     if (!companyId || !name || !name.trim()) {
       return res.status(400).json({ error: 'Company ID and Employee Name are required' });
@@ -143,10 +201,19 @@ adminRouter.post('/employees', (req, res) => {
 
     const newUserId = 'user_' + empName.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
 
+    let empId = (employeeId && String(employeeId).trim()) ? String(employeeId).trim().toUpperCase() : '';
+    if (!empId) {
+      const empCountRow = db.prepare("SELECT COUNT(*) as count FROM team_members WHERE company_id = ?").get(company.id) as any;
+      const empSeq = (empCountRow?.count || 0) + 1;
+      const empSeqStr = empSeq < 10 ? `0${empSeq}` : `${empSeq}`;
+      const compPrefix = (company.code || 'EMP').toUpperCase();
+      empId = `${compPrefix}-EMP-${empSeqStr}`;
+    }
+
     db.prepare(`
-      INSERT INTO team_members (id, company_id, team_id, user_id, user_name, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id)
-      VALUES (?, ?, 'team_office_pact', ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(`m_${newUserId}`, company.id, newUserId, empName, empRole, hood, lat, lon, `nex_${newUserId}`, 'group_office_pact');
+      INSERT INTO team_members (id, company_id, team_id, user_id, user_name, employee_id, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id)
+      VALUES (?, ?, 'team_office_pact', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(`m_${newUserId}`, company.id, newUserId, empName, empId, empRole, hood, lat, lon, `nex_${newUserId}`, 'group_office_pact');
 
     res.json({
       success: true,
@@ -154,11 +221,12 @@ adminRouter.post('/employees', (req, res) => {
         id: `m_${newUserId}`,
         user_id: newUserId,
         user_name: empName,
+        employee_id: empId,
         role: empRole,
         neighbourhood: hood,
         company_id: company.id,
       },
-      message: `Employee '${empName}' provisioned under ${company.name}`,
+      message: `Employee '${empName}' (${empId}) provisioned under ${company.name}`,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

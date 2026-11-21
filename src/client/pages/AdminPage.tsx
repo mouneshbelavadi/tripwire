@@ -13,6 +13,20 @@ interface CompanyRecord {
   pact_count: number;
 }
 
+interface EmployeeRecord {
+  id: string;
+  company_id: string;
+  team_id?: string;
+  user_id: string;
+  user_name: string;
+  employee_id?: string;
+  role: string;
+  neighbourhood: string;
+  company_name?: string;
+  company_code?: string;
+  corporate_id?: string;
+}
+
 interface AdminMetrics {
   totalCompanies: number;
   totalEmployees: number;
@@ -45,20 +59,50 @@ export function AdminPage() {
   // Provision Member Form State
   const [targetCompanyId, setTargetCompanyId] = useState('');
   const [memberName, setMemberName] = useState('');
+  const [memberEmployeeId, setMemberEmployeeId] = useState('');
   const [memberRole, setMemberRole] = useState<'creator' | 'participant'>('participant');
   const [memberNeighbourhood, setMemberNeighbourhood] = useState('Indiranagar');
   const [provisioning, setProvisioning] = useState(false);
   const [provisionSuccessMsg, setProvisionSuccessMsg] = useState<string | null>(null);
 
+  // Employee Directory State
+  const [employees, setEmployees] = useState<EmployeeRecord[]>([]);
+  const [selectedEmpFilter, setSelectedEmpFilter] = useState<string>('all');
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+
   // Copy helper
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const fetchEmployeesForCompany = async (companyId: string) => {
+    setLoadingEmployees(true);
+    try {
+      if (companyId === 'all') {
+        const res = await fetch('/api/admin/employees');
+        if (res.ok) {
+          const data = await res.json();
+          setEmployees(data.employees || []);
+        }
+      } else {
+        const res = await fetch(`/api/admin/companies/${encodeURIComponent(companyId)}/employees`);
+        if (res.ok) {
+          const data = await res.json();
+          setEmployees(data.employees || []);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
 
   const fetchAdminData = async () => {
     setLoading(true);
     try {
-      const [ovRes, compRes] = await Promise.all([
+      const [ovRes, compRes, empRes] = await Promise.all([
         fetch('/api/admin/overview'),
         fetch('/api/admin/companies'),
+        fetch('/api/admin/employees'),
       ]);
       if (ovRes.ok && compRes.ok) {
         const ovData = await ovRes.json();
@@ -70,6 +114,10 @@ export function AdminPage() {
         }
       } else {
         setError('Failed to fetch administrative data');
+      }
+      if (empRes && empRes.ok) {
+        const empData = await empRes.json();
+        setEmployees(empData.employees || []);
       }
     } catch (err: any) {
       setError(err.message || 'Error connecting to admin service');
@@ -136,6 +184,7 @@ export function AdminPage() {
         body: JSON.stringify({
           companyId: targetCompanyId,
           name: memberName,
+          employeeId: memberEmployeeId,
           role: memberRole,
           neighbourhood: memberNeighbourhood,
         }),
@@ -145,6 +194,7 @@ export function AdminPage() {
 
       setProvisionSuccessMsg(data.message || `Member '${memberName}' added successfully!`);
       setMemberName('');
+      setMemberEmployeeId('');
       await fetchAdminData();
     } catch (err: any) {
       setError(err.message || 'Provisioning failed');
@@ -656,26 +706,53 @@ export function AdminPage() {
                 </select>
               </div>
 
-              <div style={{ marginBottom: '14px' }}>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--ink-secondary, #5F6661)', marginBottom: '5px' }}>
-                  Employee Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Kabir Verma, Maya Rao"
-                  value={memberName}
-                  onChange={(e) => setMemberName(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    fontSize: '13px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--rule-strong, #BABDB6)',
-                    background: 'var(--paper, #FFFFFF)',
-                    boxSizing: 'border-box',
-                  }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '14px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--ink-secondary, #5F6661)', marginBottom: '5px' }}>
+                    Employee Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Kabir Verma, Maya Rao"
+                    value={memberName}
+                    onChange={(e) => setMemberName(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--rule-strong, #BABDB6)',
+                      background: 'var(--paper, #FFFFFF)',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--ink-secondary, #5F6661)', marginBottom: '5px' }}>
+                    Employee ID
+                  </label>
+                  <input
+                    type="text"
+                    placeholder={
+                      targetCompanyId
+                        ? `e.g. ${(companies.find((c) => c.id === targetCompanyId)?.code || 'EMP').toUpperCase()}-EMP-03`
+                        : 'e.g. PAYTM-EMP-03'
+                    }
+                    value={memberEmployeeId}
+                    onChange={(e) => setMemberEmployeeId(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      fontSize: '13px',
+                      borderRadius: '6px',
+                      border: '1px solid var(--rule-strong, #BABDB6)',
+                      background: 'var(--paper, #FFFFFF)',
+                      boxSizing: 'border-box',
+                      fontFamily: 'monospace',
+                    }}
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '18px' }}>
@@ -919,6 +996,180 @@ export function AdminPage() {
                   </tr>
                 );
               })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Provisioned Corporate Employee Directory */}
+        <div style={{
+          marginTop: '28px',
+          background: 'var(--paper-raised, #FCFBF8)',
+          border: '1px solid var(--rule, #D5D8D0)',
+          borderRadius: '8px',
+          padding: '24px',
+          overflowX: 'auto',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ fontSize: '16px', fontWeight: 600, margin: '0 0 4px 0', color: 'var(--ink, #202824)' }}>
+                Corporate Employee Directory
+              </h2>
+              <span style={{ fontSize: '12px', color: 'var(--ink-secondary, #5F6661)' }}>
+                Active provisioned colleagues across corporate tenants with assigned Employee IDs
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <select
+                value={selectedEmpFilter}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSelectedEmpFilter(val);
+                  fetchEmployeesForCompany(val);
+                }}
+                style={{
+                  padding: '6px 10px',
+                  fontSize: '12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--rule, #D5D8D0)',
+                  background: 'var(--paper, #FFFFFF)',
+                  color: 'var(--ink, #202824)',
+                }}
+              >
+                <option value="all">All Corporate Workspaces ({employees.length})</option>
+                {companies.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => fetchEmployeesForCompany(selectedEmpFilter)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--ink, #202824)',
+                  background: 'var(--paper, #F7F6F2)',
+                  border: '1px solid var(--rule, #D5D8D0)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                </svg>
+                {loadingEmployees ? 'Refreshing...' : 'Refresh Directory'}
+              </button>
+            </div>
+          </div>
+
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: '13px',
+            textAlign: 'left',
+          }}>
+            <thead>
+              <tr style={{
+                borderBottom: '1px solid var(--rule, #D5D8D0)',
+                color: 'var(--ink-secondary, #5F6661)',
+                fontSize: '11px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+              }}>
+                <th style={{ padding: '10px 12px' }}>Employee Name</th>
+                <th style={{ padding: '10px 12px' }}>Employee ID</th>
+                <th style={{ padding: '10px 12px' }}>Company Workspace</th>
+                <th style={{ padding: '10px 12px' }}>Role</th>
+                <th style={{ padding: '10px 12px' }}>Departure Hub</th>
+                <th style={{ padding: '10px 12px' }}>System User ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '24px', textAlign: 'center', color: 'var(--ink-secondary, #5F6661)' }}>
+                    {loadingEmployees ? 'Loading provisioned employees...' : 'No provisioned employees found.'}
+                  </td>
+                </tr>
+              ) : (
+                employees.map((emp) => {
+                  const comp = companies.find((c) => c.id === emp.company_id);
+                  const displayCompName = emp.company_name || comp?.name || emp.company_id;
+                  const displayCompCode = emp.company_code || comp?.code || 'CORP';
+                  const displayEmpId = emp.employee_id || `${displayCompCode}-EMP-01`;
+
+                  return (
+                    <tr key={emp.id || emp.user_id} style={{
+                      borderBottom: '1px solid var(--rule-subtle, #EBE8E3)',
+                    }}>
+                      <td style={{ padding: '12px' }}>
+                        <strong style={{ color: 'var(--ink, #202824)' }}>{emp.user_name}</strong>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <code style={{
+                            background: 'var(--pact-wash, #EEF4F0)',
+                            color: 'var(--pact-green, #1B4D3E)',
+                            padding: '3px 7px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: 600,
+                          }}>
+                            {displayEmpId}
+                          </code>
+                          <button
+                            type="button"
+                            onClick={() => handleCopy(displayEmpId)}
+                            title="Copy Employee ID"
+                            style={{
+                              border: 'none',
+                              background: 'transparent',
+                              cursor: 'pointer',
+                              color: 'var(--ink-secondary, #5F6661)',
+                              padding: '2px',
+                            }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <CompanyLogo code={displayCompCode} size={14} />
+                          <span style={{ color: 'var(--ink, #202824)', fontWeight: 500 }}>{displayCompName}</span>
+                        </div>
+                      </td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{
+                          background: emp.role === 'creator' ? 'var(--pact-wash, #EEF4F0)' : 'var(--paper, #F7F6F2)',
+                          color: emp.role === 'creator' ? 'var(--pact-green, #1B4D3E)' : 'var(--ink-secondary, #5F6661)',
+                          border: '1px solid var(--rule, #D5D8D0)',
+                          padding: '2px 8px',
+                          borderRadius: '12px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          textTransform: 'capitalize',
+                        }}>
+                          {emp.role === 'creator' ? 'Workspace Lead' : 'Commuter'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px', color: 'var(--ink-secondary, #5F6661)' }}>
+                        {emp.neighbourhood || 'Indiranagar'}
+                      </td>
+                      <td style={{ padding: '12px', color: 'var(--ink-secondary, #5F6661)', fontFamily: 'monospace', fontSize: '11px' }}>
+                        {emp.user_id}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>

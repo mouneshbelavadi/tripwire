@@ -21,6 +21,7 @@ export interface AuthUser {
   origin_lat: number;
   origin_lon: number;
   company_id: string;
+  employee_id?: string;
 }
 
 // GET /api/auth/companies - List available corporate workspaces
@@ -68,6 +69,7 @@ authRouter.post('/login', (req, res) => {
     const rawCompanyId = (companyId || companyCode || '').trim();
     const rawCompanyName = (companyName || '').trim();
     const targetUserName = (userName || employeeId || 'Team Member').trim();
+    const targetEmpId = (employeeId || '').trim();
 
     if (!rawCompanyId && !rawCompanyName) {
       return res.status(400).json({ error: 'Company Name and Company ID are required' });
@@ -117,18 +119,24 @@ authRouter.post('/login', (req, res) => {
 
     // 2. Locate member under this company or provision
     let members = db.prepare('SELECT * FROM team_members WHERE company_id = ?').all(company.id) as unknown as AuthUser[];
-    let user = members.find((m) => m.user_name.toLowerCase() === targetUserName.toLowerCase() || m.user_id.toLowerCase() === targetUserName.toLowerCase());
+    let user = members.find((m) => 
+      (targetEmpId && m.employee_id?.toUpperCase() === targetEmpId.toUpperCase()) ||
+      (m.employee_id && m.employee_id.toUpperCase() === targetUserName.toUpperCase()) ||
+      m.user_name.toLowerCase() === targetUserName.toLowerCase() || 
+      m.user_id.toLowerCase() === targetUserName.toLowerCase()
+    );
 
     if (!user) {
       const newUserId = 'user_' + targetUserName.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Math.floor(Math.random() * 1000);
       const hood = neighbourhood || 'Indiranagar';
       const lat = hood.toLowerCase().includes('hsr') ? 12.9121 : 12.9784;
       const lon = hood.toLowerCase().includes('hsr') ? 77.6446 : 77.6408;
+      const newEmployeeId = targetEmpId || `${company.code}-EMP-${Math.floor(10 + Math.random() * 90)}`;
 
       db.prepare(`
-        INSERT INTO team_members (id, company_id, team_id, user_id, user_name, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id)
-        VALUES (?, ?, 'team_office_pact', ?, ?, 'creator', ?, ?, ?, ?, ?)
-      `).run(`m_${newUserId}`, company.id, newUserId, targetUserName, hood, lat, lon, `nex_${newUserId}`, 'group_office_pact');
+        INSERT INTO team_members (id, company_id, team_id, user_id, user_name, role, neighbourhood, origin_lat, origin_lon, nex_user_id, nex_group_id, employee_id)
+        VALUES (?, ?, 'team_office_pact', ?, ?, 'creator', ?, ?, ?, ?, ?, ?)
+      `).run(`m_${newUserId}`, company.id, newUserId, targetUserName, hood, lat, lon, `nex_${newUserId}`, 'group_office_pact', newEmployeeId);
 
       user = {
         id: `m_${newUserId}`,
@@ -139,9 +147,13 @@ authRouter.post('/login', (req, res) => {
         origin_lat: lat,
         origin_lon: lon,
         company_id: company.id,
+        employee_id: newEmployeeId,
       };
 
       members = db.prepare('SELECT * FROM team_members WHERE company_id = ?').all(company.id) as unknown as AuthUser[];
+    } else if (targetEmpId && (!user.employee_id || user.employee_id.toUpperCase() !== targetEmpId.toUpperCase())) {
+      db.prepare('UPDATE team_members SET employee_id = ? WHERE id = ?').run(targetEmpId, user.id);
+      user.employee_id = targetEmpId;
     }
 
     res.json({

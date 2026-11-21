@@ -38,7 +38,7 @@ export interface AppContextType {
   actionNotice: string | null;
   setActionNotice: (msg: string | null) => void;
   handleSwitchUser: (userId: string) => Promise<void>;
-  loginCompany: (companyName: string, companyId?: string, userName?: string) => Promise<boolean>;
+  loginCompany: (companyName: string, companyId?: string, userName?: string, employeeId?: string) => Promise<boolean>;
   logout: () => void;
   loadData: (userId?: string, companyId?: string) => Promise<void>;
   latestReceipt: any | null;
@@ -205,11 +205,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (authRes.ok) {
           const authData = await authRes.json();
           if (authData.company) setCurrentCompany(authData.company);
-          setTeamMembers(authData.allCompanyMembers || []);
-          const chosen = currentUserId
-            ? (authData.allCompanyMembers || []).find((m: any) => m.user_id === currentUserId) || authData.user
+
+          let savedUser: TeamMember | null = null;
+          try {
+            const raw = localStorage.getItem('officepact_user');
+            if (raw) savedUser = JSON.parse(raw);
+          } catch {}
+
+          const members: TeamMember[] = (authData.allCompanyMembers || []).map((m: any) => ({
+            ...m,
+            employee_id:
+              m.employee_id ||
+              m.employeeId ||
+              (m.user_id === savedUser?.user_id ? savedUser?.employee_id : undefined) ||
+              (m.user_id === activeUser?.user_id ? activeUser?.employee_id : undefined),
+          }));
+          setTeamMembers(members);
+
+          let chosen = currentUserId
+            ? members.find((m: any) => m.user_id === currentUserId) || authData.user
             : activeUser || authData.user;
+          if (chosen) {
+            chosen = {
+              ...chosen,
+              employee_id:
+                chosen.employee_id ||
+                chosen.employeeId ||
+                (chosen.user_id === savedUser?.user_id ? savedUser?.employee_id : undefined) ||
+                (chosen.user_id === activeUser?.user_id ? activeUser?.employee_id : undefined),
+            };
+          }
           setActiveUser(chosen);
+          if (chosen) {
+            localStorage.setItem('officepact_user', JSON.stringify(chosen));
+          }
         }
       } catch {
         // Fallback to legacy session endpoint if needed
@@ -297,32 +326,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     loadData();
   }, [loadData]);
 
-  const loginCompany = useCallback(async (companyName: string, companyId?: string, userName?: string) => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          companyName,
-          companyId: companyId || companyName,
-          companyCode: companyId || companyName,
-          userName: userName || 'Team Member',
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Login failed');
-      setCurrentCompany(data.company);
-      setActiveUser(data.user);
-      setTeamMembers(data.allCompanyMembers || []);
-      localStorage.setItem('officepact_company', JSON.stringify(data.company));
-      localStorage.setItem('officepact_user', JSON.stringify(data.user));
-      await loadData(data.user?.user_id, data.company?.id);
-      return true;
-    } catch (err: any) {
-      console.error('Login error:', err);
-      return false;
-    }
-  }, [loadData]);
+  const loginCompany = useCallback(
+    async (companyName: string, companyId?: string, userName?: string, employeeId?: string) => {
+      try {
+        const resolvedEmployeeId =
+          employeeId || (userName ? 'EMP-' + userName.slice(0, 3).toUpperCase() : 'EMP-01');
+
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyName: companyName,
+            companyId: companyId || companyName,
+            companyCode: companyId || companyName,
+            userName: userName || 'Team Member',
+            employeeId: resolvedEmployeeId,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Login failed');
+        setCurrentCompany(data.company);
+
+        const userWithEmp: TeamMember = {
+          ...data.user,
+          employee_id: data.user?.employee_id || data.user?.employeeId || resolvedEmployeeId,
+        };
+        const membersWithEmp: TeamMember[] = (data.allCompanyMembers || []).map((m: any) => ({
+          ...m,
+          employee_id:
+            m.employee_id ||
+            m.employeeId ||
+            (m.user_id === userWithEmp.user_id ? userWithEmp.employee_id : undefined),
+        }));
+
+        setActiveUser(userWithEmp);
+        setTeamMembers(membersWithEmp);
+        localStorage.setItem('officepact_company', JSON.stringify(data.company));
+        localStorage.setItem('officepact_user', JSON.stringify(userWithEmp));
+        await loadData(data.user?.user_id, data.company?.id);
+        return true;
+      } catch (err: any) {
+        console.error('Login error:', err);
+        return false;
+      }
+    },
+    [loadData]
+  );
 
   const logout = useCallback(() => {
     localStorage.removeItem('officepact_company');
