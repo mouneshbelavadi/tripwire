@@ -1,6 +1,6 @@
 /**
  * Tripwire: Office Pact - Rapid Success Scenario Demo (~10s)
- * Demonstrates clean invariant evaluation and All-Clear state for Kabir & Ananya (Paytm).
+ * Demonstrates clean invariant evaluation, All-Clear state, and arrived onsite progression for Kabir & Ananya (Paytm).
  */
 
 const { exec, spawn } = require('child_process');
@@ -8,7 +8,7 @@ const { exec, spawn } = require('child_process');
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const PACT_ID = process.env.PACT_ID || 'pact_paytm_google_anantha';
-const TARGET_URL = process.env.TARGET_URL || BASE_URL;
+const TARGET_URL = process.env.TARGET_URL || `${BASE_URL}?arrived=true`;
 const REQUEST_TIMEOUT_MS = 5000;
 
 const ANSI = {
@@ -235,28 +235,32 @@ async function run() {
   await sleep(3000);
 
   // -------------------------------------------------------------------------
-  // t = 9s: All-Clear confirmed! Logs status to SQLite, sends confirmation to team channel
+  // t = 9s: Invariant satisfied & arrival confirmed!
   // -------------------------------------------------------------------------
-  console.log(`\n${ANSI.brightGreen}${ANSI.bold}[00:09.000] t=9s │ ALL-CLEAR CONFIRMED · COMMITTED TO SQLITE & TEAM CHANNEL${ANSI.reset}`);
-  console.log(`  ${ANSI.green}💾 SQLite Journal:${ANSI.reset}  Recorded observations in 'observations' table (provenance: live)`);
+  console.log(`\n${ANSI.brightGreen}${ANSI.bold}[00:09.000] t=9s │ INVARIANT SATISFIED: COMMUTE SAFE & ARRIVED ONSITE${ANSI.reset}`);
+  console.log(`  🏢 Destination: Google Anantha Bengaluru`);
+  console.log(`  ⏱  Indiranagar: 38 min (Limit: 60m) · ZERO BREACHES`);
+  console.log(`  ⏱  HSR Layout:   34 min (Limit: 60m) · ZERO BREACHES`);
+  console.log(`  🎉 Status:      Team has arrived safely onsite. Proceeding with work.`);
+  console.log(`\n  ${ANSI.green}💾 SQLite Journal:${ANSI.reset}  Recorded observations in 'observations' table (provenance: live)`);
   console.log(`  ${ANSI.green}🛡  Rule State:${ANSI.reset}      rule_states active = 0, consecutive_breaches = 0 (verified across ${ruleCount} rule(s))`);
-  console.log(`  ${ANSI.green}📢 Team Channel:${ANSI.reset}    All-Clear notice dispatched to team messages (#channel_comp_paytm_office_pact):`);
-  console.log(`  ${ANSI.dim}   "${ANSI.reset}${ANSI.brightGreen}✅ [All-Clear Confirmed] Route check complete: Indiranagar: 38 min, HSR Layout: 34 min. Both within 60m threshold. Zero breaches. Office pact on track!${ANSI.reset}${ANSI.dim}"${ANSI.reset}`);
+  console.log(`  ${ANSI.green}📢 Team Channel:${ANSI.reset}    All-Clear arrival notice dispatched to team messages (#channel_comp_paytm_office_pact):`);
+  console.log(`  ${ANSI.dim}   "${ANSI.reset}${ANSI.brightGreen}✅ [Commute Safe & Arrived Onsite] Indiranagar (38m) & HSR Layout (34m). Zero breaches. Team has arrived safely onsite at Google Anantha Bengaluru. Proceeding with work!${ANSI.reset}${ANSI.dim}"${ANSI.reset}`);
 
   await sleep(1000);
 
   // -------------------------------------------------------------------------
-  // t = 10s: Opens browser to TARGET_URL showing the green "All clear" dashboard
+  // t = 10s: Opens browser to TARGET_URL showing arrival state & dashboard card
   // -------------------------------------------------------------------------
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   console.log(`\n${ANSI.brightGreen}${ANSI.bold}[00:10.000] t=${elapsed}s │ OPENING BROWSER DASHBOARD${ANSI.reset}`);
   console.log(`  ${ANSI.brightGreen}🚀 Launching browser to ${TARGET_URL}...${ANSI.reset}`);
-  console.log(`  ${ANSI.white}Displaying: ${ANSI.brightGreen}${ANSI.bold}● All Clear Dashboard${ANSI.reset}${ANSI.white} with active bilateral pact "${initResult.pact.title}"${ANSI.reset}\n`);
+  console.log(`  ${ANSI.white}Displaying: ${ANSI.brightGreen}${ANSI.bold}● Arrived Onsite Dashboard${ANSI.reset}${ANSI.white} with "Continue Work & Open Strategy Session" card${ANSI.reset}\n`);
 
   openBrowser(TARGET_URL);
 
   console.log(`${ANSI.brightGreen}${ANSI.bold}╔══════════════════════════════════════════════════════════════════════════════════╗${ANSI.reset}`);
-  console.log(`${ANSI.brightGreen}${ANSI.bold}║              ✓ DEMO SUCCESSFUL: ALL INVARIANTS SATISFIED (10s)                   ║${ANSI.reset}`);
+  console.log(`${ANSI.brightGreen}${ANSI.bold}║       ✓ DEMO SUCCESSFUL: COMMUTE SAFE & ARRIVED ONSITE (10s)                     ║${ANSI.reset}`);
   console.log(`${ANSI.brightGreen}${ANSI.bold}╚══════════════════════════════════════════════════════════════════════════════════╝${ANSI.reset}`);
 
   // Safety delay to allow detached browser process to initialize cleanly before Node exit

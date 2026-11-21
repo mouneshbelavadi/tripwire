@@ -47,8 +47,8 @@ echo.
 node scripts/demo_success.cjs
 
 echo.
-echo [*] Opening Microsoft Edge to http://localhost:3000...
-start msedge "http://localhost:3000" 2>nul || start microsoft-edge:"http://localhost:3000" 2>nul || start "" "http://localhost:3000"
+echo [*] Opening Microsoft Edge to http://localhost:3000?arrived=true...
+start msedge "http://localhost:3000?arrived=true" 2>nul || start microsoft-edge:"http://localhost:3000?arrived=true" 2>nul || start "" "http://localhost:3000?arrived=true"
 
 echo.
 echo ======================================================================

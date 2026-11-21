@@ -3,7 +3,7 @@
 > **Target Audience:** Presenters, Hackathon Evaluators, System Auditors, and Demonstrators.  
 > **Repository:** `Office-Pact-Handoff`  
 > **Key Value Proposition:** *"Agree on when to reconsider the office trip, check before leaving."*  
-> **Supported Demo Runners:** `succes.bat` (All-Clear proof, ~10s) and `fail.bat` (Observable breach proof, ~16s).
+> **Supported Demo Runners:** `succes.bat` (All-Clear & Arrived Onsite proof, ~10s) and `fail.bat` (Observable breach & selectable fallback options, ~16s).
 
 ---
 
@@ -98,8 +98,8 @@ When presenting to evaluators, clearly delineate what data is synthetic fixture 
 
 | Scenario / Flow | Component | Nature of Data | Verifiable Proof |
 |---|---|---|---|
-| **Safe Commute Demo (`succes.bat`)** | Indiranagar & HSR Layout corridors | **Seeded Baseline** | Injected via `POST /api/simulation/safe-commute` with `fastestDuration` = 2280s (38m) and 2040s (34m). Stored with `provenance = 'live'` for baseline visual fidelity. |
-| **Breach Fail Demo (`fail.bat`)** | Step 1 (68m) & Step 2 (72m) | **Synthetic Fixture** | Generated deterministically by `createSyntheticBreachSequence()`. Tagged with `provenance = 'synthetic'` in `observations`. |
+| **Safe Commute Demo (`succes.bat`)** | Indiranagar & HSR Layout corridors | **Seeded Baseline & Arrival State** | Injected via `POST /api/simulation/safe-commute` with `fastestDuration` = 2280s (38m) and 2040s (34m). Demonstrates zero breaches, safe commute window, and onsite arrival progression with "Continue Work & Open Strategy Session". |
+| **Breach Fail Demo (`fail.bat`)** | Step 1 (68m) & Step 2 (72m) | **Synthetic Fixture** | Generated deterministically by `createSyntheticBreachSequence()`. Tagged with `provenance = 'synthetic'` in `observations`. Presents actionable selectable fallback options (Meet, Cancel Cab, Cancel Meeting, Maintain Plan, Chat) without unilateral auto-redirects. |
 | **Breach Citations** | Bangalore Traffic Police Advisory | **Synthetic Fixture** | Hardcoded citation in `citation_contexts` referencing Bellandur junction waterlogging. **Not a live municipal scrape.** |
 | **Live Route Check** | Directions Polling | **Live SerpApi** | Triggered via `POST /api/simulation/check-live` or wizard route checks; calls `https://serpapi.com/search.json?engine=google_maps_directions`. |
 | **Interactive Map** | Corridor Map & Destination Pins | **Live Esri Tiles** | Live vector street map tiles loaded directly via Leaflet from Esri (`https://server.arcgisonline.com/...`) without watermarks. |
@@ -109,9 +109,9 @@ When presenting to evaluators, clearly delineate what data is synthetic fixture 
 
 ## 4. Rehearsal Guide: Demonstration Batch Runners
 
-### 4.1 Demo Script 1: `succes.bat` — All-Clear Rapid Verification (~10 Seconds)
+### 4.1 Demo Script 1: `succes.bat` — All-Clear & Arrived Onsite Verification (~10 Seconds)
 
-**Pitch Angle:** *"When traffic is within agreed bounds, the system provides passive assurance without noise, false alerts, or wasted commute anxiety."*
+**Pitch Angle:** *"When traffic is within agreed bounds, the system provides passive assurance without noise, false alerts, or wasted commute anxiety. Once members reach the destination, it seamlessly transitions into the arrived onsite state."*
 
 #### How to Execute:
 Double-click `succes.bat` in Windows Explorer or run from terminal:
@@ -130,24 +130,34 @@ succes.bat
      - Indiranagar: **38 min** ($\le 60\text{m}$) $\rightarrow$ `PASS` (-22 min under ceiling)
      - HSR Layout: **34 min** ($\le 60\text{m}$) $\rightarrow$ `PASS` (-26 min under ceiling)
    - Consecutive breaches counter: **0 / 2**.
-4. **t = 9s [Database Commit & Outbox Dispatch]:**
+4. **t = 9s [Database Commit, Invariant Satisfied & Arrival State]:**
+   - Emphasizes arrival and time progression in terminal:
+     ```
+     [00:09.000] t=9s │ INVARIANT SATISFIED: COMMUTE SAFE & ARRIVED ONSITE
+       🏢 Destination: Google Anantha Bengaluru
+       ⏱  Indiranagar: 38 min (Limit: 60m) · ZERO BREACHES
+       ⏱  HSR Layout:   34 min (Limit: 60m) · ZERO BREACHES
+       🎉 Status:      Team has arrived safely onsite. Proceeding with work.
+     ```
    - Logs observations with `provenance = 'live'`.
    - Dispatches confirmation to internal team channel `#channel_comp_paytm_office_pact`:
-     `"✅ [All-Clear Confirmed] Route check complete: Indiranagar: 38 min, HSR Layout: 34 min. Both within 60m threshold. Zero breaches. Office pact on track!"`
+     `"✅ [Commute Safe & Arrived Onsite] Indiranagar (38m) & HSR Layout (34m). Zero breaches. Team has arrived safely onsite at Google Anantha Bengaluru. Proceeding with work!"`
 5. **t = 10s [Browser Presentation]:**
-   - Launches browser to `http://localhost:3000`.
+   - Launches browser directly to:
+     `http://localhost:3000?arrived=true`
 
 #### Observable UI Verification for Evaluators:
 - TopBar displays corporate badge: **Paytm (One97 Communications)** with `● LIVE MODE`.
-- Green **"All clear" Dashboard** indicating 0 alerts requiring decision.
+- Green **"Commute Safe & Arrived Onsite" Dashboard Banner** with timestamp and zero breach confirmation.
+- Rich arrival dashboard card: **"Continue Work & Open Strategy Session"**, giving participants one-click access to meeting notes, agenda, and desk resources.
 - Monitored Corridors card displays: **2 routes (● Active)**.
 - Active pact card visible with direct navigation to pact details.
 
 ---
 
-### 4.2 Demo Script 2: `fail.bat` — Observable Breach & Fallback Verification (~16 Seconds)
+### 4.2 Demo Script 2: `fail.bat` — Observable Breach & Selectable Fallback Options (~16 Seconds)
 
-**Pitch Angle:** *"A single traffic spike is noise; two consecutive fresh checks make a verified breach. Once triggered, the pact automatically switches the team to remote before anyone leaves home."*
+**Pitch Angle:** *"A single traffic spike is noise; two consecutive fresh checks make a verified breach. Once triggered, the pact provides an actionable menu of fallback options (Google Meet, ride cancellation, meeting reschedule, or team discussion) rather than an automatic unilateral redirect, allowing the team to make an informed consensus choice."*
 
 #### How to Execute:
 Double-click `fail.bat` in Windows Explorer or run from terminal:
@@ -168,14 +178,25 @@ fail.bat
    - Second fresh check at Bellandur bottleneck worsens to **72m (+12m over limit)**.
    - Mathematical proof satisfied: Two distinct fresh checks exceeded the threshold.
    - Terminal confirms: `>> 2nd Consecutive Fresh Breach (2/2) Confirmed!`
-4. **t = 14s [Phase 4: Tripwire Alert Fired & Fallback Directive Proposed]:**
+4. **t = 14s [Phase 4: Tripwire Alert Fired & Actionable Fallback Options Menu]:**
    - Tripwire alert generated with unique Cryptographic Episode Receipt ID.
-   - Automatic remote fallback directive proposed:
-     `"Switch to remote Google Meet and cancel cab"`
+   - Terminal displays the actionable fallback options menu:
+     ```
+     ======================================================================
+     ACTIONABLE FALLBACK OPTIONS AVAILABLE TO USER:
+     ======================================================================
+       [1] Go to Google Meet      -> Open virtual meeting room (meet.google.com)
+       [2] Cancel the cab         -> Cancel Uber / Ola ride to avoid penalties
+       [3] Cancel the meeting     -> Reschedule in-person sync to tomorrow
+       [4] Maintain Office Plan   -> Proceed with onsite meeting despite traffic
+       [5] Discuss in Team Chat   -> Align in internal team channel
+     ----------------------------------------------------------------------
+     >> Launching Microsoft Edge directly to interactive decision panel...
+     ```
    - Outbox delivery dispatched to `#channel_comp_paytm_office_pact`.
-5. **t = 16s [Phase 5: Browser Launch & Interactive Voting]:**
-   - Automatically opens browser directly to the live agreement:
-     `http://localhost:3000/pacts/pact_paytm_google_anantha`
+5. **t = 16s [Phase 5: Browser Launch to Interactive Decision Panel]:**
+   - Automatically opens Microsoft Edge directly to the decision tab:
+     `http://localhost:3000/pacts/pact_paytm_google_anantha?tab=decision`
 
 #### Interactive Evaluation Walkthrough (What Judges See & Do):
 1. **Verified Two-Breach Evidence Receipt Card:**
@@ -185,9 +206,15 @@ fail.bat
 2. **4-Step Stepper Decision Line:**
    - Step 3 (Tripwire Monitor) shows amber alert state.
    - Step 4 (Team Consensus) shows pending bilateral voting.
-3. **Interactive Bilateral Consensus Voting:**
-   - Evaluators can click any of the three decision buttons:
-     - `Switch to Remote`: Casts vote to adopt the fallback plan.
+3. **Actionable Fallback Options & Bilateral Consensus Voting:**
+   - Evaluators see the five actionable fallback choices available to the user:
+     - `[1] Go to Google Meet`: Direct link to switch the sync into a virtual meeting room.
+     - `[2] Cancel the cab`: Prompt / deep-link to cancel Uber/Ola ride before cancellation fees apply.
+     - `[3] Cancel the meeting`: Reschedule in-person sync to tomorrow.
+     - `[4] Maintain Office Plan`: Proceed with onsite meeting despite traffic.
+     - `[5] Discuss in Team Chat`: Align in internal team channel.
+   - Evaluators can click the voting buttons to cast their decision:
+     - `Switch to Remote`: Casts vote to adopt virtual fallback.
      - `Keep the Plan`: Casts vote to proceed with onsite meeting despite traffic.
      - `Discuss in Chat`: Automatically flags a decision mismatch and drafts an alignment briefing in the chat drawer.
    - Once both participants cast matching votes, the Stepper resolves to green **"Consensus Reached: Unanimous Remote"** and a system resolution message is written to team chat.
@@ -203,7 +230,7 @@ fail.bat
 | **Missing `dist/` directory or assets** | Fresh repository checkout without prior build | Run full build command: `npm run build`. This generates `dist/client` (Vite) and `dist/server` (tsc). |
 | **`SQLITE_BUSY: database is locked`** | Concurrent SQLite write contention or zombie Node process holding lock | 1. Terminate orphaned Node processes: `taskkill /F /IM node.exe`<br>2. SQLite busy timeout is configured to 5000ms. Rerun the script. |
 | **SerpApi rate limit or invalid API key** | Missing or exhausted `SERPAPI_API_KEY` | The application will log a warning and fall back to curated landmarks or synthetic data. `succes.bat` and `fail.bat` operate cleanly using deterministic database seeds even if SerpApi keys are omitted. |
-| **Browser fails to launch automatically** | OS default browser handler restricted | Manually open your browser and navigate to `http://localhost:3000` (for success scenario) or `http://localhost:3000/pacts/pact_paytm_google_anantha` (for breach scenario). |
+| **Browser fails to launch automatically** | OS default browser handler restricted | Manually open your browser and navigate to `http://localhost:3000?arrived=true` (for success scenario) or `http://localhost:3000/pacts/pact_paytm_google_anantha?tab=decision` (for breach scenario). |
 
 ---
 
@@ -219,7 +246,7 @@ For transparency with technical evaluators, the following architectural boundari
    - However, the Server-Sent Events stream (`/api/stream`) broadcasts domain events globally across all connected clients without company partitioning.
    - The Enterprise Admin console (`/admin`) is unauthenticated.
 3. **External Action Directives:**
-   - Fallback proposals (*"Switch to remote Google Meet and cancel cab"*) are human-executable team alignment directives recorded in SQLite and posted to team chat.
-   - They do **not** trigger direct automated API calls to Google Calendar, Google Meet, Uber, or Ola.
+   - Fallback options (Go to Google Meet, Cancel the cab, Reschedule sync, Maintain Plan, Discuss in Chat) are human-executable team alignment choices presented to the user and recorded in SQLite.
+   - They do **not** unilaterally execute automated external API calls to Google Calendar, Google Meet, Uber, or Ola without user confirmation.
 4. **Simulation Route Safety:**
    - Endpoints under `/api/simulation/` perform broad destructive SQL table deletes. They are strictly intended for controlled hackathon presentations and automated test harnesses against disposable databases.

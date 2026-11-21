@@ -170,7 +170,7 @@ alertsRouter.post('/:id/decision', (req, res, next) => writeRateLimiter(req, res
     const rawAction = req.body.action || req.body.decision;
     if (!rawAction) {
       res.status(400).json({
-        error: 'Missing action. Must be remote_fallback, keep_plan, or discuss.',
+        error: 'Missing action. Must be remote_fallback, keep_plan, discuss, meet, cancel_cab, or cancel_meeting.',
       });
       return;
     }
@@ -179,9 +179,20 @@ alertsRouter.post('/:id/decision', (req, res, next) => writeRateLimiter(req, res
     if (action === 'remote') action = 'remote_fallback';
     if (action === 'keep') action = 'keep_plan';
 
-    if (!['remote_fallback', 'keep_plan', 'discuss'].includes(action)) {
+    const validActions = [
+      'remote_fallback',
+      'keep_plan',
+      'discuss',
+      'meet',
+      'cancel_cab',
+      'cancel_meeting',
+      'remote',
+      'keep',
+    ];
+
+    if (!validActions.includes(action)) {
       res.status(400).json({
-        error: `Invalid action "${action}". Must be remote_fallback, keep_plan, or discuss.`,
+        error: `Invalid action "${action}". Must be remote_fallback, keep_plan, discuss, meet, cancel_cab, or cancel_meeting.`,
       });
       return;
     }

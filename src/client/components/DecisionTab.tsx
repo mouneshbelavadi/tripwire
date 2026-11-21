@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { PactDetails, TeamMember } from '../types';
+import { FallbackOptionsGrid } from './FallbackOptionsGrid';
 
 export interface DecisionTabProps {
   pact: PactDetails;
@@ -17,7 +18,6 @@ export function DecisionTab({
   onDecisionRecorded,
   onSwitchToChat,
 }: DecisionTabProps) {
-  const [submittingAction, setSubmittingAction] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [chatSentFeedback, setChatSentFeedback] = useState<string | null>(null);
   const [isSendingChat, setIsSendingChat] = useState(false);
@@ -61,9 +61,11 @@ export function DecisionTab({
   for (const ack of acknowledgements) {
     const rawDecision = ack.decision;
     let normalized = rawDecision;
-    if (rawDecision === 'remote' || rawDecision === 'remote_fallback') normalized = 'remote_fallback';
-    else if (rawDecision === 'keep' || rawDecision === 'keep_plan') normalized = 'keep_plan';
+    if (rawDecision === 'remote' || rawDecision === 'remote_fallback' || rawDecision === 'meet') normalized = 'meet';
+    else if (rawDecision === 'keep' || rawDecision === 'keep_plan') normalized = 'keep';
     else if (rawDecision === 'discuss') normalized = 'discuss';
+    else if (rawDecision === 'cancel_cab') normalized = 'cancel_cab';
+    else if (rawDecision === 'cancel_meeting') normalized = 'cancel_meeting';
 
     let istTime = ack.createdAtIst;
     if (!istTime && ack.createdAt) {
@@ -122,29 +124,44 @@ export function DecisionTab({
   let isResolved = false;
   let isNeedsDiscussion = false;
   let isPending = false;
-  let resolvedAction: 'remote_fallback' | 'keep_plan' | 'discuss' | null = null;
+  let resolvedAction: string | null = null;
   let resolvedLabel = '';
 
   if (
     receipt?.consensus?.isResolved ||
     receipt?.currentDecisionStatus === 'remote_chosen' ||
-    receipt?.currentDecisionStatus === 'plan_kept'
+    receipt?.currentDecisionStatus === 'plan_kept' ||
+    receipt?.currentDecisionStatus === 'cab_canceled' ||
+    receipt?.currentDecisionStatus === 'meeting_canceled'
   ) {
     isResolved = true;
     if (
       receipt?.currentDecisionStatus === 'remote_chosen' ||
       receipt?.consensus?.resolvedAction === 'remote' ||
-      receipt?.consensus?.resolvedAction === 'remote_fallback'
+      receipt?.consensus?.resolvedAction === 'remote_fallback' ||
+      receipt?.consensus?.resolvedAction === 'meet'
     ) {
-      resolvedAction = 'remote_fallback';
-      resolvedLabel = 'Switch to remote Google Meet (agreed fallback)';
+      resolvedAction = 'meet';
+      resolvedLabel = 'Switch to virtual Google Meet room (agreed fallback)';
     } else if (
       receipt?.currentDecisionStatus === 'plan_kept' ||
       receipt?.consensus?.resolvedAction === 'keep' ||
       receipt?.consensus?.resolvedAction === 'keep_plan'
     ) {
-      resolvedAction = 'keep_plan';
+      resolvedAction = 'keep';
       resolvedLabel = 'Maintain office meeting plan';
+    } else if (
+      receipt?.currentDecisionStatus === 'cab_canceled' ||
+      receipt?.consensus?.resolvedAction === 'cancel_cab'
+    ) {
+      resolvedAction = 'cancel_cab';
+      resolvedLabel = 'Cancel cab reservation to avoid surge fee';
+    } else if (
+      receipt?.currentDecisionStatus === 'meeting_canceled' ||
+      receipt?.consensus?.resolvedAction === 'cancel_meeting'
+    ) {
+      resolvedAction = 'cancel_meeting';
+      resolvedLabel = "Cancel today's in-person sync & reschedule to tomorrow";
     }
   } else if (
     receipt?.consensus?.needsDiscussion ||
@@ -154,13 +171,18 @@ export function DecisionTab({
   } else if (recordedChoices.length >= totalParticipants && uniqueDecisions.length === 1) {
     // Both choose the SAME action -> Resolved / Final!
     isResolved = true;
-    resolvedAction = uniqueDecisions[0] as any;
-    resolvedLabel =
-      resolvedAction === 'remote_fallback'
-        ? 'Switch to remote Google Meet (agreed fallback)'
-        : resolvedAction === 'keep_plan'
-        ? 'Maintain office meeting plan'
-        : 'Discuss in chat';
+    resolvedAction = uniqueDecisions[0];
+    if (resolvedAction === 'meet' || resolvedAction === 'remote' || resolvedAction === 'remote_fallback') {
+      resolvedLabel = 'Switch to virtual Google Meet room (agreed fallback)';
+    } else if (resolvedAction === 'cancel_cab') {
+      resolvedLabel = 'Cancel cab reservation to avoid surge fee';
+    } else if (resolvedAction === 'cancel_meeting') {
+      resolvedLabel = "Cancel today's in-person sync & reschedule to tomorrow";
+    } else if (resolvedAction === 'keep' || resolvedAction === 'keep_plan') {
+      resolvedLabel = 'Maintain office meeting plan';
+    } else {
+      resolvedLabel = 'Discuss in chat';
+    }
   } else if (uniqueDecisions.length > 1 || (recordedChoices.length > 0 && uniqueDecisions.includes('discuss'))) {
     // Choices differ -> Needs discussion
     isNeedsDiscussion = true;
@@ -178,7 +200,9 @@ export function DecisionTab({
   const p2Name = p2?.user_name || 'Participant 2';
 
   const actionFriendly = (d?: string) => {
-    if (d === 'remote_fallback' || d === 'remote') return 'switch to remote';
+    if (d === 'meet' || d === 'remote_fallback' || d === 'remote') return 'switch to Google Meet';
+    if (d === 'cancel_cab') return 'cancel the cab';
+    if (d === 'cancel_meeting') return "cancel today's meeting";
     if (d === 'keep_plan' || d === 'keep') return 'keep the plan';
     if (d === 'discuss') return 'discuss in chat';
     return 'pending';
@@ -213,37 +237,6 @@ export function DecisionTab({
   )}, but ${p2Name} voted to ${actionFriendly(
     p2ChoiceObj?.decision || arjunChoiceObj?.decision
   )}. Let's discuss our plan for today's meeting.`;
-
-  // Submit decision
-  const handleVote = async (action: 'remote_fallback' | 'keep_plan' | 'discuss') => {
-    if (!activeUser || !alertId) return;
-    setSubmittingAction(action);
-    setFeedback(null);
-
-    try {
-      // POST to /api/alerts/:id/decision
-      const res = await fetch(`/api/alerts/${alertId}/decision`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': activeUser.user_id,
-        },
-        body: JSON.stringify({ action, decision: action }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to record decision');
-      }
-
-      setFeedback(data.message || `Vote recorded for ${activeUser.user_name}.`);
-      onDecisionRecorded();
-    } catch (err: any) {
-      setFeedback(`Error: ${err.message}`);
-    } finally {
-      setSubmittingAction(null);
-    }
-  };
 
   // Send pre-filled message to chat
   const handleSendToChat = async () => {
@@ -434,80 +427,20 @@ export function DecisionTab({
         </div>
       )}
 
-      {/* 4. THREE AUTHENTICATED ACTION BUTTONS */}
+      {/* 4. SELECTABLE FALLBACK OPTIONS GRID */}
       <div className="decision-actions-panel">
-        <div className="actions-header-row">
-          <h3 className="actions-panel-title">Your Authenticated Decision</h3>
-          <span className="acting-user-badge">
-            Voting as: <strong>{activeUser?.user_name}</strong> ({activeUser?.neighbourhood})
-          </span>
-        </div>
-
-        {isResolved && (
-          <div className="actions-locked-notice" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
-            Action buttons are locked because team consensus has been finalized.
-          </div>
-        )}
-
-        <div className="decision-buttons-grid">
-          {/* Button 1: Switch to Remote (Primary Action) */}
-          <button
-            type="button"
-            className={`btn-action-decision remote ${userChoicesMap.get(activeUser?.user_id || '')?.decision === 'remote_fallback' ? 'selected' : ''}`}
-            onClick={() => handleVote('remote_fallback')}
-            disabled={Boolean(isResolved) || Boolean(submittingAction)}
-          >
-            <span className="btn-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
-            </span>
-            <div className="btn-text-slot">
-              <span className="btn-main-label">Switch to Remote</span>
-              <span className="btn-sub-label">Agreed bilateral fallback (Primary Action)</span>
-            </div>
-            {userChoicesMap.get(activeUser?.user_id || '')?.decision === 'remote_fallback' && (
-              <span className="btn-voted-pill">Your Choice ✓</span>
-            )}
-          </button>
-
-          {/* Button 2: Keep Plan */}
-          <button
-            type="button"
-            className={`btn-action-decision keep ${userChoicesMap.get(activeUser?.user_id || '')?.decision === 'keep_plan' ? 'selected' : ''}`}
-            onClick={() => handleVote('keep_plan')}
-            disabled={Boolean(isResolved) || Boolean(submittingAction)}
-          >
-            <span className="btn-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg>
-            </span>
-            <div className="btn-text-slot">
-              <span className="btn-main-label">Keep Plan</span>
-              <span className="btn-sub-label">Maintain office meet</span>
-            </div>
-            {userChoicesMap.get(activeUser?.user_id || '')?.decision === 'keep_plan' && (
-              <span className="btn-voted-pill">Your Choice ✓</span>
-            )}
-          </button>
-
-          {/* Button 3: Discuss in Chat */}
-          <button
-            type="button"
-            className={`btn-action-decision discuss ${userChoicesMap.get(activeUser?.user_id || '')?.decision === 'discuss' ? 'selected' : ''}`}
-            onClick={() => handleVote('discuss')}
-            disabled={Boolean(isResolved) || Boolean(submittingAction)}
-          >
-            <span className="btn-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-            </span>
-            <div className="btn-text-slot">
-              <span className="btn-main-label">Discuss in Chat</span>
-              <span className="btn-sub-label">Open group channel</span>
-            </div>
-            {userChoicesMap.get(activeUser?.user_id || '')?.decision === 'discuss' && (
-              <span className="btn-voted-pill">Your Choice ✓</span>
-            )}
-          </button>
-        </div>
+        <FallbackOptionsGrid
+          alertId={alertId}
+          activeUser={activeUser}
+          currentDecision={userChoicesMap.get(activeUser?.user_id || '')?.decision}
+          isLocked={Boolean(isResolved)}
+          onDecisionRecorded={() => {
+            onDecisionRecorded();
+          }}
+          onSwitchToChat={onSwitchToChat}
+          title="Selectable Fallback Options"
+          subtitle={`Threshold breach active (${check2Minutes} min reached, ${excessMinutes} min over limit). Select an action for your team:`}
+        />
       </div>
 
       {/* 5. PARTICIPANTS' CHOICES TABLE WITH IST TIMESTAMP */}
@@ -526,15 +459,21 @@ export function DecisionTab({
             let badgeClass = 'vote-pending';
             let badgeText = 'Awaiting decision...';
 
-            if (decisionType === 'remote_fallback' || decisionType === 'remote') {
+            if (decisionType === 'meet' || decisionType === 'remote_fallback' || decisionType === 'remote') {
               badgeClass = 'vote-remote';
-              badgeText = 'Switch to Remote (Agreed Fallback)';
+              badgeText = '📹 Go to Google Meet';
+            } else if (decisionType === 'cancel_cab') {
+              badgeClass = 'vote-cancel-cab';
+              badgeText = '🚕 Cancel the Cab';
+            } else if (decisionType === 'cancel_meeting') {
+              badgeClass = 'vote-cancel-meeting';
+              badgeText = '📅 Cancel the Meeting';
             } else if (decisionType === 'keep_plan' || decisionType === 'keep') {
               badgeClass = 'vote-keep';
-              badgeText = 'Keep Plan';
+              badgeText = '🚗 Maintain Office Plan';
             } else if (decisionType === 'discuss') {
               badgeClass = 'vote-discuss';
-              badgeText = 'Discuss in Chat';
+              badgeText = '💬 Discuss in Chat';
             }
 
             return (

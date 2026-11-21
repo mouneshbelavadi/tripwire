@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { EvidencePanel } from '../components/EvidencePanel';
 import { DecisionTab } from '../components/DecisionTab';
 import { EvidenceReceiptCard } from '../components/EvidenceReceiptCard';
+import { FallbackOptionsGrid } from '../components/FallbackOptionsGrid';
 import { PactEditorModal } from '../components/PactEditorModal';
 import { VenueSearchModal, type VerifiedPlace } from '../components/VenueSearchModal';
 import { getPactDisplayStatus, type PactDisplayStatus } from './DashboardPage';
@@ -816,21 +817,37 @@ export function PactDetailPage() {
           {/* Live Alert Receipt & Decision Voting Section (Shown prominently when Alert is triggered) */}
           {(statusDisplay.label === 'Alert' || (currentReceipt && currentReceipt.pactId === pact.id)) && (
             <div className="overview-alert-receipt-section" style={{ margin: '4px 0 16px 0' }}>
-              <EvidenceReceiptCard
-                receipt={currentReceipt}
-                activeUser={activeUser}
-                onDecisionRecorded={() => {
-                  loadData();
-                  if (pact?.id) {
-                    fetch(`/api/receipts/latest/pact/${pact.id}`)
-                      .then((r) => r.json())
-                      .then((data) => {
-                        if (data.receipt) setPactReceipt(data.receipt);
-                      })
-                      .catch(() => {});
-                  }
-                }}
-              />
+              {currentReceipt ? (
+                <EvidenceReceiptCard
+                  receipt={currentReceipt}
+                  activeUser={activeUser}
+                  onDecisionRecorded={() => {
+                    loadData();
+                    if (pact?.id) {
+                      fetch(`/api/receipts/latest/pact/${pact.id}`)
+                        .then((r) => r.json())
+                        .then((data) => {
+                          if (data.receipt) setPactReceipt(data.receipt);
+                        })
+                        .catch(() => {});
+                    }
+                  }}
+                />
+              ) : (
+                <div className="stat-card" style={{ padding: '20px', borderLeft: '4px solid var(--error-ink)' }}>
+                  <FallbackOptionsGrid
+                    alertId={latestReceipt?.alertId || 'latest'}
+                    activeUser={activeUser}
+                    currentDecision={null}
+                    isLocked={false}
+                    onDecisionRecorded={() => {
+                      loadData();
+                    }}
+                    title="Commute Threshold Breach Detected · Select Fallback Option"
+                    subtitle="Two consecutive commute duration observations exceeded agreed threshold. Select an immediate fallback action:"
+                  />
+                </div>
+              )}
             </div>
           )}
 

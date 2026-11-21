@@ -7,7 +7,7 @@ import { humanizeIncidentType } from '../../common/incidentTypes.js';
 export interface UserAcknowledgement {
   userId: string;
   userName: string;
-  decision: 'keep' | 'remote' | 'discuss';
+  decision: 'keep' | 'remote' | 'discuss' | 'meet' | 'cancel_cab' | 'cancel_meeting' | string;
   createdAt: string;
   createdAtIst?: string;
 }
@@ -21,7 +21,7 @@ export interface ParticipantSummary {
 
 export interface ConsensusState {
   status: 'pending' | 'resolved' | 'needs_discussion';
-  resolvedAction: 'remote' | 'keep' | 'discuss' | null;
+  resolvedAction: 'remote' | 'keep' | 'discuss' | 'meet' | 'cancel_cab' | 'cancel_meeting' | string | null;
   isResolved: boolean;
   needsDiscussion: boolean;
   warningBanner: string | null;
@@ -365,7 +365,7 @@ export class ReceiptService {
   static async recordDecision(
     alertId: string,
     userId: string,
-    decision: 'keep' | 'remote' | 'discuss'
+    decision: 'keep' | 'remote' | 'discuss' | 'meet' | 'cancel_cab' | 'cancel_meeting' | string
   ): Promise<EvidenceReceipt> {
     const db = getDb();
     const alert = db.prepare('SELECT * FROM alerts WHERE id = ?').get(alertId) as any;
@@ -405,9 +405,11 @@ export class ReceiptService {
         newAlertStatus = 'needs_discussion';
       } else {
         // Partial vote: preserve caller's choice for backward compatibility
-        if (decision === 'remote') newAlertStatus = 'remote_chosen';
+        if (decision === 'remote' || decision === 'meet') newAlertStatus = 'remote_chosen';
         else if (decision === 'keep') newAlertStatus = 'plan_kept';
-        else if (decision === 'discuss') newAlertStatus = 'discuss_chosen';
+        else if (decision === 'discuss') newAlertStatus = 'needs_discussion';
+        else if (decision === 'cancel_cab') newAlertStatus = 'cab_canceled';
+        else if (decision === 'cancel_meeting') newAlertStatus = 'meeting_canceled';
       }
 
       db.prepare(`

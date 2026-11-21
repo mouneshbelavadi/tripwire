@@ -68,8 +68,8 @@ echo.
 node scripts\demo_fail.cjs
 
 echo.
-echo [*] Opening Microsoft Edge to view Breach Alert ^& Fallback Plan...
-start msedge "http://localhost:3000/pacts/pact_paytm_google_anantha" 2>nul || start microsoft-edge:"http://localhost:3000/pacts/pact_paytm_google_anantha" 2>nul || start "" "http://localhost:3000"
+echo [*] Opening Microsoft Edge to view Breach Alert, Evidence Receipt, and Selectable Fallback Options...
+start msedge "http://localhost:3000/pacts/pact_paytm_google_anantha?tab=decision" 2>nul || start microsoft-edge:"http://localhost:3000/pacts/pact_paytm_google_anantha?tab=decision" 2>nul || start "" "http://localhost:3000/pacts/pact_paytm_google_anantha?tab=decision"
 
 echo.
 echo ======================================================================

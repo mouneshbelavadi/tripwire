@@ -97,6 +97,8 @@ simulationRouter.get('/pact/:pactId', (req, res) => {
   try {
     const db = getDb();
     const pactId = req.params.pactId;
+    const pact = db.prepare('SELECT * FROM pacts WHERE id = ?').get(pactId) as any;
+    const arrived = Boolean(pact?.arrived);
     const observations = db
       .prepare(`
         SELECT o.*, w.engine, w.params_json
@@ -117,7 +119,7 @@ simulationRouter.get('/pact/:pactId', (req, res) => {
       `)
       .all(pactId);
 
-    res.json({ observations, ruleStates });
+    res.json({ pact, arrived, observations, ruleStates });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -573,9 +575,11 @@ simulationRouter.get('/status', (_req, res) => {
     const alertCount = db.prepare("SELECT COUNT(*) as count FROM alerts WHERE episode_id LIKE 'ep_%'").get() as { count: number };
     const creditAttemptsSim = db.prepare("SELECT COUNT(*) as count FROM credit_attempts WHERE phase LIKE 'audit%'").get() as { count: number };
     
-    // Check if primary pact is in paused state from simulation
-    const pact = db.prepare("SELECT status FROM pacts WHERE id = 'pact_bellandur_01'").get() as any;
+    // Check if primary pact is in paused state from simulation or arrived
+    const pact = db.prepare("SELECT status, arrived FROM pacts WHERE id = 'pact_bellandur_01'").get() as any;
+    const paytmPact = db.prepare("SELECT status, arrived FROM pacts WHERE id = 'pact_paytm_google_anantha'").get() as any;
     const isPaused = pact?.status === 'paused';
+    const isArrived = Boolean(paytmPact?.arrived || pact?.arrived);
 
     const isSimulatedActive = isSimulationActiveFlag ||
       (syntheticObs && syntheticObs.count > 0) ||
@@ -590,6 +594,7 @@ simulationRouter.get('/status', (_req, res) => {
       syntheticObservationsCount: syntheticObs?.count || 0,
       syntheticAlertsCount: syntheticAlerts?.count || 0,
       alertsCount: alertCount?.count || 0,
+      arrived: isArrived,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -610,6 +615,7 @@ simulationRouter.post('/reset', (req, res) => {
     db.prepare('DELETE FROM alerts').run();
     db.prepare("DELETE FROM observations WHERE provenance = 'synthetic'").run();
     db.prepare("DELETE FROM credit_attempts WHERE phase LIKE 'audit%' OR phase LIKE 'demo%'").run();
+    db.prepare("UPDATE pacts SET arrived = 0").run();
 
     // Reset pact to armed state with 0 breaches
     const fourHoursLater = new Date(Date.now() + 4 * 3600 * 1000).toISOString();
@@ -674,24 +680,28 @@ simulationRouter.post('/safe-commute', (req, res) => {
     // 2. Remove unapproved test pacts under comp_paytm
     db.prepare("DELETE FROM pacts WHERE company_id = 'comp_paytm' AND id NOT IN ('pact_paytm_google_anantha', 'pact_past_whitefield', 'pact_past_koramangala')").run();
 
+    try {
+      db.exec('ALTER TABLE pacts ADD COLUMN arrived INTEGER DEFAULT 0');
+    } catch {}
+
     const nowSec = Math.floor(Date.now() / 1000);
     const nowIso = new Date().toISOString();
     const fourHoursLater = new Date(Date.now() + 4 * 3600 * 1000);
     const deadlineUtc = fourHoursLater.toISOString();
     const deadlineIst = fourHoursLater.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kolkata' }) + ' IST · ' + fourHoursLater.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' });
 
-    // 3. Ensure pact_paytm_google_anantha is armed and fresh
+    // 3. Ensure pact_paytm_google_anantha is armed, fresh, and marked arrived
     const existingPaytm = db.prepare('SELECT id FROM pacts WHERE id = ?').get(pactId);
     if (!existingPaytm) {
       db.prepare(`
         INSERT INTO pacts (
           id, company_id, team_id, title, version, status,
           destination_name, destination_place_id, destination_lat, destination_lon, destination_address,
-          decision_deadline_utc, decision_deadline_ist, fallback_text, created_by, created_at, updated_at
+          decision_deadline_utc, decision_deadline_ist, fallback_text, created_by, created_at, updated_at, arrived
         ) VALUES (
           ?, 'comp_paytm', 'team_office_pact', 'Paytm & Google Anantha Strategy Meetup', 1, 'armed',
           'Google Anantha Bengaluru', 'place_google_anantha_blr', 12.9352, 77.6946, 'Prestige Tech Park, Outer Ring Rd, Bellandur, Bengaluru 560103',
-          ?, ?, 'Switch to remote Google Meet and cancel cab', 'user_ananya', ?, ?
+          ?, ?, 'Switch to remote Google Meet and cancel cab', 'user_ananya', ?, ?, 1
         )
       `).run(pactId, deadlineUtc, deadlineIst, nowIso, nowIso);
     } else {
@@ -700,7 +710,8 @@ simulationRouter.post('/safe-commute', (req, res) => {
           status = 'armed',
           decision_deadline_utc = ?,
           decision_deadline_ist = ?,
-          updated_at = ?
+          updated_at = ?,
+          arrived = 1
         WHERE id = ?
       `).run(deadlineUtc, deadlineIst, nowIso, pactId);
     }
@@ -763,21 +774,28 @@ simulationRouter.post('/safe-commute', (req, res) => {
       WHERE watch_id = ?
     `).run(acmeWatchId);
 
-    // 9. Send confirmation to team channel
-    const msgId = `msg_all_clear_${nowSec}`;
+    // 9. Send arrival event & confirmation to team channel
+    const msgId = `msg_arrived_${nowSec}`;
     db.prepare(`
       INSERT INTO team_messages (id, company_id, channel_id, user_id, user_name, text, sent_time)
-      VALUES (?, 'comp_paytm', 'channel_comp_paytm_office_pact', 'system_tripwire', 'Tripwire Engine', '✅ [All-Clear Confirmed] Route check complete: Indiranagar: 38 min, HSR Layout: 34 min. Both within 60m threshold. Zero breaches. Office pact on track!', ?)
-    `).run(msgId, Date.now());
+      VALUES (?, 'comp_paytm', 'channel_comp_paytm_office_pact', 'system_tripwire', 'Tripwire Engine', ?, ?)
+    `).run(
+      msgId,
+      '🎉 [Arrived Onsite] Both Kabir (34m) and Ananya (38m) have arrived at Google Anantha Bengaluru! Commute thresholds verified (0 breaches). Proceed with strategy meetup!',
+      Date.now()
+    );
 
     res.json({
       success: true,
-      message: 'Safe commute state established: all corridors clear, consecutive breaches: 0.',
+      arrived: true,
+      allClear: true,
+      message: '🎉 Safe commute verified & team arrived safely onsite at Google Anantha Bengaluru.',
       pact: {
         id: pactId,
         companyId: 'comp_paytm',
         title: 'Paytm & Google Anantha Strategy Meetup',
         status: 'armed',
+        arrived: true,
         destination: 'Google Anantha Bengaluru',
         decisionDeadlineIst: deadlineIst,
       },
@@ -785,7 +803,6 @@ simulationRouter.post('/safe-commute', (req, res) => {
         { corridor: 'Indiranagar', participant: 'Ananya', durationMinutes: 38, limitMinutes: 60, breaches: 0, status: 'safe' },
         { corridor: 'HSR Layout', participant: 'Kabir', durationMinutes: 34, limitMinutes: 60, breaches: 0, status: 'safe' },
       ],
-      allClear: true,
     });
   } catch (err: any) {
     res.status(500).json({ error: err.message });

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useInRouterContext } from 'react-router-dom';
+import { useNavigate, useInRouterContext, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import type { PactDetails } from '../types';
 import { formatTimeIST, getDeadlineStatus } from '../lib/time';
@@ -87,7 +87,26 @@ function formatIstTime(isoOrDateString: string): string {
 export function DashboardPage() {
   const inRouter = useInRouterContext();
   const navigate = inRouter ? useNavigate() : (to: string) => { window.location.href = to; };
-  const { pacts, activeUser, latestReceipt, loadData, setActionNotice } = useApp();
+  const { pacts, activeUser, latestReceipt, loadData, setActionNotice, setIsChatDrawerOpen } = useApp();
+  const [searchParams] = useSearchParams();
+  const [strategySessionActive, setStrategySessionActive] = useState(false);
+  const [simArrived, setSimArrived] = useState(false);
+
+  // Sync simulation arrived status
+  useEffect(() => {
+    let isMounted = true;
+    fetch('/api/simulation/status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (isMounted && data?.arrived) {
+          setSimArrived(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Tick clock for live countdown timer
   const [, setTick] = useState(0);
@@ -198,6 +217,25 @@ export function DashboardPage() {
   }, [pacts, latestReceipt]);
 
   const alertsCount = alertsNeedingDecision.length;
+
+  // Determine if commute has safely completed and team arrived onsite
+  const isArrived = useMemo(() => {
+    if (
+      searchParams.get('arrived') === 'true' ||
+      searchParams.get('scenario') === 'success' ||
+      searchParams.get('safe') === 'true'
+    ) {
+      return true;
+    }
+    if (simArrived && alertsCount === 0) {
+      return true;
+    }
+    const arrivedPact = pacts.find((p) => Boolean(p.arrived));
+    if (arrivedPact && alertsCount === 0) {
+      return true;
+    }
+    return false;
+  }, [searchParams, simArrived, pacts, alertsCount]);
 
   // 3. Stat Card 3: Next deadline
   const earliestActivePactWithDeadline = useMemo(() => {
@@ -341,23 +379,47 @@ export function DashboardPage() {
       </section>
 
       {/* ====================================================================
-          "NEEDS YOUR DECISION" SECTION (PLACED PROMINENTLY FIRST)
+          "NEEDS YOUR DECISION" / COMMUTE OUTCOME SECTION (PLACED PROMINENTLY FIRST)
           ==================================================================== */}
-      <section className={`decision-alert-section ${alertsCount > 0 ? 'has-alert' : ''}`} aria-labelledby="decision-section-heading">
+      <section
+        className={`decision-alert-section ${alertsCount > 0 ? 'has-alert' : isArrived ? 'is-arrived-state' : ''}`}
+        aria-labelledby="decision-section-heading"
+      >
         <div className="section-eyebrow-row">
-          <div className={`section-eyebrow-title ${alertsCount > 0 ? 'alert' : ''}`} id="decision-section-heading">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-              <line x1="12" y1="9" x2="12" y2="13" />
-              <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-            Needs your decision
+          <div
+            className={`section-eyebrow-title ${alertsCount > 0 ? 'alert' : isArrived ? 'arrived' : ''}`}
+            id="decision-section-heading"
+          >
+            {isArrived && alertsCount === 0 ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--forest)' }}>
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            )}
+            {isArrived && alertsCount === 0 ? 'Commute Outcome' : 'Needs your decision'}
           </div>
-          {alertsCount > 0 && (
+          {alertsCount > 0 ? (
             <span className="stat-indicator-badge action-required">
               {alertsCount} {alertsCount === 1 ? 'alert awaiting action' : 'alerts awaiting action'}
             </span>
-          )}
+          ) : isArrived ? (
+            <span
+              className="stat-indicator-badge clear"
+              style={{
+                background: 'var(--forest-wash)',
+                color: 'var(--forest)',
+                borderColor: 'var(--forest-border)',
+              }}
+            >
+              ✓ All-Clear Verified
+            </span>
+          ) : null}
         </div>
 
         {alertsCount > 0 ? (
@@ -423,6 +485,188 @@ export function DashboardPage() {
                 </div>
               );
             })}
+          </div>
+        ) : isArrived ? (
+          <div className="arrived-onsite-card">
+            {/* Celebratory Banner when Strategy Session button is clicked */}
+            {strategySessionActive && (
+              <div className="arrived-strategy-banner" role="status" aria-live="polite">
+                <div className="arrived-strategy-banner-content">
+                  <span className="arrived-strategy-icon" aria-hidden="true">🚀</span>
+                  <div>
+                    <div className="arrived-strategy-title">Strategy Session Active — Team Ready to Collaborate!</div>
+                    <div className="arrived-strategy-desc">
+                      Room 4B reserved at Google Anantha Bengaluru · Kabir (34m) & Ananya (38m) checked in · Bilateral pact successfully fulfilled.
+                    </div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="arrived-strategy-dismiss"
+                  onClick={() => setStrategySessionActive(false)}
+                  aria-label="Dismiss banner"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            <div className="arrived-card-header">
+              <div className="arrived-badge-row">
+                <div className="arrived-hero-badge">
+                  <span className="arrived-badge-emoji" aria-hidden="true">🎉</span>
+                  <span className="arrived-badge-text">ARRIVED ONSITE · COMMUTE VERIFIED (0/2 BREACHES)</span>
+                </div>
+                <span className="arrived-timestamp-badge tabular-nums">09:15 IST · On-Time Arrival</span>
+              </div>
+
+              <h2 className="arrived-headline">
+                Commute Succeeded — Team Has Arrived at Google Anantha Bengaluru
+              </h2>
+
+              <p className="arrived-narrative">
+                Commute corridors were strictly monitored across Indiranagar (38m) and HSR Layout (34m). Zero breaches detected. The morning commute is complete and team members have arrived safely onsite before deadline.
+              </p>
+            </div>
+
+            {/* Time Progression Stepper */}
+            <div className="arrived-stepper-box">
+              <div className="arrived-stepper-header">
+                <span className="arrived-stepper-label">Commute Verification Progression</span>
+                <span className="arrived-stepper-status-pill">All Stages Complete · 100% On-Time</span>
+              </div>
+
+              <div className="arrived-stepper-track" aria-label="Commute Timeline Progression">
+                {/* Step 1 */}
+                <div className="arrived-step completed">
+                  <div className="arrived-step-marker">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div className="arrived-step-body">
+                    <div className="arrived-step-time tabular-nums">08:30 IST</div>
+                    <div className="arrived-step-title">Commute Monitored</div>
+                    <div className="arrived-step-desc">Indiranagar & HSR Layout</div>
+                  </div>
+                </div>
+
+                <div className="arrived-stepper-connector completed" />
+
+                {/* Step 2 */}
+                <div className="arrived-step completed">
+                  <div className="arrived-step-marker">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <div className="arrived-step-body">
+                    <div className="arrived-step-time tabular-nums">08:50 IST</div>
+                    <div className="arrived-step-title">Corridors Clear</div>
+                    <div className="arrived-step-desc">34m & 38m vs 60m ceiling</div>
+                  </div>
+                </div>
+
+                <div className="arrived-stepper-connector completed" />
+
+                {/* Step 3 */}
+                <div className="arrived-step arrived">
+                  <div className="arrived-step-marker arrived">
+                    <span className="arrived-step-pin" aria-hidden="true">📍</span>
+                  </div>
+                  <div className="arrived-step-body">
+                    <div className="arrived-step-time tabular-nums">09:15 IST</div>
+                    <div className="arrived-step-title">Arrived Onsite</div>
+                    <div className="arrived-step-desc">Google Anantha Bengaluru</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Corridors Grid */}
+            <div className="arrived-corridors-grid">
+              <div className="arrived-corridor-card">
+                <div className="arrived-corridor-top">
+                  <div className="arrived-corridor-avatar">🚗</div>
+                  <div>
+                    <div className="arrived-corridor-user">Kabir · HSR Layout Corridor</div>
+                    <div className="arrived-corridor-meta">Destination: Google Anantha (ORR)</div>
+                  </div>
+                  <span className="arrived-pill-clear">0 Breaches</span>
+                </div>
+                <div className="arrived-corridor-metrics">
+                  <div className="arrived-corridor-stat">
+                    <span className="arrived-stat-label">Actual Commute</span>
+                    <span className="arrived-stat-val tabular-nums">34 min</span>
+                  </div>
+                  <div className="arrived-corridor-stat">
+                    <span className="arrived-stat-label">Pact Ceiling</span>
+                    <span className="arrived-stat-val muted tabular-nums">60 min</span>
+                  </div>
+                  <div className="arrived-corridor-stat">
+                    <span className="arrived-stat-label">Headroom</span>
+                    <span className="arrived-stat-val success tabular-nums">+26 min safe</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="arrived-corridor-card">
+                <div className="arrived-corridor-top">
+                  <div className="arrived-corridor-avatar">🚗</div>
+                  <div>
+                    <div className="arrived-corridor-user">Ananya · Indiranagar Corridor</div>
+                    <div className="arrived-corridor-meta">Destination: Google Anantha (ORR)</div>
+                  </div>
+                  <span className="arrived-pill-clear">0 Breaches</span>
+                </div>
+                <div className="arrived-corridor-metrics">
+                  <div className="arrived-corridor-stat">
+                    <span className="arrived-stat-label">Actual Commute</span>
+                    <span className="arrived-stat-val tabular-nums">38 min</span>
+                  </div>
+                  <div className="arrived-corridor-stat">
+                    <span className="arrived-stat-label">Pact Ceiling</span>
+                    <span className="arrived-stat-val muted tabular-nums">60 min</span>
+                  </div>
+                  <div className="arrived-corridor-stat">
+                    <span className="arrived-stat-label">Headroom</span>
+                    <span className="arrived-stat-val success tabular-nums">+22 min safe</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons to continue work */}
+            <div className="arrived-actions-bar">
+              <button
+                type="button"
+                className="ui-button ui-button--primary ui-button--md arrived-action-primary"
+                onClick={() => {
+                  setStrategySessionActive(true);
+                  setActionNotice('Strategy session active — team ready to collaborate!');
+                }}
+              >
+                <span aria-hidden="true">🚀</span> Continue Work & Open Strategy Session
+              </button>
+              <button
+                type="button"
+                className="ui-button ui-button--secondary ui-button--md"
+                onClick={() => navigate('/pacts/pact_paytm_google_anantha')}
+              >
+                <span aria-hidden="true">📋</span> View Commute Verification Summary
+              </button>
+              <button
+                type="button"
+                className="ui-button ui-button--secondary ui-button--md"
+                onClick={() => {
+                  if (setIsChatDrawerOpen) {
+                    setIsChatDrawerOpen(true);
+                  }
+                }}
+              >
+                <span aria-hidden="true">💬</span> Open Team Chat
+              </button>
+            </div>
           </div>
         ) : (
           <div className="all-clear-card">

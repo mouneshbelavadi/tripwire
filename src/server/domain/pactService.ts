@@ -41,6 +41,7 @@ export interface PactDetails {
   consecutive_breaches?: number;
   is_alert_active?: boolean;
   latest_source_at?: number | null;
+  arrived?: boolean;
 }
 
 export interface ParticipantInput {
@@ -142,6 +143,7 @@ export class PactService {
 
     return {
       ...pact,
+      arrived: Boolean(pact.arrived),
       participants,
       all_approved: allApproved,
       can_current_user_approve: canCurrentUserApprove,

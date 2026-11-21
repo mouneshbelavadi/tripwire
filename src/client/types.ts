@@ -70,6 +70,7 @@ export interface PactDetails {
   consecutive_breaches?: number;
   is_alert_active?: boolean;
   latest_source_at?: number | null;
+  arrived?: boolean;
 }
 
 export interface TeamMember {

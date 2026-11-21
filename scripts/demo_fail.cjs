@@ -6,8 +6,8 @@
  *  t=0s:  Initializes bilateral agreement between Kabir & Ananya (Paytm workspace at Google Anantha Bengaluru). Limit: 60 min.
  *  t=4s:  Traffic spike detected on Outer Ring Road! Commute estimate jumps to 68m (+8m over limit). Shows 1st Breach Recorded (Confirming 1/2).
  *  t=9s:  Re-check at Bellandur bottleneck: 72m (+12m over limit). Shows 2nd Consecutive Fresh Breach (2/2) Confirmed!
- *  t=14s: TRIPWIRE ALERT TRIGGERED! Invariant met. Cryptographic breach receipt generated. Automatic remote fallback proposed: "Switch to remote Google Meet and cancel cab". Outbox delivery dispatched to team channel.
- *  t=16s: Launches browser directly to http://localhost:3000/pacts/pact_paytm_google_anantha showing live alert receipt, decision line, and voting buttons.
+ *  t=14s: TRIPWIRE ALERT TRIGGERED! Invariant met. Cryptographic breach receipt generated. Actionable fallback options presented to team. Outbox delivery dispatched to team channel.
+ *  t=16s: Launches browser directly to http://localhost:3000/pacts/pact_paytm_google_anantha?tab=decision showing live alert receipt, decision line, selectable options, and voting buttons.
  */
 
 const { exec, spawn } = require('child_process');
@@ -15,7 +15,7 @@ const { exec, spawn } = require('child_process');
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const PACT_ID = process.env.PACT_ID || 'pact_paytm_google_anantha';
-const TARGET_URL = process.env.TARGET_URL || `${BASE_URL}/pacts/${PACT_ID}`;
+const TARGET_URL = process.env.TARGET_URL || `${BASE_URL}/pacts/${PACT_ID}?tab=decision`;
 const REQUEST_TIMEOUT_MS = 5000;
 
 // ANSI styling
@@ -262,22 +262,33 @@ async function runScenario() {
   console.log(`  ${WHITE}Invariant Fired:${RESET}       Two consecutive fresh Driving checks exceeded ${step2Res.limitMinutes}m limit`);
   console.log(`  ${WHITE}Check 1 (${check1Mins}m):${RESET}         Confirmed breach at Outer Ring Road`);
   console.log(`  ${WHITE}Check 2 (${check2Mins}m):${RESET}         Tripped alert at Bellandur bottleneck`);
-  console.log(`  ${YELLOW}Automatic Remote Fallback Proposed:${RESET} ${BOLD}"${fallbackText}"${RESET}`);
+  console.log(`  ${YELLOW}Agreed Policy Fallback:${RESET}     ${BOLD}"${fallbackText}"${RESET}`);
   console.log(`  ${GREEN}Outbox Delivery:${RESET}       Status: ${outboxStatus} (${outboxReceipt})`);
   console.log(`  ${GREEN}Receipt Status:${RESET}        Recorded in SQLite & Awaiting Bilateral Voting`);
+
+  console.log(`\n${CYAN}${BOLD}======================================================================${RESET}`);
+  console.log(`${CYAN}${BOLD}ACTIONABLE FALLBACK OPTIONS AVAILABLE TO USER:${RESET}`);
+  console.log(`${CYAN}${BOLD}======================================================================${RESET}`);
+  console.log(`  [1] Go to Google Meet      -> Open virtual meeting room (meet.google.com)`);
+  console.log(`  [2] Cancel the cab         -> Cancel Uber / Ola ride to avoid penalties`);
+  console.log(`  [3] Cancel the meeting     -> Reschedule in-person sync to tomorrow`);
+  console.log(`  [4] Maintain Office Plan   -> Proceed with onsite meeting despite traffic`);
+  console.log(`  [5] Discuss in Team Chat   -> Align in internal team channel`);
+  console.log(`${CYAN}----------------------------------------------------------------------${RESET}`);
+  console.log(`>> Launching Microsoft Edge directly to interactive decision panel...`);
 
   console.log(`\n  ${GRAY}Preparing browser launch for live UI verification...${RESET}`);
   await sleep(2000);
 
   // -------------------------------------------------------------------------
-  // PHASE 4: t=16s - Launch browser to live pact
+  // PHASE 5: t=16s - Launch browser to live pact decision tab
   // -------------------------------------------------------------------------
-  console.log(`\n${CYAN}${BOLD}[${getElapsed()}] [PHASE 5] Launching browser directly to live agreement...${RESET}`);
+  console.log(`\n${CYAN}${BOLD}[${getElapsed()}] [PHASE 5] Launching browser directly to interactive decision panel...${RESET}`);
   console.log(`  ${CYAN}URL: ${TARGET_URL}${RESET}`);
   console.log(`  ${WHITE}Verifying UI components on screen:${RESET}`);
   console.log(`    ${GREEN}● Live Cryptographic Breach Receipt${RESET}`);
   console.log(`    ${GREEN}● 4-Step Stepper Decision Line (Alert State)${RESET}`);
-  console.log(`    ${GREEN}● Three Authenticated Voting Buttons (Remote / Keep / Discuss)${RESET}`);
+  console.log(`    ${GREEN}● Actionable Fallback Options (Meet, Cancel Cab, Cancel Meeting, Maintain Plan, Chat)${RESET}`);
   console.log(`    ${GREEN}● Commute Progression Sparkline (68m & 72m breach markers)${RESET}`);
 
   // ONLY open browser when the scenario succeeded completely

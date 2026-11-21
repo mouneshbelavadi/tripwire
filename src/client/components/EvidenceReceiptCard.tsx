@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import type { TeamMember } from '../types';
 import { ReceiptDecisionLine } from './DecisionLine';
 import { formatTimeIST } from '../lib/time';
 import { humanizeIncidentType } from '../../common/incidentTypes';
+import { FallbackOptionsGrid } from './FallbackOptionsGrid';
 
 export interface EvidenceReceiptProps {
   receipt: any;
@@ -11,34 +11,10 @@ export interface EvidenceReceiptProps {
 }
 
 export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }: EvidenceReceiptProps) {
-  const [submitting, setSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
-
   if (!receipt) return null;
 
-  const handleDecision = async (decision: 'keep' | 'remote' | 'discuss') => {
-    if (!activeUser) return;
-    setSubmitting(true);
-    setFeedback(null);
-    try {
-      const res = await fetch(`/api/receipts/${receipt.alertId}/decision`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-user-id': activeUser.user_id,
-        },
-        body: JSON.stringify({ decision }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to record decision');
-      setFeedback(data.message);
-      onDecisionRecorded();
-    } catch (err: any) {
-      setFeedback(`Error: ${err.message}`);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const userAck = receipt.acknowledgements?.find((a: any) => a.userId === activeUser?.user_id);
+  const userDecision = userAck?.decision;
 
   const currentStatus = receipt.currentDecisionStatus || 'pending';
   const statusLabel =
@@ -196,58 +172,41 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
 
       {/* Interactive Acknowledgement & Decision Actions */}
       <div className="receipt-action-box">
-        <div className="action-box-header">
-          <span className="action-box-title">Team Decision</span>
-          <span className="action-box-user">Acting as: <strong>{activeUser?.user_name}</strong></span>
-        </div>
-
-        {feedback && <div className="action-feedback">{feedback}</div>}
-
-        <div className="decision-buttons-row">
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => handleDecision('remote')}
-            disabled={submitting}
-          >
-            {submitting ? 'Recording...' : 'Switch to Remote (Agreed Fallback)'}
-          </button>
-
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={() => handleDecision('keep')}
-            disabled={submitting}
-          >
-            Keep the Plan
-          </button>
-
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={() => handleDecision('discuss')}
-            disabled={submitting}
-          >
-            Discuss in Chat
-          </button>
-        </div>
+        <FallbackOptionsGrid
+          alertId={receipt.alertId}
+          activeUser={activeUser}
+          currentDecision={userDecision}
+          isLocked={currentStatus === 'remote_chosen' || currentStatus === 'plan_kept'}
+          onDecisionRecorded={() => onDecisionRecorded()}
+          title="Team Decision & Fallback Actions"
+          subtitle="Threshold breach confirmed. Select an immediate action to handle this commute failure:"
+        />
 
         {/* Real-time Acknowledgements Table */}
-        <div className="acknowledgements-table">
+        <div className="acknowledgements-table" style={{ marginTop: '16px' }}>
           <div className="table-heading">Recorded Team Acknowledgements:</div>
           {receipt.acknowledgements && receipt.acknowledgements.length > 0 ? (
             <div className="acks-list">
-              {receipt.acknowledgements.map((ack: any, idx: number) => (
-                <div key={idx} className="ack-row">
-                  <span className="ack-user"><strong>{ack.userName}</strong>:</span>
-                  <span className={`ack-decision ${ack.decision}`}>
-                    {ack.decision === 'remote' ? 'Switch to Remote' : ack.decision === 'keep' ? 'Keep the Plan' : 'Discuss'}
-                  </span>
-                  <span className="ack-time">
-                    {formatTimeIST(ack.createdAt)}
-                  </span>
-                </div>
-              ))}
+              {receipt.acknowledgements.map((ack: any, idx: number) => {
+                let ackLabel = ack.decision;
+                if (ack.decision === 'meet' || ack.decision === 'remote') ackLabel = '📹 Go to Google Meet';
+                else if (ack.decision === 'cancel_cab') ackLabel = '🚕 Cancel the Cab';
+                else if (ack.decision === 'cancel_meeting') ackLabel = '📅 Cancel the Meeting';
+                else if (ack.decision === 'keep') ackLabel = '🚗 Maintain Office Plan';
+                else if (ack.decision === 'discuss') ackLabel = '💬 Discuss in Chat';
+
+                return (
+                  <div key={idx} className="ack-row">
+                    <span className="ack-user"><strong>{ack.userName}</strong>:</span>
+                    <span className={`ack-decision ${ack.decision}`}>
+                      {ackLabel}
+                    </span>
+                    <span className="ack-time">
+                      {formatTimeIST(ack.createdAt)}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="no-acks-state">No decisions recorded yet. Select an action above.</div>

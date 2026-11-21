@@ -59,7 +59,8 @@ export function initSchema(db: DatabaseSync): void {
       fallback_text TEXT NOT NULL,
       created_by TEXT NOT NULL,
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
+      updated_at TEXT NOT NULL,
+      arrived INTEGER DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS participants (
@@ -192,6 +193,7 @@ export function initSchema(db: DatabaseSync): void {
 
   // Run dynamic schema migrations for existing SQLite databases
   try { db.exec("ALTER TABLE pacts ADD COLUMN company_id TEXT DEFAULT 'comp_paytm';"); } catch {}
+  try { db.exec("ALTER TABLE pacts ADD COLUMN arrived INTEGER DEFAULT 0;"); } catch {}
   try { db.exec("ALTER TABLE team_members ADD COLUMN company_id TEXT DEFAULT 'comp_paytm';"); } catch {}
   try { db.exec("ALTER TABLE team_messages ADD COLUMN company_id TEXT DEFAULT 'comp_paytm';"); } catch {}
   try { db.exec("ALTER TABLE companies ADD COLUMN corporate_id TEXT;"); } catch {}
