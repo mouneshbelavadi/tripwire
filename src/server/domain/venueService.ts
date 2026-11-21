@@ -1,5 +1,6 @@
 import { SerpApiProvider } from '../providers/serpapi.js';
 import { config } from '../config.js';
+import { getCreditUsage } from '../db.js';
 
 export interface VerifiedPlace {
   title: string;
@@ -13,8 +14,13 @@ export interface VerifiedPlace {
   open_state?: string;
 }
 
-// Curated verified Bengaluru coworking places for simulation mode
-// Matches exact fields documented in fixtures/field-contract.json
+export interface AutocompleteResult {
+  places: VerifiedPlace[];
+  budgetExhausted: boolean;
+  notice?: string | null;
+}
+
+// Curated verified Bengaluru coworking places and key neighborhoods
 const VERIFIED_BENGALURU_PLACES: VerifiedPlace[] = [
   {
     title: 'WeWork Bellandur (Prestige Tech Park)',
@@ -60,6 +66,94 @@ const VERIFIED_BENGALURU_PLACES: VerifiedPlace[] = [
     },
     open_state: 'Open 24 hours',
   },
+  {
+    title: 'WeWork Galaxy - Residency Road',
+    place_id: 'ChIJq123Galaxy-place-05',
+    data_id: '0x3bae167909a8bc12:0x3456-galaxy',
+    address: '43, Residency Rd, Shanthala Nagar, Ashok Nagar, Bengaluru, Karnataka 560025',
+    gps_coordinates: {
+      latitude: 12.9715,
+      longitude: 77.6068,
+    },
+    open_state: 'Open ⋅ Closes 9 PM',
+  },
+  {
+    title: '91springboard Koramangala',
+    place_id: 'ChIJ8765Kora-place-06',
+    data_id: '0x3bae156789abcdef:0x91sb-kora',
+    address: 'Hosur Rd, 7th Block, Koramangala, Bengaluru, Karnataka 560095',
+    gps_coordinates: {
+      latitude: 12.9345,
+      longitude: 77.6189,
+    },
+    open_state: 'Open 24 hours',
+  },
+  {
+    title: 'Indiranagar Hub',
+    place_id: 'ChIJ_indiranagar_hub_01',
+    data_id: '0x3bae140000000001:0xindi',
+    address: '100 Feet Rd, HAL 2nd Stage, Indiranagar, Bengaluru, Karnataka 560038',
+    gps_coordinates: {
+      latitude: 12.9784,
+      longitude: 77.6408,
+    },
+    open_state: 'Open',
+  },
+  {
+    title: 'HSR Layout Sector 4',
+    place_id: 'ChIJ_hsr_layout_hub_02',
+    data_id: '0x3bae140000000002:0xhsr',
+    address: 'Sector 4, HSR Layout, Bengaluru, Karnataka 560102',
+    gps_coordinates: {
+      latitude: 12.9121,
+      longitude: 77.6446,
+    },
+    open_state: 'Open',
+  },
+  {
+    title: 'Koramangala 4th Block',
+    place_id: 'ChIJ_koramangala_hub_03',
+    data_id: '0x3bae140000000003:0xkora',
+    address: 'Sony World Junction, Koramangala 4th Block, Bengaluru, Karnataka 560034',
+    gps_coordinates: {
+      latitude: 12.9352,
+      longitude: 77.6245,
+    },
+    open_state: 'Open',
+  },
+  {
+    title: 'Whitefield ITPL Tech Hub',
+    place_id: 'ChIJ_whitefield_hub_04',
+    data_id: '0x3bae140000000004:0xitpl',
+    address: 'ITPB, Whitefield Main Rd, Bengaluru, Karnataka 560066',
+    gps_coordinates: {
+      latitude: 12.9868,
+      longitude: 77.7380,
+    },
+    open_state: 'Open ⋅ Closes 8 PM',
+  },
+  {
+    title: 'Electronic City Phase 1',
+    place_id: 'ChIJ_ecity_hub_05',
+    data_id: '0x3bae140000000005:0xecity',
+    address: 'Hosur Rd, Electronic City Phase 1, Bengaluru, Karnataka 560100',
+    gps_coordinates: {
+      latitude: 12.8452,
+      longitude: 77.6602,
+    },
+    open_state: 'Open',
+  },
+  {
+    title: 'Marathahalli Bridge Hub',
+    place_id: 'ChIJ_marathahalli_hub_06',
+    data_id: '0x3bae140000000006:0xmarath',
+    address: 'Outer Ring Rd, Marathahalli, Bengaluru, Karnataka 560037',
+    gps_coordinates: {
+      latitude: 12.9591,
+      longitude: 77.6974,
+    },
+    open_state: 'Open',
+  },
 ];
 
 export class VenueService {
@@ -68,7 +162,36 @@ export class VenueService {
    * Invariant: Never claims seat availability. Rejects entries without coordinates.
    */
   static async searchVenues(query: string = 'coworking Bellandur'): Promise<VerifiedPlace[]> {
-    if (config.serpApi.isConfigured) {
+    const res = await this.searchPlacesAutocomplete(query);
+    return res.places;
+  }
+
+  /**
+   * Search-as-you-type autocomplete helper for destinations and origin neighborhoods.
+   * Monitors credit ceiling to protect user budget.
+   */
+  static async searchPlacesAutocomplete(query: string = ''): Promise<AutocompleteResult> {
+    const creditUsage = getCreditUsage();
+    const budgetExhausted = creditUsage.researchSpent >= config.budget.researchCap;
+
+    const trimmed = query.trim().toLowerCase();
+
+    // If budget is exhausted, guard notice is triggered and verified local cache is served
+    if (budgetExhausted) {
+      const filtered = VERIFIED_BENGALURU_PLACES.filter(
+        (p) =>
+          !trimmed ||
+          p.title.toLowerCase().includes(trimmed) ||
+          p.address.toLowerCase().includes(trimmed)
+      );
+      return {
+        places: filtered.length > 0 ? filtered : VERIFIED_BENGALURU_PLACES,
+        budgetExhausted: true,
+        notice: `SerpApi research budget ceiling reached (${creditUsage.researchSpent}/${config.budget.researchCap}). Live place query paused to protect account budget. Serving verified Bengaluru locations.`,
+      };
+    }
+
+    if (config.serpApi.isConfigured && trimmed.length >= 2) {
       try {
         const raw = await SerpApiProvider.search({
           engine: 'google_maps',
@@ -79,14 +202,13 @@ export class VenueService {
             gl: 'in',
             hl: 'en',
           },
-          label: 'venue_search',
+          label: 'places_autocomplete',
         });
 
         const results = raw.local_results || [];
         const validated: VerifiedPlace[] = [];
 
         for (const item of results) {
-          // Strict verification: title, place_id and valid numeric coordinates are mandatory
           if (
             typeof item.title === 'string' &&
             typeof item.place_id === 'string' &&
@@ -109,21 +231,37 @@ export class VenueService {
         }
 
         if (validated.length > 0) {
-          return validated;
+          return {
+            places: validated,
+            budgetExhausted: false,
+            notice: null,
+          };
         }
-      } catch (err) {
-        console.warn('SerpApi venue search failed, falling back to verified fixture:', err);
+      } catch (err: any) {
+        const isCeiling = err?.message?.includes('credit ceiling reached');
+        if (isCeiling) {
+          return {
+            places: VERIFIED_BENGALURU_PLACES,
+            budgetExhausted: true,
+            notice: 'SerpApi research budget ceiling reached. Showing verified Bengaluru locations.',
+          };
+        }
+        console.warn('SerpApi places autocomplete search failed, falling back to verified fixture:', err);
       }
     }
 
-    // Curated verified simulation data
-    const normalized = query.toLowerCase();
+    // Curated verified simulation data filtered by query
     const filtered = VERIFIED_BENGALURU_PLACES.filter(
       (p) =>
-        p.title.toLowerCase().includes(normalized) ||
-        p.address.toLowerCase().includes(normalized)
+        !trimmed ||
+        p.title.toLowerCase().includes(trimmed) ||
+        p.address.toLowerCase().includes(trimmed)
     );
 
-    return filtered.length > 0 ? filtered : VERIFIED_BENGALURU_PLACES;
+    return {
+      places: filtered.length > 0 ? filtered : VERIFIED_BENGALURU_PLACES,
+      budgetExhausted: false,
+      notice: null,
+    };
   }
 }

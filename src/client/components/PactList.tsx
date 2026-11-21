@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { PactDetails } from '../types';
+import { getDeadlineStatus } from '../lib/time';
 
 interface PactListProps {
   pacts: PactDetails[];
@@ -41,6 +42,9 @@ export function PactList({ pacts, selectedPactId, onSelectPact, onNewPact }: Pac
     if (isPast) {
       statusLabel = 'COMPLETED';
       statusClass = 'completed';
+    } else if (getDeadlineStatus(p.decision_deadline_utc) === 'expired') {
+      statusLabel = 'Deadline passed';
+      statusClass = 'expired';
     } else if (p.status === 'armed') {
       if (p.is_alert_active || (p.consecutive_breaches && p.consecutive_breaches >= 2)) {
         statusLabel = 'ALERT';

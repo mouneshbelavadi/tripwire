@@ -27,7 +27,7 @@ export interface HealthResponse {
   providers: {
     serpapi: ProviderHealth;
     you: ProviderHealth;
-    nexconn: ProviderHealth;
+    teamChannel: ProviderHealth;
   };
   activePactsCount: number;
 }
@@ -77,4 +77,93 @@ export interface TeamMember {
   user_name: string;
   neighbourhood: string;
   role: string;
+}
+
+export interface UserAcknowledgement {
+  userId: string;
+  userName: string;
+  decision: 'keep' | 'remote' | 'discuss' | 'remote_fallback' | 'keep_plan';
+  action?: 'keep' | 'remote' | 'discuss' | 'remote_fallback' | 'keep_plan';
+  createdAt: string;
+  createdAtIst?: string;
+}
+
+export interface ConsensusState {
+  status: 'pending' | 'resolved' | 'needs_discussion' | 'remote_fallback' | 'keep_plan';
+  resolvedAction: 'remote' | 'keep' | 'discuss' | 'remote_fallback' | 'keep_plan' | null;
+  isResolved: boolean;
+  needsDiscussion: boolean;
+  warningBanner: string | null;
+  prefilledChat: string | null;
+  resolvedAt: string | null;
+  resolvedAtIst: string | null;
+}
+
+export interface BreachingObservation {
+  id: string;
+  watch_id?: string;
+  received_at: string;
+  provider_created_at?: string;
+  provider_search_id?: string;
+  validity: string;
+  provenance: 'live' | 'replay' | 'synthetic';
+  duration_minutes?: number | null;
+  limit_minutes?: number;
+  time_ist?: string;
+  query_hash_prefix?: string;
+}
+
+export interface FullAlertReceipt {
+  alertId: string;
+  pactId: string;
+  pactTitle: string;
+  ruleVersion: number;
+  episodeId: string;
+  createdAt: string;
+  createdAtIst?: string;
+  destinationName: string;
+  destinationAddress?: string;
+  fallbackText: string;
+  decisionDeadlineIst: string;
+  participants: Array<{
+    userId: string;
+    userName: string;
+    neighbourhood: string;
+    limitMinutes: number;
+  }>;
+  participant: {
+    userId: string;
+    userName: string;
+    neighbourhood: string;
+    limitMinutes: number;
+  };
+  evidence: {
+    baselineMinutes: number;
+    check1Minutes: number;
+    check1Timestamp: string;
+    check1TimestampIst: string;
+    check1LimitMinutes: number;
+    check1Provenance: 'live' | 'replay' | 'synthetic';
+    check1QueryHash: string;
+    check2Minutes: number;
+    check2Timestamp: string;
+    check2TimestampIst: string;
+    check2LimitMinutes: number;
+    check2Provenance: 'live' | 'replay' | 'synthetic';
+    check2QueryHash: string;
+    sourceFreshnessSeconds: number;
+    provenance: 'live' | 'replay' | 'synthetic';
+    ruleFired: string;
+  };
+  areaIncidents: Array<{
+    id: string;
+    type: string;
+    title: string;
+  }>;
+  publicContext?: any;
+  acknowledgements: UserAcknowledgement[];
+  currentDecisionStatus: string;
+  outboxStatus?: string | null;
+  outboxReceipt?: string | null;
+  consensus: ConsensusState;
 }

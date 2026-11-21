@@ -61,3 +61,64 @@ def evaluate(state, *, observation_id, source_at, now, deadline, duration, limit
         state.active = False
         return 'recovered'
     return 'active' if state.active else 'within_limit'
+
+def deadline_status(deadline, now, closing_soon_threshold=1800):
+    """Evaluates deadline: 'expired', 'closing_soon', or 'upcoming'."""
+    if isinstance(deadline, str):
+        # Support ISO timestamps if string passed
+        import datetime
+        deadline = datetime.datetime.fromisoformat(deadline.replace('Z', '+00:00')).timestamp()
+    if isinstance(now, str):
+        import datetime
+        now = datetime.datetime.fromisoformat(now.replace('Z', '+00:00')).timestamp()
+
+    if now >= deadline:
+        return 'expired'
+    if deadline - now <= closing_soon_threshold:
+        return 'closing_soon'
+    return 'upcoming'
+
+def resolve_decision(acknowledgements, expected_count=2):
+    """Resolves collective team consensus from participant decisions."""
+    if not acknowledgements:
+        return 'pending'
+    
+    # Any participant requesting discussion requires discussion
+    for ack in acknowledgements:
+        dec = ack.get('decision') if isinstance(ack, dict) else ack
+        if dec == 'discuss':
+            return 'needs_discussion'
+            
+    if len(acknowledgements) < expected_count:
+        return 'pending'
+        
+    decisions = [ack.get('decision') if isinstance(ack, dict) else ack for ack in acknowledgements]
+    if all(d == 'keep' for d in decisions):
+        return 'unanimous_keep'
+    if all(d == 'remote' for d in decisions):
+        return 'unanimous_remote'
+        
+    return 'needs_discussion'
+
+def estimate_credits(participants_count, duration_minutes, route_interval_minutes=5, traffic_interval_minutes=15, contingency_reserve=2, budget_cap=40):
+    """Estimates required SerpApi credits for pact observation lifecycle."""
+    if duration_minutes <= 0 or participants_count <= 0:
+        return {
+            'route_checks': 0,
+            'traffic_checks': 0,
+            'total_estimated_credits': 0,
+            'is_within_budget': True,
+            'budget_ceiling': budget_cap
+        }
+    route_checks_per_part = math.ceil(duration_minutes / route_interval_minutes)
+    total_route_checks = participants_count * route_checks_per_part
+    traffic_checks = math.ceil(duration_minutes / traffic_interval_minutes)
+    total_estimated = total_route_checks + traffic_checks + contingency_reserve
+    return {
+        'route_checks': total_route_checks,
+        'traffic_checks': traffic_checks,
+        'total_estimated_credits': total_estimated,
+        'is_within_budget': total_estimated <= budget_cap,
+        'budget_ceiling': budget_cap
+    }
+

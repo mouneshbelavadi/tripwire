@@ -1,3 +1,5 @@
+import { getDeadlineStatus } from '../lib/time';
+
 interface DecisionLineProps {
   maxDurationMinutes: number;
   deadlineIst: string;
@@ -5,6 +7,7 @@ interface DecisionLineProps {
   status: string;
   consecutiveBreaches?: number;
   lastObservationMinutes?: number | null;
+  deadlineUtc?: string;
 }
 
 export function DecisionLine({
@@ -14,13 +17,16 @@ export function DecisionLine({
   status,
   consecutiveBreaches = 0,
   lastObservationMinutes = null,
+  deadlineUtc,
 }: DecisionLineProps) {
+  const isExpired = status === 'expired' || (deadlineUtc ? getDeadlineStatus(deadlineUtc) === 'expired' : false);
   const isConfirming = consecutiveBreaches === 1;
   const isAlert = status === 'alert' || consecutiveBreaches >= 2;
   const isPaused = status === 'paused';
 
   let stateLabel = 'DRAFT AGREEMENT';
-  if (isAlert) stateLabel = 'ALERT TRIGGERED · 2/2 BREACHES';
+  if (isExpired) stateLabel = 'DEADLINE PASSED';
+  else if (isAlert) stateLabel = 'ALERT TRIGGERED · 2/2 BREACHES';
   else if (isConfirming) stateLabel = 'CONFIRMING · 1/2 BREACHES';
   else if (isPaused) stateLabel = 'MONITORING PAUSED';
   else if (status === 'completed' || status === 'closed') stateLabel = 'PACT COMPLETED · ARCHIVED';
@@ -67,7 +73,7 @@ export function DecisionLine({
         <div className="decision-node">
           <div className="node-marker" />
           <div className="node-label">Decision Deadline</div>
-          <div className="node-value">{deadlineIst.split('·')[0].trim()}</div>
+          <div className="node-value">{isExpired ? 'Deadline passed' : deadlineIst.split('·')[0].trim()}</div>
         </div>
 
         <div className={`decision-segment ${isAlert ? 'segment-alert' : ''}`} />

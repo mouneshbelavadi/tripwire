@@ -1,0 +1,146 @@
+/**
+ * TRIPWIRE: OFFICE PACT DESIGN TOKENS
+ * Refined, high-contrast, editorial design tokens.
+ * Compliant with WCAG 2.2 AA (normal text >= 4.5:1, large text/UI components >= 3:1).
+ * Zero decorative fluff.
+ */
+
+:root {
+  /* ==========================================================================
+     CORE COLOR PALETTE
+     ========================================================================== */
+
+  /* Surfaces & Canvas */
+  --paper: #FBFBF9;             /* Primary app background: warm paper substrate */
+  --paper-raised: #FFFFFF;      /* Elevated surface: cards, modals, popovers */
+  --paper-inset: #F2F1EC;       /* Recessed surface: code blocks, tags, wells */
+  --paper-hover: #F5F4EF;       /* Hover state for paper elements */
+  --paper-active: #EAE9E2;      /* Active/pressed state for paper elements */
+
+  /* Ink & Typography (Graphite) */
+  --graphite: #1A1A1A;          /* High contrast primary ink (16.5:1 contrast on paper) */
+  --ink: var(--graphite);       /* Semantic alias for primary body text */
+  --ink-secondary: #4A4A4A;    /* Secondary metadata, subtitles, labels (7.2:1) */
+  --ink-muted: #666666;        /* De-emphasized timestamps, hints, placeholders (4.8:1) */
+  --ink-inverse: #FFFFFF;      /* Inverted text on dark backgrounds */
+
+  /* Structural Rules & Borders */
+  --rule: #D8D8D2;              /* Subtle container borders, dividers */
+  --rule-strong: #8A8A82;       /* Emphasized boundaries, inputs, active outlines */
+  --rule-subtle: #EBEBE6;       /* Delicate internal table grid lines */
+
+  /* Semantic State: Forest Green (Armed, Active, Success, Normal) */
+  --forest: #1B4D3E;            /* Active watch, armed agreement, success (8.8:1 on paper) */
+  --forest-hover: #143A2F;      /* Hover state for forest buttons */
+  --forest-active: #0E2921;     /* Pressed state for forest buttons */
+  --forest-wash: #EBF3EE;       /* Subtle green background tint */
+  --forest-border: #9FC4B3;     /* Green boundary border */
+  --forest-text-dark: #12352B;  /* High-contrast text on forest wash (11.5:1) */
+  --pact-green: var(--forest);
+  --pact-green-hover: var(--forest-hover);
+  --pact-green-wash: var(--forest-wash);
+
+  /* Semantic State: Amber (Caution, Warning, Confirming, Paused, Budget) */
+  --amber: #B45309;             /* Cautionary states, confirming breach, budget limits (5.1:1) */
+  --amber-hover: #92400E;       /* Amber hover */
+  --amber-active: #78350F;      /* Amber active */
+  --amber-wash: #FEF3C7;        /* Subtle amber background tint */
+  --amber-border: #FCD34D;      /* Amber boundary border */
+  --amber-text-dark: #78350F;   /* High contrast text on amber wash (7.8:1) */
+  --caution-ink: var(--amber);
+  --caution-wash: var(--amber-wash);
+
+  /* Semantic State: Red (Alert, Danger, Breached, Error) */
+  --red: #B91C1C;               /* Breach confirmed, error alerts, destructive (5.8:1) */
+  --red-hover: #991B1B;         /* Red hover */
+  --red-active: #7F1D1D;        /* Red active */
+  --red-wash: #FEE2E2;          /* Subtle red background tint */
+  --red-border: #FCA5A5;        /* Red boundary border */
+  --red-text-dark: #7F1D1D;     /* High contrast text on red wash (8.2:1) */
+  --error-ink: var(--red);
+  --error-wash: var(--red-wash);
+
+  /* Focus Ring (WCAG 2.2 AA Focus Appearance Compliant) */
+  --focus: #1B4D3E;             /* High contrast focus ring color */
+  --focus-ring: 0 0 0 2px var(--paper), 0 0 0 4px var(--focus);
+  --focus-ring-inset: inset 0 0 0 2px var(--focus);
+
+  /* ==========================================================================
+     TYPOGRAPHY SCALE
+     ========================================================================== */
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 36px;
+
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-normal: 1.45;
+  --leading-relaxed: 1.6;
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* ==========================================================================
+     SPACING SCALE (4px / 8px linear scale)
+     ========================================================================== */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ==========================================================================
+     CONTROL & PANEL RADII
+     ========================================================================== */
+  --radius-xs: 2px;
+  --radius-sm: 4px;             /* Badges, tags, small indicator pills */
+  --radius-control: 6px;        /* Buttons, inputs, selects, segmented controls */
+  --radius-md: 6px;
+  --radius-panel: 8px;          /* Cards, drawers, modal dialogs, flyouts */
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;        /* Rounded avatar pills, dot indicators */
+
+  /* ==========================================================================
+     ELEVATION SHADOWS (Tactile, restrained, non-distracting)
+     ========================================================================== */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgba(26, 26, 26, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(26, 26, 26, 0.08), 0 2px 4px -2px rgba(26, 26, 26, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(26, 26, 26, 0.1), 0 4px 6px -4px rgba(26, 26, 26, 0.05);
+  --shadow-modal: 0 20px 25px -5px rgba(26, 26, 26, 0.14), 0 8px 10px -6px rgba(26, 26, 26, 0.06);
+  --shadow-drawer: -6px 0 24px 0 rgba(26, 26, 26, 0.12);
+
+  /* ==========================================================================
+     Z-INDEX SYSTEM
+     ========================================================================== */
+  --z-base: 1;
+  --z-sticky: 100;
+  --z-dropdown: 200;
+  --z-drawer: 500;
+  --z-modal-backdrop: 900;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-tooltip: 1200;
+
+  /* ==========================================================================
+     TRANSITIONS
+     ========================================================================== */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}

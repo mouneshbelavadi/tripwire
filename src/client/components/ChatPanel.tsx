@@ -13,7 +13,7 @@ export function ChatPanel({ pact, activeUser }: ChatPanelProps) {
           <h3>Team Conversation</h3>
           <div className="conversation-sub">#bellandur-office-pact</div>
         </div>
-        <span className="channel-badge">Nexconn Group</span>
+        <span className="channel-badge">In-App Team Channel</span>
       </div>
 
       <div className="conversation-body">
@@ -49,7 +49,7 @@ export function ChatPanel({ pact, activeUser }: ChatPanelProps) {
             Connected as <strong>{activeUser?.user_name}</strong> ({activeUser?.neighbourhood}).
           </p>
           <p style={{ marginTop: '4px', fontSize: '12px', color: 'var(--ink-muted)' }}>
-            Nexconn Web Chat SDK and two-way group message exchange activates in Phase 3.
+            In-app team channel and two-way group message exchange.
           </p>
         </div>
       </div>

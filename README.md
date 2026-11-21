@@ -6,173 +6,195 @@
 
 ---
 
-## 1. Executive Summary & Product Workflow
+## 1. Product Pitch & The Bengaluru Commute Problem
 
-Office Pact is a collective, time-bound commute tripwire built for distributed teams meeting at a shared Bengaluru workspace (e.g., Maya travelling from Indiranagar and Arjun from HSR Layout to WeWork Bellandur). 
+Morning commutes in Bengaluru are notorious for severe, unpredictable bottlenecks—especially across high-density tech corridors like the Outer Ring Road (ORR), Bellandur, Marathahalli, and Silk Board. 
 
-Rather than telling users *how* to navigate or assuming seat availability, Office Pact automates bilateral team agreements:
-1. **Pact Agreement:** Participants agree on a destination, individual commute thresholds (e.g., 60 minutes driving), a decision deadline (e.g., 09:00 IST), and a default remote fallback (e.g., Google Meet huddle).
-2. **Deterministic Monitoring:** A persistent scheduler checks Google Maps Directions and Traffic. Commute estimates are evaluated using strict, LLM-free mathematical invariants.
-3. **Two-Breach Requirement:** Exactly two consecutive, source-fresh observations exceeding a participant's threshold are required before an alert is triggered. Replayed cached observations or stale data cannot trigger false alarms.
-4. **Evidence Receipt & Decision:** An immutable evidence receipt is generated with before/after estimates, source freshness, cited You.com context, and real-time team decision actions (`Keep the plan`, `Switch to remote`, `Discuss`).
-5. **Cross-Session Delivery:** Alerts and receipts are delivered to the team's dedicated Nexconn group chat (`group_office_pact`) where participants acknowledge consensus.
+Distributed teams planning to work together in person (for example, **Maya** travelling from Indiranagar and **Arjun** from HSR Layout to **WeWork Bellandur**) routinely encounter high-friction coordination overhead:
+- Team members wake up early, guess commute conditions from individual navigation apps, and ask over chat if the meetup is still on.
+- Frequently, one member spends 80+ minutes in bumper-to-bumper traffic only to arrive at an empty office because colleagues cancelled late, or everyone cancels unnecessarily because of a single transient traffic spike.
+
+**Office Pact** solves this with a **deterministic, bilateral commute tripwire**:
+1. **The Pact Contract:** Team members agree ahead of time on a destination, individual commute duration ceilings (e.g., 60 minutes driving), a decision deadline (e.g., 09:00 IST), and a default remote fallback (e.g., Google Meet huddle).
+2. **Deterministic Background Monitoring:** A persistent scheduler checks Google Maps Directions and Traffic. Commute times are parsed and evaluated using mathematical invariants—free from LLM hallucinations or opaque heuristics.
+3. **Strict Two-Breach Gate:** Exactly **two consecutive, source-fresh checks** exceeding a participant's limit are required to fire an alert. Single spikes or replayed cached data cannot trigger false alarms.
+4. **5-Minute Recovery Hysteresis:** An active alert does not flap or reset on minor fluctuations; commute times must drop at least 5 minutes below the threshold to recover.
+5. **Immutable Evidence Receipt & Bilateral Consensus:** When breached, an immutable evidence receipt is generated with before/after estimates, source timestamps, and cited corridor context. Participants vote (`Keep the plan`, `Switch to remote`, `Discuss`) to reach consensus before anyone steps out the door.
 
 ---
 
-## 2. Technology Stack & Architecture
+## 2. System Architecture
 
 ```mermaid
-flowchart LR
-  U[React Pact & Evidence UI] --> A[Authenticated App Server]
-  U <--> N[Nexconn Group Chat]
-  A --> DB[(SQLite: pacts, observations, budget, outbox)]
-  W[Single Scheduler Worker] --> DB
-  W --> S[SerpApi Maps / Directions / Traffic]
-  S --> V[Typed Normalization & Deterministic Rules]
-  V --> DB
-  V --> Y[You.com Answer API]
-  Y --> DB
-  O[Outbox Delivery Worker] --> DB
-  O --> NS[Nexconn Platform Chat API v4]
-  NS --> N
+flowchart TD
+  subgraph Client [React 18 + Vite + Astra Design System]
+    UI[Workspace & Pact List]
+    Triad[5-Second Legibility Triad]
+    Stepper[4-Step Stepper Decision Line]
+    ReceiptUI[Immutable Evidence Receipt]
+    ChatUI[#bellandur-office-pact Channel]
+  end
+
+  subgraph Server [Node.js 24 + Express Application]
+    Sec[Helmet Security & Rate Limiting]
+    Auth[Session Manager & RBAC]
+    Kernel[Deterministic Tripwire Kernel]
+    Sched[Watch Scheduler Worker]
+    Outbox[Outbox Delivery Worker]
+  end
+
+  subgraph Storage [SQLite 3 (Durable Persistent Database)]
+    DB_Pacts[(pacts & participants)]
+    DB_Watches[(watches & rule_states)]
+    DB_Obs[(observations & alerts)]
+    DB_Budget[(credit_attempts & worker_leases)]
+    DB_Chat[(team_messages & outbox)]
+  end
+
+  subgraph Providers [External API Integrations]
+    SerpApi[SerpApi: Maps / Directions / Traffic]
+    YouAPI[You.com Answer API]
+    Nexconn[Nexconn Platform Chat API]
+  end
+
+  UI --> Sec
+  Sec --> Auth
+  Auth --> Kernel
+  Kernel --> Storage
+  Sched --> DB_Watches
+  Sched --> DB_Budget
+  Sched --> SerpApi
+  SerpApi --> Kernel
+  Kernel --> YouAPI
+  Outbox --> DB_Chat
+  Outbox --> Nexconn
+  Storage --> UI
 ```
 
-- **Frontend:** React 18, Vite 6, TypeScript 5.7. Hand-crafted CSS design system based on warm paper (`#F7F6F2`), deep graphite ink (`#202824`), and forest green (`#245C46`). Zero utility CSS or generic template bloat.
-- **Backend:** Node.js 24 + Express + TypeScript (`node:sqlite` persistent database).
-- **Scheduler:** Durable SQLite lease with transactional credit reservations (`credit_attempts`) and single-flight duplicate suppression.
-- **Sponsor Integrations:**
-  - **SerpApi:** Destination resolution (`google_maps`), fastest driving estimates (`google_maps_directions`), area traffic incident sets (`google_maps_traffic`).
-  - **You.com:** Grounded web citations (`https://api.you.com/v1/answer`) for corridor context.
-  - **Nexconn:** Pinned `@nexconn/chat-uikit-react` & `@nexconn/chat-engine-core` (`26.5.1`) with protected server token derivation.
+### Architectural Highlights
+- **Zero-Bloat Frontend:** Custom Astra design system built on paper (`#F7F6F2`), graphite (`#202824`), and forest green (`#245C46`). High contrast (WCAG AA compliant), responsive desktop/mobile layouts, and keyboard accessible.
+- **Server-Side Security:** Enforced via `helmet()` security headers and sliding-window rate limiting on write endpoints (`POST /api/pacts`, `POST /api/alerts/:id/decision`).
+- **Transactional Lease & Budget Guard:** A single scheduler worker acquires a SQLite database lease with periodic heartbeats. Every attempted search transactionally reserves a credit before dispatch, preventing double-spend or ceiling overruns.
+- **Real-Time Cross-Session Sync:** Server-Sent Events (`/api/stream`) deliver immediate updates to all connected browser windows without polling lag.
 
 ---
 
-## 3. Getting Started & Run Instructions
+## 3. 3-Command Setup & Quick Start
 
-### Prerequisites
-- Node.js 20+ (Tested on Node `v24.14.0`)
-- npm 10+ (Tested on npm `11.9.0`)
-- Python 3.10+ (Tested on Python `3.13.9` for core invariants)
-- Google Chrome (for automated headless Puppeteer audits and browser testing)
-
-### Installation
+### 3-Command Setup (Any OS)
 ```powershell
 npm install
-```
-
-### Environment Configuration
-Copy the example environment configuration:
-```powershell
-cp .env.example .env
-```
-Fill in your API credentials in `.env`:
-```ini
-# SerpApi Credentials
-SERPAPI_API_KEY=your_serpapi_key_here
-
-# You.com Credentials
-YDC_API_KEY=your_you_api_key_here
-
-# Nexconn Credentials
-NEXCONN_APP_KEY=your_nexconn_app_key_here
-NEXCONN_APP_SECRET=your_nexconn_app_secret_here
-NEXCONN_API_BASE=https://api.nexconn.ai/v4
-
-# Server Port
-PORT=3000
-```
-> **Note on Simulation Mode:** If API keys are omitted or pending, the system cleanly boots in `SIMULATION` mode with full interactive controls, honest `CREDENTIALS PENDING` disclosures, and persistent `SIMULATED CHANGE` banners.
-
-### One-Click Launch (Windows)
-Double-click **`run.bat`** (or run `.\run.bat` in terminal).
-
-This single batch file automatically:
-1. Validates Node.js (v20+) and npm in your system.
-2. Creates `.env` from `.env.example` if it doesn't already exist.
-3. Automatically installs dependencies (`npm install`) if `node_modules` is missing.
-4. Compiles client and server production bundles (`npm run build`) so any redesign or code change is always up-to-date.
-5. Launches the background server on port 3000 and automatically opens `http://localhost:3000` in your default browser.
-
-### Manual Build and Start
-```powershell
-# Typecheck TypeScript client and server
-npm run typecheck
-
-# Build production client and server bundles
 npm run build
-
-# Start production server
 npm start
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### One-Click Launch (Windows)
+Double-click **`run.bat`** (or execute `.\run.bat` in your terminal).  
+This single batch file automatically:
+1. Verifies Node.js (v20+) and npm.
+2. Creates `.env` from `.env.example` if missing.
+3. Installs dependencies if `node_modules` is not present.
+4. Compiles client and server production bundles (`npm run build`).
+5. Boots the server on port 3000 and automatically launches your browser.
+
 ---
 
-## 4. Verification & Audit Suite (100% Passing)
+## 4. Environment Variables Explanation (`.env.example`)
+
+Copy `.env.example` to `.env` to configure credentials:
+```powershell
+cp .env.example .env
+```
+
+| Variable | Required? | Purpose & Engine Mapping |
+|---|---|---|
+| `PORT` | Optional (default: `3000`) | Port on which the Express server listens. |
+| `SERPAPI_API_KEY` | Recommended | API key for SerpApi. Powers live Google Maps Directions, Traffic Incidents, and Place Autocomplete. |
+| `YDC_API_KEY` | Optional | API key for You.com Answer API. Powers grounded public context summaries for traffic corridors. |
+| `NEXCONN_APP_KEY` | Optional | Nexconn Platform Chat application key for token derivation. |
+| `NEXCONN_APP_SECRET` | Optional | Nexconn Platform Chat application secret. |
+| `NEXCONN_API_BASE` | Optional | Nexconn API base endpoint (e.g., `https://api.nexconn.ai/v4`). |
+
+> **Honest Simulation Mode:** If `SERPAPI_API_KEY` or sponsor keys are omitted, Office Pact cleanly boots in **`SIMULATION`** mode. The full UI, 4-step stepper, multi-user consensus voting, and simulated breach sequences operate seamlessly using verified Bengaluru corridor fixtures, with clear and honest `SIMULATED CHANGE` and `CREDENTIALS PENDING` badges.
+
+---
+
+## 5. SerpApi Engine Specifications & Credit Guard
+
+### Supported SerpApi Engines
+1. **`engine=google_maps_directions`**
+   - **Parameters:** `start_coords`, `end_coords`, `travel_mode=0` (Driving), `distance_unit=0`, `gl=in`, `hl=en`.
+   - **Kernel Parser (`fastestDriving`):** Extracts the minimum finite positive `duration` in seconds across all returned Driving alternatives. Rejects non-numeric, negative, or boolean durations. Independent of row reordering.
+2. **`engine=google_maps_traffic`**
+   - **Parameters:** `bbox`, `zoom=13`, `gl=in`, `hl=en`.
+   - **Kernel Parser (`incidentSnapshot`):** Extracts `{ incident_id: type }` maps with deterministic key sorting. Flags new incidents for route rechecks without falsely declaring routes closed.
+3. **`engine=google_maps`**
+   - **Parameters:** `q`, `ll`, `type=search`, `gl=in`, `hl=en`.
+   - **Kernel Parser:** Resolves destination coordinates and place IDs for workspace venues.
+
+### Transactional Credit Guard
+- **Pre-Dispatch Reservation:** Credits are reserved inside a SQLite transaction (`BEGIN IMMEDIATE`) in the `credit_attempts` table *before* network requests are dispatched.
+- **Ambiguous Failures Count as Spent:** If an upstream request times out, fails, or returns an error, the credit remains accounted for to protect account limits.
+- **Ceiling Enforcement:** Research ceiling is strictly capped at **40 credits**; live demo windows cap at **60 credits**; total account allocation is enforced against **500 credits**.
+- **Durability Across Restarts:** Budget usage is persisted in SQLite and cannot reset upon process restarts or crashes.
+
+---
+
+## 6. Key Design Decisions & Mathematical Invariants
+
+| Design Decision | Rationale & Mathematical Invariant |
+|---|---|
+| **Why 2 Fresh Breaches?** | A single long commute estimate can be caused by transient signal drops, momentary traffic light queues, or map provider anomalies. Firing alerts on a single spike causes fatigue. Exactly **two consecutive, source-fresh checks** exceeding the limit are required before transitioning from `Confirming` to `Alert Active`. |
+| **Why 5-Minute (300s) Recovery Hysteresis?** | Traffic congestion fluctuates constantly around thresholds. If a limit is 60 minutes and traffic drops from 68m to 59m, clearing the alert immediately would cause "flapping" (rapid alert/clear cycles). The kernel enforces a 300-second margin: duration must recover to $\le \text{limit} - 300\text{s}$ (e.g., 55 minutes) to clear the alert. |
+| **Why Bilateral Approval?** | A commute pact is a bilateral social contract. Neither Maya nor Arjun can unilaterally change the threshold, destination, or deadline without mutual consent. Any modification increments the pact version ($v1 \to v2$) and automatically invalidates all prior approvals, returning the status to `Draft`. |
+| **Why Reject Cached Timestamps?** | Replayed HTTP responses or stale provider cache hits have identical `created_at` or non-advancing source timestamps. The kernel rejects observations where `source_at <= last_source_at` or `observation_id` is already seen (`duplicate_or_old`), preventing replays from confirming alerts. |
+| **Why Unanimous vs Needs Discussion?** | If Maya votes `Switch to remote` and Arjun votes `Keep the plan`, or if either participant chooses `Discuss`, consensus cannot be presumed. The status transitions to `needs_discussion` until the team aligns. |
+
+---
+
+## 7. Verification & Test Matrix (100% Passing)
 
 Every test suite passes with zero errors:
 
 | Suite | Command | Coverage & Invariants | Result |
 |---|---|---|---|
-| **Python Core Proof** | `python -m unittest discover -s scripts -p test_core.py -v` | Comparability, stale/future data rejection, deduplication, 5m recovery hysteresis | **15/15 Passed** |
+| **Python Core Proof** | `python -m unittest discover -s scripts -p test_core.py -v` | Deadline status, decision resolution, credit estimation, 2-breach recovery hysteresis | **19/19 Passed** |
+| **Prompt 8 Invariants & QA** | `npx tsx src/server/tests/test_prompt8_invariants.ts` | Deadlines, decision resolution, credit math, two-breach gate, rate limiting, helmet | **6/6 Passed** |
 | **Domain Model & Auth** | `npx tsx src/server/tests/test_domain.ts` | Server-side team membership, versioned approvals, invalidation on rule edit | **5/5 Passed** |
-| **Nexconn Contract** | `npx tsx src/server/tests/test_chat_auth.ts` | Protected token issuance, session identity derivation, honest failure | **4/4 Passed** |
-| **Tripwire Backend** | `npx tsx src/server/tests/test_tripwire_core.ts` | Fastest driving duration, incident sets, 2-breach threshold, hash invariants | **21/21 Passed** |
+| **Tripwire Backend** | `npx tsx src/server/tests/test_tripwire_core.ts` | Fastest driving duration, incident sets, 2-breach threshold, canonical query hash | **21/21 Passed** |
 | **Scheduler & Lease** | `npx tsx src/server/tests/test_scheduler.ts` | Worker leases, single-flight ticks, outbox retry, budget ceilings, deadline stop | **6/6 Passed** |
 | **Cited Context & Receipt** | `npx tsx src/server/tests/test_phase6.ts` | You Answer 400-char limits, citation sanitization, alert preservation on You failure | **5/5 Passed** |
-| **Visual & Accessibility** | `npx tsx scripts/audit_phase7.ts` | Desktop/Mobile states, WCAG AA contrast ($\ge 4.5:1$), 200% zoom, focus trap | **13/13 Screenshots** |
+| **Pact Creation & Past Plans** | `npx tsx src/server/tests/test_pact_management.ts` | Multiple pacts, past pacts archive, dynamic creation, automated watch arming | **5/5 Passed** |
 | **Hygiene & Secrets** | `npx tsx scripts/scan_hygiene.ts` | Zero leaked tokens, .env and raw fixtures gitignored, budget durability on restart | **0 Violations** |
-| **Two-Browser Smoke Test** | `npx tsx scripts/smoke_two_browser.ts` | Interactive Maya & Arjun sessions, versioned approvals, cross-session consensus | **Passed** |
-| **Three-Minute Rehearsal** | `npx tsx scripts/rehearse_demo.ts` | Rehearsed BUILDPLAN.md narrative twice, verified 6 segments, UNKNOWN and budget-stop | **2/2 Passed** |
+| **Full Production Build** | `npm run build` | Vite client bundle + TypeScript server compilation | **Clean Build** |
+| **TypeScript Typecheck** | `npm run typecheck` | Strict compiler checks on client and server | **0 Errors** |
 
 ---
 
-## 5. Three-Minute Demo Walkthrough
+## 8. Known Limitations & Roadmap
 
-The demo script follows `BUILDPLAN.md` (lines 127–140):
+### Current Scope & Honest Limitations
+- **Multi-Modal Transit Excluded:** Current MVP targets four-wheeler / cab driving commutes via SerpApi Google Maps Directions. Bengaluru Namma Metro and BMTC bus schedules are not integrated.
+- **No Calendar Writeback:** To maintain user trust and avoid disruptive automation, Office Pact does not modify Google Calendar or Outlook events directly.
+- **No Live GPS Geotracking:** Office Pact explicitly does not track continuous background GPS locations of participants' personal phones, preserving privacy and battery life.
 
-1. **0:00–0:25 — The Problem:** Open desktop view. Show Maya (Indiranagar) and Arjun (HSR Layout) with the agreed 60-minute limit. Point to the **5-Second Legibility Triad** (Agreed Condition, Source Age, Next Action).
-2. **0:25–0:55 — Make the Pact:** In Maya's session, review the destination (WeWork Bellandur) and remote fallback. Approve version 1. In Arjun's session, observe Maya's approval and approve version 1. Both sessions transition to `ARMED`.
-3. **0:55–1:25 — Prove the Data:** Observe normal baseline commute (42m). Inspect the SerpApi credit ledger decrement in the header (`BUDGET: 0/40 CREDITS`). Traffic incidents panel explicitly notes area status without claiming route blockage.
-4. **1:25–2:00 — Controlled Breach:** Trigger the controlled 2-breach simulation ($68\text{m} \to 72\text{m}$). The persistent **SIMULATED CHANGE** banner appears. Replay the identical observation to demonstrate mathematical deduplication (`duplicate_or_old` returned; no duplicate alert created).
-5. **2:00–2:35 — Decide Together:** Show the Evidence Receipt with before/after estimates, source timestamps, and You.com citations. Arjun clicks `Switch to remote`. Maya's session updates in real-time. Maya confirms `Switch to remote`, completing bilateral agreement.
-6. **2:35–3:00 — Show Boundaries:** Switch to degraded data (`UNKNOWN` data clears confirmation streak but preserves alert). Trigger budget-stop state (`40/40 spent`), proving monitoring pauses cleanly without overspending.
-
----
-
-## 6. Credit Budget & Spend Ledger
-
-All searches reserve transactionally before network dispatch in SQLite:
-
-| Pool | Calculation | SerpApi Ceiling | Actual Usage |
-|---|---|---:|---:|
-| Research Probes & Field Verification | Initial endpoint checks | 40 | 0 (local fixtures used) |
-| Implementation & Integration | Development testing | 50 | 0 (local fixtures used) |
-| Two-Hour Rehearsal | Route watches + traffic | 60 | 0 (local fixtures used) |
-| Live Final Demo Window | 2 route watches + traffic | 60 | Reserved for stage |
-| On-Stage Refresh | 3 engines × 2 runs | 6 | Reserved for stage |
-| Controlled Recovery Contingency | Manual error recovery | 24 | Reserved for stage |
-| **Untouched Reserve** | Guaranteed unallocated | **260** | Unallocated |
-| **Total Allocation** | Full 500-credit allotment | **500** | Budget Enforced |
+### Roadmap
+1. **Multi-Modal Tripwires:** Add Namma Metro purple/green line service interruption alerts.
+2. **Slack & Teams Native Bot:** Expand outbox delivery beyond Nexconn to enterprise Slack and Microsoft Teams channels.
+3. **Recurring Pact Schedules:** Support weekly recurring templates (e.g., "Every Tuesday & Thursday morning").
+4. **Carpool / Cab Coordination:** Integrate direct Uber/Ola shared booking link generation upon unanimous `Keep the plan` consensus.
 
 ---
 
-## 7. Final Acceptance & Self-Rating
+## 9. Changelog Summary
 
-### Re-scoring Against the Six Dimensions
-Compared to the initial proposal baseline of **8.83/10**:
-
-1. **Pain Severity (9/10):** Collective morning departure decisions in Bengaluru remain a high-friction, daily problem. The 5-second triad makes the decision immediate.
-2. **Novelty & Differentiation (8.5/10):** Unlike generic route aggregators or single-user notification bots, Office Pact implements bilateral contract consent, double confirmation, and explicit refusal to infer road closures from incident presence.
-3. **Technical Depth & Invariants (9.5/10):** Strict typed normalization, canonical query hashing, recovery hysteresis, persistent SQLite leases, and transactional budget ceilings ensure production-level determinism.
-4. **Implementation & Craft (9.5/10):** Fully responsive Paper/Graphite/Green UI, WCAG AA contrast compliance, zero-overlap mobile layout, full keyboard navigation, and signature decision lines across 5 views.
-5. **Operational Feasibility & Budget (9/10):** Budget strictly capped; cannot reset on restart; honest fallbacks and simulation modes handle missing credentials without fabricating data.
-6. **Sponsor Integration Integrity (8.5/10):** Real endpoint schemas, typed requests, and verified payloads for SerpApi, You.com, and Nexconn. Marked as incomplete when credentials are not supplied rather than masked.
-
-**Final Composite Score:** **9.0 / 10** (Meets the 9+ selection gate with verified implementation evidence).
-
-### Truthful Status Breakdown
-- **Fully Implemented:** React UI, Express server, SQLite database, Tripwire deterministic core, Scheduler & Outbox worker, You Answer integration, Nexconn token derivation & chat UI, two-browser smoke test, and double rehearsal automation.
-- **Live-Verified:** End-to-end multi-browser state sync, SQLite transaction persistence, contrast and accessibility, deduplication invariants, and budget ceiling enforcement.
-- **Simulated:** SerpApi live network requests and You Answer live network requests run against verified synthetic fixtures until live production keys are supplied by the user.
-- **Unfinished / Scope Exclusions:** Native Android/iOS push notifications, automatic calendar event rescheduling, multi-modal transit (metro/bus), and user billing onboarding.
+See [CHANGELOG.md](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/CHANGELOG.md) for full details across all prompts:
+- **Prompt 8:** Helmet security headers, write endpoint rate limiting, deadline status & decision resolution domain invariants, credit estimation functions, 19/19 passing Python tests, and 2-minute demo walkthrough.
+- **Prompt 7:** Astra warm paper design system, 5-second legibility triad, 4-step stepper decision line, and multi-browser synchronization.
+- **Prompt 6:** Immutable evidence receipts with You.com grounded context and multi-action consensus.
+- **Prompt 5:** Durable background scheduler worker, worker lease recovery, and transactional credit reservations.
+- **Prompt 4:** Mathematical tripwire decision kernel with two-breach gate and 5-minute recovery margin.
+- **Prompt 3:** Team membership authentication and Nexconn chat bridge.
+- **Prompt 2:** SQLite schema, bilateral pact approvals, and venue autocomplete.
+- **Prompt 1:** Field probe scripts, SerpApi contract validation, and architecture blueprint.

@@ -242,3 +242,156 @@ export function evaluateRule(
 
   return state.active ? 'active' : 'within_limit';
 }
+
+export type DeadlineStatus = 'upcoming' | 'closing_soon' | 'expired';
+
+/**
+ * Evaluates the status of a decision deadline.
+ * Invariants:
+ * - 'expired': now >= deadline
+ * - 'closing_soon': deadline - now <= closingSoonWindowSeconds (default 30m / 1800s)
+ * - 'upcoming': deadline - now > closingSoonWindowSeconds
+ */
+export function getDeadlineStatus(
+  deadline: string | number | Date,
+  nowInput?: string | number | Date,
+  closingSoonWindowSeconds = 1800
+): DeadlineStatus {
+  const parseSeconds = (val: string | number | Date): number => {
+    if (typeof val === 'number') {
+      return val > 1e11 ? Math.floor(val / 1000) : Math.floor(val);
+    }
+    if (val instanceof Date) {
+      return Math.floor(val.getTime() / 1000);
+    }
+    const ms = Date.parse(val);
+    if (isNaN(ms)) {
+      throw new Error(`Invalid deadline timestamp: ${val}`);
+    }
+    return Math.floor(ms / 1000);
+  };
+
+  const deadlineSec = parseSeconds(deadline);
+  const nowSec = nowInput !== undefined ? parseSeconds(nowInput) : Math.floor(Date.now() / 1000);
+
+  if (nowSec >= deadlineSec) {
+    return 'expired';
+  }
+  if (deadlineSec - nowSec <= closingSoonWindowSeconds) {
+    return 'closing_soon';
+  }
+  return 'upcoming';
+}
+
+export type TeamDecisionResolution =
+  | 'unanimous_keep'
+  | 'unanimous_remote'
+  | 'needs_discussion'
+  | 'pending';
+
+export interface DecisionAcknowledgement {
+  userId?: string;
+  decision: 'keep' | 'remote' | 'discuss';
+}
+
+/**
+ * Resolves collective team decision status from participant acknowledgements.
+ * Invariants:
+ * - 'pending' when no votes or partial quorum without disagreement
+ * - 'unanimous_remote' when all participants choose 'remote'
+ * - 'unanimous_keep' when all participants choose 'keep'
+ * - 'needs_discussion' if any participant chooses 'discuss' or if votes are split (keep vs remote)
+ */
+export function resolveDecisionStatus(
+  acknowledgements: DecisionAcknowledgement[],
+  expectedCount = 2
+): TeamDecisionResolution {
+  if (!acknowledgements || acknowledgements.length === 0) {
+    return 'pending';
+  }
+
+  // Any call for discussion immediately requires discussion
+  const hasDiscuss = acknowledgements.some((a) => a.decision === 'discuss');
+  if (hasDiscuss) {
+    return 'needs_discussion';
+  }
+
+  // If quorum not yet reached
+  if (acknowledgements.length < expectedCount) {
+    return 'pending';
+  }
+
+  const allKeep = acknowledgements.every((a) => a.decision === 'keep');
+  if (allKeep) {
+    return 'unanimous_keep';
+  }
+
+  const allRemote = acknowledgements.every((a) => a.decision === 'remote');
+  if (allRemote) {
+    return 'unanimous_remote';
+  }
+
+  // Split votes (e.g., 1 keep, 1 remote)
+  return 'needs_discussion';
+}
+
+export interface CreditEstimationParams {
+  participantsCount: number;
+  durationMinutes: number;
+  routeIntervalMinutes?: number;
+  trafficIntervalMinutes?: number;
+  contingencyReserve?: number;
+  budgetCap?: number;
+}
+
+export interface CreditEstimationResult {
+  routeChecks: number;
+  trafficChecks: number;
+  totalEstimatedCredits: number;
+  isWithinBudget: boolean;
+  budgetCeiling: number;
+}
+
+/**
+ * Estimates required SerpApi credits for a pact's observation lifecycle.
+ * Invariants:
+ * - Route checks: ceil(durationMinutes / routeIntervalMinutes) * participantsCount
+ * - Traffic checks: ceil(durationMinutes / trafficIntervalMinutes)
+ * - Total credits = routeChecks + trafficChecks + contingencyReserve
+ * - isWithinBudget validates against planning ceiling (e.g. 40 or 60)
+ */
+export function estimateCreditRequirement(
+  params: CreditEstimationParams
+): CreditEstimationResult {
+  const {
+    participantsCount,
+    durationMinutes,
+    routeIntervalMinutes = 5,
+    trafficIntervalMinutes = 15,
+    contingencyReserve = 2,
+    budgetCap = 40,
+  } = params;
+
+  if (durationMinutes <= 0 || participantsCount <= 0) {
+    return {
+      routeChecks: 0,
+      trafficChecks: 0,
+      totalEstimatedCredits: 0,
+      isWithinBudget: true,
+      budgetCeiling: budgetCap,
+    };
+  }
+
+  const routeChecksPerParticipant = Math.ceil(durationMinutes / routeIntervalMinutes);
+  const totalRouteChecks = participantsCount * routeChecksPerParticipant;
+  const trafficChecks = Math.ceil(durationMinutes / trafficIntervalMinutes);
+  const totalEstimatedCredits = totalRouteChecks + trafficChecks + contingencyReserve;
+
+  return {
+    routeChecks: totalRouteChecks,
+    trafficChecks,
+    totalEstimatedCredits,
+    isWithinBudget: totalEstimatedCredits <= budgetCap,
+    budgetCeiling: budgetCap,
+  };
+}

@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { getDb } from '../db.js';
+import { eventBus } from './eventBus.js';
 import {
   evaluateRule,
   fastestDriving,
@@ -196,6 +197,29 @@ export class ObservationService {
 
       db.exec('COMMIT');
 
+      eventBus.emitEvent('observation', {
+        observationId,
+        watchId: input.watchId,
+        pactId: input.pactId,
+        userId: input.userId,
+        outcome,
+        fastestDrivingSeconds: fastestDuration,
+        provenance: input.provenance,
+        receivedAt,
+      });
+
+      if (alertCreated && alertId) {
+        eventBus.emitEvent('alert', {
+          alertId,
+          pactId: input.pactId,
+          watchId: input.watchId,
+          ruleVersion: input.pactVersion,
+          episodeId: ruleState.episodeId,
+          observationId,
+          createdAt: nowIso,
+        });
+      }
+
       return {
         observationId,
         outcome,
@@ -279,6 +303,17 @@ export class ObservationService {
       );
 
       db.exec('COMMIT');
+
+      eventBus.emitEvent('observation', {
+        observationId,
+        watchId: input.watchId,
+        pactId: input.pactId,
+        validity,
+        totalIncidents: currentIds.length,
+        newIncidentIds: newIds,
+        provenance: input.provenance,
+        receivedAt,
+      });
 
       return {
         observationId,

@@ -1,33 +1,5 @@
-:root {
-  --paper: #F7F6F2;
-  --paper-raised: #FCFBF8;
-  --paper-inset: #EFEEE8;
-  --ink: #202824;
-  --ink-secondary: #48544B;
-  --ink-muted: #4B584E;
-  --rule: #D5D8D0;
-  --rule-strong: #848E82;
-  --pact-green: #245C46;
-  --pact-green-hover: #1B4937;
-  --pact-green-wash: #E8EFE8;
-  --caution-ink: #755110;
-  --caution-wash: #FBF0D9;
-  --error-ink: #992F27;
-  --error-wash: #FAECE8;
-  --focus: #215A9A;
-  --radius-control: 6px;
-  --radius-panel: 8px;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-12: 48px;
-
-  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-}
+@import './styles/tokens.css';
+@import './styles/ui.css';
 
 * {
   box-sizing: border-box;
@@ -44,15 +16,17 @@ body {
   background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 15px;
-  line-height: 22px;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
 button, input, select, textarea {
   font-family: inherit;
   font-size: inherit;
+  color: inherit;
 }
 
 @media (prefers-reduced-motion: reduce) {

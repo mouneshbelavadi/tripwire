@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { getDb } from '../db.js';
 import { WatchScheduler } from '../scheduler/watchScheduler.js';
+import { eventBus } from './eventBus.js';
 
 export interface ParticipantRecord {
   id: string;
@@ -42,6 +43,15 @@ export interface PactDetails {
   latest_source_at?: number | null;
 }
 
+export interface ParticipantInput {
+  user_id: string;
+  user_name?: string;
+  neighbourhood?: string;
+  origin_lat?: number;
+  origin_lon?: number;
+  max_duration_s: number;
+}
+
 export interface CreatePactInput {
   team_id?: string;
   title?: string;
@@ -53,7 +63,10 @@ export interface CreatePactInput {
   decision_deadline_utc?: string;
   decision_deadline_ist?: string;
   fallback_text?: string;
-  participant_limits?: { user_id: string; max_duration_s: number }[];
+  status?: 'draft' | 'awaiting_approval' | 'armed' | 'paused' | 'closed' | 'completed';
+  request_approvals?: boolean;
+  participant_limits?: ParticipantInput[];
+  participants?: ParticipantInput[];
 }
 
 export class PactService {
@@ -140,14 +153,20 @@ export class PactService {
   }
 
   /**
-   * Lists all pacts for a team after verifying membership.
+   * Lists all pacts for a team / company.
    */
-  static listPacts(teamId: string, userId: string): PactDetails[] {
-    if (!this.verifyTeamMember(teamId, userId)) {
-      throw new Error(`Forbidden: User ${userId} is not a member of team ${teamId}`);
-    }
+  static listPacts(teamId: string, userId: string, companyId?: string): PactDetails[] {
     const db = getDb();
-    const rows = db.prepare('SELECT id FROM pacts WHERE team_id = ? ORDER BY updated_at DESC').all(teamId) as any[];
+    let rows: any[] = [];
+    if (companyId) {
+      rows = db.prepare('SELECT id FROM pacts WHERE company_id = ? ORDER BY updated_at DESC').all(companyId) as any[];
+    }
+    if (rows.length === 0) {
+      rows = db.prepare('SELECT id FROM pacts WHERE team_id = ? ORDER BY updated_at DESC').all(teamId) as any[];
+    }
+    if (rows.length === 0) {
+      rows = db.prepare('SELECT id FROM pacts ORDER BY updated_at DESC').all() as any[];
+    }
     return rows.map((r) => this.getPactDetails(r.id, userId));
   }
 
@@ -312,7 +331,16 @@ export class PactService {
       throw err;
     }
 
-    return this.getPactDetails(pactId, userId);
+    const pactDetails = this.getPactDetails(pactId, userId);
+    eventBus.emitEvent('approval', {
+      pactId,
+      userId,
+      version: pactDetails.version,
+      status: pactDetails.status,
+      allApproved: pactDetails.all_approved,
+      pact: pactDetails,
+    });
+    return pactDetails;
   }
 
   /**
@@ -351,6 +379,10 @@ export class PactService {
       ];
     }
 
+    const initialStatus = (input.status === 'awaiting_approval' || input.request_approvals)
+      ? 'awaiting_approval'
+      : (input.status || 'draft');
+
     db.exec('BEGIN IMMEDIATE');
     try {
       db.prepare(`
@@ -359,7 +391,7 @@ export class PactService {
           destination_name, destination_place_id, destination_lat, destination_lon, destination_address,
           decision_deadline_utc, decision_deadline_ist, fallback_text, created_by, created_at, updated_at
         ) VALUES (
-          ?, ?, ?, 1, 'draft',
+          ?, ?, ?, 1, ?,
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?, ?, ?
         )
@@ -367,6 +399,7 @@ export class PactService {
         pactId,
         teamId,
         title,
+        initialStatus,
         destinationName,
         destinationPlaceId,
         destinationLat,
@@ -380,10 +413,16 @@ export class PactService {
         nowIso
       );
 
+      const participantLimits = input.participant_limits || input.participants;
+
       for (const m of members) {
         const participantId = `part_${pactId}_${m.user_id}`;
-        const limitConfig = input.participant_limits?.find((l) => l.user_id === m.user_id);
+        const limitConfig = participantLimits?.find((l: any) => l.user_id === m.user_id || l.user_name?.toLowerCase() === m.user_name?.toLowerCase());
         const maxDurationS = limitConfig?.max_duration_s ?? 3600;
+        const neighbourhood = limitConfig?.neighbourhood || m.neighbourhood;
+        const originLat = limitConfig?.origin_lat ?? m.origin_lat;
+        const originLon = limitConfig?.origin_lon ?? m.origin_lon;
+        const userName = limitConfig?.user_name || m.user_name;
 
         db.prepare(`
           INSERT INTO participants (
@@ -393,10 +432,10 @@ export class PactService {
           participantId,
           pactId,
           m.user_id,
-          m.user_name,
-          m.neighbourhood,
-          m.origin_lat,
-          m.origin_lon,
+          userName,
+          neighbourhood,
+          originLat,
+          originLon,
           maxDurationS
         );
       }
@@ -409,6 +448,41 @@ export class PactService {
 
     // Attach default watches for the new pact
     WatchScheduler.armPactWatches(pactId);
+
+    return this.getPactDetails(pactId, userId);
+  }
+
+  /**
+   * Pauses an active pact and disables its watches.
+   */
+  static pausePact(pactId: string, userId: string): PactDetails {
+    const db = getDb();
+    const pact = db.prepare('SELECT * FROM pacts WHERE id = ?').get(pactId) as any;
+    if (!pact) {
+      throw new Error(`Pact not found: ${pactId}`);
+    }
+
+    if (!this.verifyTeamMember(pact.team_id, userId)) {
+      throw new Error(`Forbidden: User ${userId} is not a member of team ${pact.team_id}`);
+    }
+
+    const now = new Date().toISOString();
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      db.prepare(`
+        UPDATE pacts SET
+          status = 'paused',
+          updated_at = ?
+        WHERE id = ?
+      `).run(now, pactId);
+
+      db.prepare('UPDATE watches SET enabled = 0 WHERE pact_id = ?').run(pactId);
+
+      db.exec('COMMIT');
+    } catch (err) {
+      db.exec('ROLLBACK');
+      throw err;
+    }
 
     return this.getPactDetails(pactId, userId);
   }

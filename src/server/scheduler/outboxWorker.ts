@@ -56,13 +56,13 @@ export class OutboxWorker {
     for (const job of pendingJobs) {
       const attempts = (job.attempts || 0) + 1;
 
-      // Invariant: If Nexconn credentials missing, retain as 'pending' with explicit note.
+      // Invariant: If team channel credentials missing, retain as 'pending' with explicit note.
       // Do NOT invent fake delivery or mark 'delivered' optimistically.
-      if (!config.nexconn.isConfigured) {
+      if (!config.teamChannel.isConfigured) {
         db.prepare(`
           UPDATE outbox
           SET attempts = ?,
-              provider_receipt = 'Delivery pending: Nexconn credentials pending in .env',
+              provider_receipt = 'Delivery pending: Team channel credentials pending in .env',
               next_attempt_at = datetime('now', '+30 seconds')
           WHERE id = ?
         `).run(attempts, job.id);
@@ -73,12 +73,12 @@ export class OutboxWorker {
         // Prepare alert delivery payload
         const alertText = `🚨 Tripwire: Office Pact Alert for "${job.pact_title}"\nTwo consecutive checks exceeded agreed commute threshold.\nSuggested Action: ${job.fallback_text}`;
 
-        const base = config.nexconn.apiBase!.replace(/\/$/, '');
+        const base = config.teamChannel.apiBase!.replace(/\/$/, '');
         // Example delivery dispatch (reconciling server group-send contract)
         const response = await fetch(`${base}/v4/group-channel/message/send`, {
           method: 'POST',
           headers: {
-            'App-Key': config.nexconn.appKey!,
+            'App-Key': config.teamChannel.appKey!,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -97,7 +97,7 @@ export class OutboxWorker {
             WHERE id = ?
           `).run(attempts, JSON.stringify(resData), job.id);
         } else {
-          throw new Error(`Nexconn HTTP ${response.status}`);
+          throw new Error(`Team channel HTTP ${response.status}`);
         }
       } catch (err: any) {
         if (attempts >= 3) {

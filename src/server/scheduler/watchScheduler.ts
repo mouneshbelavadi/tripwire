@@ -4,6 +4,7 @@ import { ObservationService } from '../domain/observationService.js';
 import { SerpApiProvider } from '../providers/serpapi.js';
 import { createSyntheticBreachSequence, createSyntheticTrafficPayload } from '../fixtures/syntheticBreach.js';
 import { canonicalQueryHash } from '../domain/tripwireCore.js';
+import { isSimulationActive } from '../routes/simulation.js';
 
 export interface SchedulerStatus {
   state: 'idle' | 'running' | 'budget_exhausted' | 'deadline_reached';
@@ -111,10 +112,26 @@ export class WatchScheduler {
    * Main scheduler tick: Dispatches due watches with strict single-flight and budget limits.
    */
   static async tick(): Promise<number> {
+    if (isSimulationActive()) {
+      this.schedulerState = 'idle';
+      return 0;
+    }
+
     const db = getDb();
     const now = new Date();
     const nowIso = now.toISOString();
     this.lastTickAt = nowIso;
+
+    // Upfront: Disable all watches for expired pacts so they stop evaluating immediately
+    db.prepare(`
+      UPDATE watches
+      SET enabled = 0
+      WHERE enabled = 1
+        AND pact_id IN (
+          SELECT id FROM pacts
+          WHERE datetime(decision_deadline_utc) <= datetime(?)
+        )
+    `).run(nowIso);
 
     // 1. Fetch due watches ordered by priority then deadline
     const dueWatches = db
@@ -208,9 +225,19 @@ export class WatchScheduler {
         }
 
         const db = getDb();
-        const participant = db
-          .prepare('SELECT id, user_id, max_duration_s FROM participants WHERE pact_id = ? LIMIT 1')
-          .get(watch.pact_id) as any;
+        // Extract userId from watchId format: watch_route_${pactId}_${userId}
+        let participant: any;
+        if (watch.id.includes('user_')) {
+          const matchedUserId = 'user_' + watch.id.split('user_')[1];
+          participant = db
+            .prepare('SELECT id, user_id, max_duration_s FROM participants WHERE pact_id = ? AND user_id = ?')
+            .get(watch.pact_id, matchedUserId) as any;
+        }
+        if (!participant) {
+          participant = db
+            .prepare('SELECT id, user_id, max_duration_s FROM participants WHERE pact_id = ? LIMIT 1')
+            .get(watch.pact_id) as any;
+        }
 
         if (participant) {
           ObservationService.processRouteObservation({

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import type { TeamMember } from '../types';
 import { ReceiptDecisionLine } from './DecisionLine';
+import { formatTimeIST } from '../lib/time';
+import { humanizeIncidentType } from '../../common/incidentTypes';
 
 export interface EvidenceReceiptProps {
   receipt: any;
@@ -41,20 +43,34 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
   const currentStatus = receipt.currentDecisionStatus || 'pending';
   const statusLabel =
     currentStatus === 'remote_chosen'
-      ? 'REMOTE FALLBACK CHOSEN'
+      ? 'REMOTE FALLBACK CHOSEN (RESOLVED)'
       : currentStatus === 'plan_kept'
-      ? 'PLAN KEPT'
+      ? 'PLAN KEPT (RESOLVED)'
+      : currentStatus === 'needs_discussion'
+      ? 'NEEDS DISCUSSION'
       : 'RECONSIDERATION PENDING';
+
+  const isSimulated = receipt.evidence?.provenance !== 'live';
+  const isAdvisoryVerified = receipt.publicContext?.status === 'retrieved' && receipt.evidence?.provenance === 'live';
 
   return (
     <div className="evidence-receipt-container">
-      {/* Persistent SIMULATED CHANGE banner for controlled breach */}
-      {receipt.evidence.provenance === 'synthetic' && (
+      {/* Requirement 5: Persistent Contains simulated data banner whenever any observation in episode is not live */}
+      {isSimulated && (
         <div className="simulation-banner" role="alert">
-          <span className="simulation-banner-badge">SIMULATED CHANGE</span>
+          <span className="simulation-banner-badge">SIMULATED DATA</span>
           <span className="simulation-banner-text">
-            This breach was generated from controlled synthetic observations for demonstration. Real road conditions have not been asserted.
+            Contains simulated data: This breach episode includes synthetic or replay observations for demonstration. Real road conditions have not been asserted.
           </span>
+        </div>
+      )}
+
+      {/* Requirement 8: Bilateral Consensus "Needs discussion" Banner */}
+      {currentStatus === 'needs_discussion' && (
+        <div className="state-notice-banner confirming" role="alert" style={{ margin: '8px 0 16px 0', borderLeft: '4px solid var(--caution-ink)' }}>
+          <strong style={{ color: 'var(--caution-ink)' }}>⚠️ Needs discussion:</strong>{' '}
+          {receipt.consensus?.warningBanner ||
+            'Participant choices differ. Bilateral consensus is required before establishing a final team action.'}
         </div>
       )}
 
@@ -76,7 +92,7 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
 
       {/* Numerical Evidence Breakdown */}
       <div className="receipt-evidence-box">
-        <div className="receipt-box-heading">Verified Two-Breach Evidence (SerpApi Directions)</div>
+        <div className="receipt-box-heading">Verified Two-Breach Evidence (Directions Commute Tripwire)</div>
 
         {/* Signature Evidence Decision Line */}
         <ReceiptDecisionLine
@@ -91,7 +107,7 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
             <div className="check-label">Check 1 (Fresh Observation)</div>
             <div className="check-value">{receipt.evidence.check1Minutes} min</div>
             <div className="check-meta">
-              Timestamp: {new Date(receipt.evidence.check1Timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              Timestamp: {formatTimeIST(receipt.evidence.check1Timestamp)}
             </div>
           </div>
 
@@ -99,52 +115,56 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
             <div className="check-label">Check 2 (Confirmation)</div>
             <div className="check-value">{receipt.evidence.check2Minutes} min</div>
             <div className="check-meta">
-              Timestamp: {new Date(receipt.evidence.check2Timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              Timestamp: {formatTimeIST(receipt.evidence.check2Timestamp)}
             </div>
-          </div>
-
-          <div className="check-card">
-            <div className="check-label">Agreed Threshold</div>
-            <div className="check-value">{receipt.participant.limitMinutes} min</div>
-            <div className="check-meta">Pact version: v{receipt.ruleVersion}</div>
           </div>
         </div>
 
-        <div className="receipt-provenance-note">
-          Provenance: <strong>{receipt.evidence.provenance.toUpperCase()}</strong> · Source freshness: {receipt.evidence.sourceFreshnessSeconds}s ago
+        <div className="receipt-provenance-meta">
+          <span>Freshness: {receipt.evidence.sourceFreshnessSeconds}s ago</span> ·{' '}
+          <span>Provenance: <strong>{receipt.evidence.provenance.toUpperCase()}</strong></span> ·{' '}
+          <span>Single-Source Episode ID: <code>{receipt.episodeId}</code></span>
         </div>
       </div>
 
-      {/* Area Incidents Context */}
+      {/* Area Incidents (if any observed) */}
       {receipt.areaIncidents && receipt.areaIncidents.length > 0 && (
         <div className="receipt-incidents-box">
-          <div className="receipt-box-heading">Area Traffic Incidents (SerpApi Traffic)</div>
+          <div className="incidents-box-header">
+            <span className="incidents-title">Corridor Traffic Incidents</span>
+            <span className="incidents-count">{receipt.areaIncidents.length} Observed</span>
+          </div>
+
           <div className="incidents-list">
             {receipt.areaIncidents.map((inc: any) => (
               <div key={inc.id} className="incident-item">
-                <span className="incident-type-tag">{inc.type.replace('_', ' ').toUpperCase()}</span>
-                <span className="incident-title">{inc.title}</span>
+                <span className="incident-type-tag">{humanizeIncidentType(inc.type)}</span>
+                <span className="incident-desc">{inc.title}</span>
               </div>
             ))}
           </div>
+
           <div className="incident-disclaimer">
             Area incident newly observed. Its direct effect on individual routes is unverified and cannot be asserted as causality.
           </div>
         </div>
       )}
 
-      {/* Route & Corridor Public Advisory */}
+      {/* Route & Corridor Public Advisory - Requirement 6 */}
       <div className="receipt-context-box">
         <div className="context-box-header">
           <span className="context-title">Route & Corridor Public Advisory</span>
-          <span className="context-status-pill">VERIFIED ADVISORY</span>
+          <span className="context-status-pill">
+            {isAdvisoryVerified ? 'VERIFIED ADVISORY' : 'Sample advisory (demo data)'}
+          </span>
         </div>
 
         <div className="context-answer-text">
-          {receipt.publicContext?.answer || 'Outer Ring Road corridor between Silk Board and Marathahalli experiences severe peak delays near Ecospace and Bellandur Central Junction.'}
+          {receipt.publicContext?.answer ||
+            'Sample advisory (demo data): Outer Ring Road corridor between Silk Board and Bellandur experiences peak commute delays near Ecospace.'}
         </div>
 
-        {receipt.publicContext.citations && receipt.publicContext.citations.length > 0 && (
+        {receipt.publicContext?.citations && receipt.publicContext.citations.length > 0 && (
           <div className="citations-list">
             <div className="citations-label">Sources & Citations:</div>
             {receipt.publicContext.citations.map((c: any, idx: number) => (
@@ -224,7 +244,7 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
                     {ack.decision === 'remote' ? 'Switch to Remote' : ack.decision === 'keep' ? 'Keep the Plan' : 'Discuss'}
                   </span>
                   <span className="ack-time">
-                    {new Date(ack.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {formatTimeIST(ack.createdAt)}
                   </span>
                 </div>
               ))}

@@ -10,31 +10,31 @@ const ALLOWED_REGIONS = new Set([
   'https://api-b.sau-light-api.com',
 ]);
 
-export class NexconnProvider {
+export class TeamChannelProvider {
   static getStatus() {
-    if (!config.nexconn.isConfigured) {
+    if (!config.teamChannel.isConfigured) {
       return {
-        name: 'Nexconn',
+        name: 'In-App Team Channel',
         configured: false,
         status: 'skipped' as const,
-        reason: 'NEXCONN_APP_KEY, APP_SECRET or API_BASE missing',
-        endpoint: config.nexconn.apiBase || 'https://api.sg-light-api.com',
+        reason: 'TEAM_CHANNEL_APP_KEY, APP_SECRET or API_BASE missing',
+        endpoint: config.teamChannel.apiBase || 'https://api.sg-light-api.com',
       };
     }
 
-    const cleanBase = config.nexconn.apiBase?.replace(/\/$/, '');
+    const cleanBase = config.teamChannel.apiBase?.replace(/\/$/, '');
     if (!cleanBase || !ALLOWED_REGIONS.has(cleanBase)) {
       return {
-        name: 'Nexconn',
+        name: 'In-App Team Channel',
         configured: false,
         status: 'blocked_config' as const,
-        reason: 'NEXCONN_API_BASE must be a documented regional HTTPS endpoint',
+        reason: 'TEAM_CHANNEL_API_BASE must be a documented regional HTTPS endpoint',
         endpoint: cleanBase || 'unspecified',
       };
     }
 
     return {
-      name: 'Nexconn',
+      name: 'In-App Team Channel',
       configured: true,
       status: 'configured' as const,
       endpoint: cleanBase,
@@ -46,22 +46,22 @@ export class NexconnProvider {
    * Signature: SHA1(AppSecret + Nonce + Timestamp)
    */
   static async issueAccessToken(userId: string, name: string): Promise<any> {
-    if (!config.nexconn.isConfigured) {
-      throw new Error(`Nexconn call rejected: Credentials not configured. Mode is ${config.mode}.`);
+    if (!config.teamChannel.isConfigured) {
+      throw new Error(`In-app team channel call rejected: Credentials not configured. Mode is ${config.mode}.`);
     }
 
-    const base = config.nexconn.apiBase!.replace(/\/$/, '');
+    const base = config.teamChannel.apiBase!.replace(/\/$/, '');
     const nonce = crypto.randomBytes(8).toString('hex');
     const timestamp = Date.now().toString();
     const signature = crypto
       .createHash('sha1')
-      .update(config.nexconn.appSecret! + nonce + timestamp)
+      .update(config.teamChannel.appSecret! + nonce + timestamp)
       .digest('hex');
 
     const response = await fetch(`${base}/v4/auth/access-token/issue`, {
       method: 'POST',
       headers: {
-        'App-Key': config.nexconn.appKey!,
+        'App-Key': config.teamChannel.appKey!,
         'Nonce': nonce,
         'Timestamp': timestamp,
         'Signature': signature,
@@ -71,7 +71,7 @@ export class NexconnProvider {
     });
 
     if (!response.ok) {
-      throw new Error(`Nexconn HTTP ${response.status}: ${await response.text()}`);
+      throw new Error(`In-app team channel HTTP ${response.status}: ${await response.text()}`);
     }
 
     return response.json();

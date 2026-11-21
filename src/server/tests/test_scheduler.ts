@@ -35,8 +35,9 @@ db.prepare(`
     (?, ?, ?, 'Arjun', 'HSR Layout', 12.9121, 77.6446, 3600, 1, datetime('now'))
 `).run('part_m_' + testPactId, testPactId, mayaId, 'part_a_' + testPactId, testPactId, arjunId);
 
-// Clean existing leases for isolated test
+// Clean existing leases and credit attempts for isolated test
 db.prepare("DELETE FROM worker_leases WHERE lease_key = 'scheduler_primary_lease'").run();
+db.prepare("DELETE FROM credit_attempts").run();
 
 // 1. Arm pact watches
 WatchScheduler.armPactWatches(testPactId);
@@ -142,7 +143,11 @@ const countSameEpisode = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE 
 assert.strictEqual(countSameEpisode.count, 1, 'One alert per episode invariant maintained');
 console.log('✓ test_duplicate_alert_suppression: One alert per breach episode enforced.');
 
+// Wait for in-flight background dispatches to settle before cleanup
+await new Promise((resolve) => setTimeout(resolve, 500));
+
 // Cleanup
+db.prepare("DELETE FROM credit_attempts WHERE phase LIKE '%sched_test%'").run();
 db.prepare('DELETE FROM outbox WHERE alert_id = ?').run(testAlertId);
 db.prepare('DELETE FROM alerts WHERE pact_id = ?').run(testPactId);
 db.prepare('DELETE FROM watches WHERE pact_id IN (?, ?)').run(testPactId, expiredPactId);

@@ -2,7 +2,7 @@ import assert from 'assert';
 import { app } from '../app.js';
 import http from 'http';
 
-console.log('--- Running Phase 3 Nexconn Auth & Contract Tests ---');
+console.log('--- Running Phase 3 In-App Team Channel Auth & Contract Tests ---');
 
 const server = http.createServer(app);
 
@@ -54,7 +54,7 @@ server.listen(3097, async () => {
     assert.strictEqual(arjunData.member.nex_user_id, 'nex_arjun');
     console.log('✓ /api/chat/token: Arjun identity derived cleanly from server session.');
 
-    console.log('--- ALL NEXCONN AUTH & CONTRACT TESTS PASSED ---');
+    console.log('--- ALL IN-APP TEAM CHANNEL AUTH & CONTRACT TESTS PASSED ---');
     server.close();
   } catch (err) {
     console.error('Test failure:', err);

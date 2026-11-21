@@ -34,3 +34,12 @@ const shutdown = () => {
 
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
+
+process.on('uncaughtException', (err) => {
+  console.error('[Office Pact] Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Office Pact] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+

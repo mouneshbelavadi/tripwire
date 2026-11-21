@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { PactDetails } from '../types';
+import { formatTimeIST } from '../lib/time';
 import type { VerifiedPlace } from './VenueSearchModal';
 import { PreviewDecisionLine } from './DecisionLine';
 
@@ -14,18 +15,26 @@ interface PactEditorModalProps {
 
 function computeDefaultDeadline(): string {
   const d = new Date(Date.now() + 4 * 3600 * 1000);
-  const timeStr = d.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'Asia/Kolkata',
-  });
-  const dateStr = d.toLocaleDateString('en-GB', {
+  const timeStr = formatTimeIST(d);
+  const dateStr = new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
-  });
-  return `${timeStr} IST · ${dateStr}`;
+    timeZone: 'Asia/Kolkata',
+  }).format(d);
+  return `${timeStr} · ${dateStr}`;
+}
+
+function formatFutureDeadline(hoursFromNow: number): string {
+  const d = new Date(Date.now() + hoursFromNow * 3600 * 1000);
+  const timeStr = formatTimeIST(d);
+  const dateStr = new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'Asia/Kolkata',
+  }).format(d);
+  return `${timeStr} · ${dateStr}`;
 }
 
 export function PactEditorModal({
@@ -204,30 +213,53 @@ export function PactEditorModal({
           <div className="form-group">
             <label>Per-Participant Commute Thresholds (Minutes)</label>
             {participantsList.map((p) => {
-              const currentVal = limits[p.user_id] ?? Math.round(p.max_duration_s / 60);
+              const currentVal = Number(limits[p.user_id] ?? Math.round(p.max_duration_s / 60)) || 60;
               return (
-                <div key={p.user_id} className="participant-threshold-input">
-                  <span>{p.user_name} ({p.neighbourhood}):</span>
-                  <input
-                    type="number"
-                    min="15"
-                    max="180"
-                    step="5"
-                    value={currentVal === 0 ? '' : currentVal}
-                    onChange={(e) => {
-                      const clean = e.target.value.replace(/^0+(?=\d)/, '');
-                      const num = clean === '' ? 0 : parseInt(clean, 10);
-                      setLimits({ ...limits, [p.user_id]: isNaN(num) ? 60 : num });
-                    }}
-                    onBlur={() => {
-                      const val = limits[p.user_id] || 60;
-                      const clamped = Math.max(15, Math.min(180, val));
-                      setLimits({ ...limits, [p.user_id]: clamped });
-                    }}
-                    required
-                    aria-label={`${p.user_name} commute limit in minutes`}
-                  />
-                  <span>min</span>
+                <div key={p.user_id} className="participant-threshold-block" style={{ marginBottom: '12px' }}>
+                  <div className="participant-threshold-input">
+                    <span>{p.user_name} ({p.neighbourhood}):</span>
+                    <input
+                      type="number"
+                      min="15"
+                      max="180"
+                      step="5"
+                      value={currentVal}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/^0+(?=\d)/, '');
+                        const num = raw === '' ? 0 : parseInt(raw, 10);
+                        setLimits({ ...limits, [p.user_id]: isNaN(num) ? 60 : num });
+                      }}
+                      onBlur={() => {
+                        const val = Number(limits[p.user_id]) || 60;
+                        const clamped = Math.max(15, Math.min(180, val));
+                        setLimits({ ...limits, [p.user_id]: clamped });
+                      }}
+                      required
+                      aria-label={`${p.user_name} commute limit in minutes`}
+                    />
+                    <span>min</span>
+                  </div>
+                  <div className="preset-threshold-chips" style={{ display: 'flex', gap: '4px', marginTop: '4px', marginLeft: '2px' }}>
+                    {[30, 45, 60, 75, 90].map((mins) => (
+                      <button
+                        key={mins}
+                        type="button"
+                        className={`chip-btn ${currentVal === mins ? 'active' : ''}`}
+                        style={{
+                          padding: '2px 8px',
+                          fontSize: '11px',
+                          borderRadius: '4px',
+                          border: currentVal === mins ? '1px solid var(--pact-green)' : '1px solid var(--rule-subtle)',
+                          background: currentVal === mins ? 'var(--pact-wash)' : 'var(--paper-raised)',
+                          color: currentVal === mins ? 'var(--pact-green)' : 'var(--ink-secondary)',
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => setLimits({ ...limits, [p.user_id]: mins })}
+                      >
+                        {mins}m
+                      </button>
+                    ))}
+                  </div>
                 </div>
               );
             })}
@@ -243,7 +275,46 @@ export function PactEditorModal({
               placeholder="e.g. 09:00 IST · 21 Nov 2026"
               required
             />
-            <span className="form-hint">Monitoring stops after this time. No checks run once expired.</span>
+            {pact?.decision_deadline_utc && new Date(pact.decision_deadline_utc).getTime() <= Date.now() && (
+              <div style={{ marginTop: '6px', padding: '6px 10px', background: 'var(--caution-wash)', border: '1px solid var(--caution-border)', borderRadius: '4px', fontSize: '12px', color: 'var(--caution-ink)' }}>
+                ⚠️ <strong>Deadline in the past:</strong> Previous deadline ({pact.decision_deadline_ist}) has passed. Pick a future time below:
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+              <button
+                type="button"
+                className="btn-secondary-xs"
+                style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid var(--rule-subtle)', background: 'var(--paper-raised)', cursor: 'pointer' }}
+                onClick={() => setDeadlineIst(formatFutureDeadline(1))}
+              >
+                +1h
+              </button>
+              <button
+                type="button"
+                className="btn-secondary-xs"
+                style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid var(--rule-subtle)', background: 'var(--paper-raised)', cursor: 'pointer' }}
+                onClick={() => setDeadlineIst(formatFutureDeadline(2))}
+              >
+                +2h
+              </button>
+              <button
+                type="button"
+                className="btn-secondary-xs"
+                style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid var(--rule-subtle)', background: 'var(--paper-raised)', cursor: 'pointer' }}
+                onClick={() => setDeadlineIst(formatFutureDeadline(4))}
+              >
+                +4h
+              </button>
+              <button
+                type="button"
+                className="btn-secondary-xs"
+                style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px', border: '1px solid var(--rule-subtle)', background: 'var(--paper-raised)', cursor: 'pointer' }}
+                onClick={() => setDeadlineIst(formatFutureDeadline(24))}
+              >
+                Tomorrow (+24h)
+              </button>
+            </div>
+            <span className="form-hint" style={{ marginTop: '4px', display: 'block' }}>Monitoring stops after this time. No checks run once expired.</span>
           </div>
 
           <div className="form-group">

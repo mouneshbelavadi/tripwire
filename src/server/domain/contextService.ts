@@ -1,6 +1,7 @@
 import { getDb } from '../db.js';
 import { config } from '../config.js';
 import { YouProvider } from '../providers/you.js';
+import { humanizeIncidentType } from '../../common/incidentTypes.js';
 
 export interface CitationItem {
   url: string;
@@ -16,22 +17,22 @@ export interface ContextResult {
   retrievedAt: string;
 }
 
-// Curated verified Bangalore public context for simulation mode
+// Transparent sample advisory without fake organizational quotes
 const SYNTHETIC_PUBLIC_CONTEXT: ContextResult = {
   alertId: '',
   status: 'synthetic',
   answer:
-    'Bangalore Traffic Police (BTP) issued an advisory for the Outer Ring Road corridor between Silk Board and Bellandur: slow-moving traffic and lane restrictions due to ongoing metro work and drainage clearance. Commuters heading towards Bellandur should anticipate substantial delays.',
+    'Sample advisory (demo data): Commute conditions on Outer Ring Road corridor show elevated travel times between Indiranagar, HSR Layout, and Bellandur. Route monitoring active.',
   citations: [
     {
-      url: 'https://twitter.com/blrcitytraffic',
-      source: 'Bangalore Traffic Police (Official Handle)',
-      excerpt: 'Slow moving traffic due to vehicle breakdown and waterlogging near Bellandur EcoSpace.',
+      url: 'https://maps.google.com/traffic',
+      source: 'Corridor Traffic Advisory Feed',
+      excerpt: 'Sample advisory (demo data) for demonstration of commute tripwire evaluation.',
     },
     {
-      url: 'https://ksp.karnataka.gov.in',
-      source: 'Karnataka State Police Portal',
-      excerpt: 'Public transit advisory for Outer Ring Road Tech corridor.',
+      url: 'https://serpapi.com/google-maps-api',
+      source: 'SerpApi Google Maps Engine',
+      excerpt: 'Corridor traffic monitoring snapshot.',
     },
   ],
   retrievedAt: new Date().toISOString(),
@@ -137,7 +138,54 @@ export class ContextService {
       }
     }
 
-    // Unconfigured mode: Use labelled synthetic public context
+    // Check if we have recent traffic observations in SQLite from SerpApi traffic watch
+    const trafficObs = db
+      .prepare(`
+        SELECT normalized_json, provider_created_at, provenance FROM observations
+        WHERE watch_id LIKE '%traffic%' AND validity = 'valid'
+        ORDER BY received_at DESC LIMIT 1
+      `)
+      .get() as any;
+
+    if (trafficObs?.normalized_json) {
+      try {
+        const incidents = JSON.parse(trafficObs.normalized_json);
+        const incidentEntries = Object.entries(incidents);
+        if (incidentEntries.length > 0) {
+          const summaries = incidentEntries.map(
+            ([_, type]) => `${humanizeIncidentType(String(type))}`
+          );
+          const isLive = trafficObs.provenance === 'live';
+          const prefix = isLive ? 'Public incident advisory' : 'Sample advisory (demo data)';
+          const derivedAnswer = `${prefix}: Active corridor disruption on ${corridorName} (${summaries.join(', ')}). Commuters should anticipate delays.`;
+
+          const result: ContextResult = {
+            alertId,
+            status: isLive ? 'retrieved' : 'synthetic',
+            answer: derivedAnswer,
+            citations: [
+              {
+                url: 'https://maps.google.com/traffic',
+                source: isLive ? 'Google Maps Live Traffic Feed' : 'Sample Traffic Advisory (Demo Data)',
+                excerpt: `Reported incidents on corridor: ${summaries.join(', ')}`,
+              },
+            ],
+            retrievedAt: nowIso,
+          };
+
+          db.prepare(`
+            INSERT INTO citation_contexts (alert_id, status, answer, citations_json, retrieved_at)
+            VALUES (?, ?, ?, ?, ?)
+          `).run(alertId, result.status, result.answer, JSON.stringify(result.citations), nowIso);
+
+          return result;
+        }
+      } catch (e) {
+        // Fallback to synthetic public context
+      }
+    }
+
+    // Unconfigured / Demo mode: Use cleanly labeled sample advisory
     const syntheticResult: ContextResult = {
       ...SYNTHETIC_PUBLIC_CONTEXT,
       alertId,

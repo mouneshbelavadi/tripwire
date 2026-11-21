@@ -16,7 +16,7 @@ export interface ServerConfig {
     apiKey?: string;
     isConfigured: boolean;
   };
-  nexconn: {
+  teamChannel: {
     appKey?: string;
     appSecret?: string;
     apiBase?: string;
@@ -34,13 +34,13 @@ export interface ServerConfig {
 
 const serpApiKey = process.env.SERPAPI_API_KEY || process.env.SERPAPI_KEY;
 const youApiKey = process.env.YDC_API_KEY || process.env.YOU_API_KEY || process.env.YOU_COM_API_KEY;
-const nexconnAppKey = process.env.NEXCONN_APP_KEY;
-const nexconnAppSecret = process.env.NEXCONN_APP_SECRET;
-const nexconnApiBase = process.env.NEXCONN_API_BASE;
+const teamChannelAppKey = process.env.TEAM_CHANNEL_APP_KEY;
+const teamChannelAppSecret = process.env.TEAM_CHANNEL_APP_SECRET;
+const teamChannelApiBase = process.env.TEAM_CHANNEL_API_BASE;
 
 const isSerpConfigured = Boolean(serpApiKey);
 const isYouConfigured = Boolean(youApiKey);
-const isNexconnConfigured = Boolean(nexconnAppKey && nexconnAppSecret && nexconnApiBase);
+const isTeamChannelConfigured = Boolean(teamChannelAppKey && teamChannelAppSecret && teamChannelApiBase);
 
 // Track 1 (SerpApi) mode resolution: LIVE whenever SerpApi key is configured!
 const mode: 'LIVE' | 'SIMULATION' | 'REPLAY' = isSerpConfigured
@@ -59,11 +59,11 @@ export const config: ServerConfig = {
     apiKey: youApiKey,
     isConfigured: isYouConfigured,
   },
-  nexconn: {
-    appKey: nexconnAppKey,
-    appSecret: nexconnAppSecret,
-    apiBase: nexconnApiBase,
-    isConfigured: isNexconnConfigured,
+  teamChannel: {
+    appKey: teamChannelAppKey,
+    appSecret: teamChannelAppSecret,
+    apiBase: teamChannelApiBase,
+    isConfigured: isTeamChannelConfigured,
   },
   mode,
   budget: {
