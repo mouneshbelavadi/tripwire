@@ -1,0 +1,1804 @@
+{
+  "retrieved_date_ist": "2026-11-21",
+  "serpapi_navigation_pages": 189,
+  "distinct_explicit_engine_values": 169,
+  "records": [
+    {
+      "name": "serp_search-api",
+      "url": "https://serpapi.com/search-api",
+      "status": "readable",
+      "chars": 89293,
+      "sha256": "6eea7ebf3907f640373df72252791e403e8b656a512a78a30a4c01f9e4036aac"
+    },
+    {
+      "name": "serp_google-about-this-result",
+      "url": "https://serpapi.com/google-about-this-result",
+      "status": "readable",
+      "chars": 27776,
+      "sha256": "1fd8982fdf2f5072178385b86f63a8e82e0ee3d620ac2ce3b25f7cd4d53ed709"
+    },
+    {
+      "name": "serp_google-light-api",
+      "url": "https://serpapi.com/google-light-api",
+      "status": "readable",
+      "chars": 14099,
+      "sha256": "a55cb7f39aa5b7496cc1c1fa70072b6ef6e559e3402401b636b102c9cd1b7b21"
+    },
+    {
+      "name": "serp_google-ai-mode-api",
+      "url": "https://serpapi.com/google-ai-mode-api",
+      "status": "readable",
+      "chars": 112839,
+      "sha256": "df7a831ecab41e3769a35719e34e3935ea9ee16064502e3c915253751af9fe5d"
+    },
+    {
+      "name": "serp_google-ai-overview-api",
+      "url": "https://serpapi.com/google-ai-overview-api",
+      "status": "readable",
+      "chars": 22000,
+      "sha256": "370cd6db590b45319d188a351c5a01d182a6bd879db9b71624877d1afd81aa86"
+    },
+    {
+      "name": "serp_google-gemini-api",
+      "url": "https://serpapi.com/google-gemini-api",
+      "status": "readable",
+      "chars": 26522,
+      "sha256": "a78800c3ebf4e76b20f5248dbc5cc355c9a772415288674edad5e712742e63a2"
+    },
+    {
+      "name": "serp_google-ads-api",
+      "url": "https://serpapi.com/google-ads-api",
+      "status": "readable",
+      "chars": 40786,
+      "sha256": "edad5b9d0beb98ad77b7a0a5c890596a5f2d1118c8c9aec1ca2c835a0d03b985"
+    },
+    {
+      "name": "serp_google-ads-transparency-center-api",
+      "url": "https://serpapi.com/google-ads-transparency-center-api",
+      "status": "readable",
+      "chars": 23018,
+      "sha256": "96c50efa43f67ae26c57112d7546bd7f08182df92cfd574e7498dfe11bdfab72"
+    },
+    {
+      "name": "serp_google-ads-transparency-center-ad-details",
+      "url": "https://serpapi.com/google-ads-transparency-center-ad-details",
+      "status": "readable",
+      "chars": 15142,
+      "sha256": "f0b1badbe41b266368d4debd914817d0aa32b8c5923292d3382ee6d544dfca6a"
+    },
+    {
+      "name": "serp_google-autocomplete-api",
+      "url": "https://serpapi.com/google-autocomplete-api",
+      "status": "readable",
+      "chars": 20292,
+      "sha256": "e7c62d417033a8faa5e7e0dcc30745ed4413c03fb6750f05dff55de6f19c8b5f"
+    },
+    {
+      "name": "serp_google-books-api",
+      "url": "https://serpapi.com/google-books-api",
+      "status": "readable",
+      "chars": 18763,
+      "sha256": "e467524186a45ffd1b6b38cec5106b14488f8cb3bd1d468e461019230a0614d8"
+    },
+    {
+      "name": "serp_google-events-api",
+      "url": "https://serpapi.com/google-events-api",
+      "status": "readable",
+      "chars": 13340,
+      "sha256": "cc4c703e171644c79de1e387dd95d1f328ecd6b5cd9d33f23b4e1be237c440a0"
+    },
+    {
+      "name": "serp_google-event-details-api",
+      "url": "https://serpapi.com/google-event-details-api",
+      "status": "readable",
+      "chars": 20952,
+      "sha256": "e7c5799f27bb3e2cbd175d5cab8839b1a4d4221343b8cb48c00dca050f9c8d41"
+    },
+    {
+      "name": "serp_google-finance-api",
+      "url": "https://serpapi.com/google-finance-api",
+      "status": "readable",
+      "chars": 32670,
+      "sha256": "07fec0693d4ea0882e3df10bc1625f7b7e24939b07913bf31720ef7f3844c323"
+    },
+    {
+      "name": "serp_google-finance-autocomplete-api",
+      "url": "https://serpapi.com/google-finance-autocomplete-api",
+      "status": "readable",
+      "chars": 18462,
+      "sha256": "084db33fa76078e01a29df7fd9c4f07d69d06d3e931121e2a53e9160c5726b81"
+    },
+    {
+      "name": "serp_google-finance-markets",
+      "url": "https://serpapi.com/google-finance-markets",
+      "status": "readable",
+      "chars": 27163,
+      "sha256": "154040f3179b60737f8c051ba0af5731ab877b804fd40d39d592f473f5e911f9"
+    },
+    {
+      "name": "serp_google-flights-api",
+      "url": "https://serpapi.com/google-flights-api",
+      "status": "readable",
+      "chars": 55026,
+      "sha256": "8b8f7d6bcd9a587f4d51d6238526e72ce784aed8156e81b14a3dfa9f740e4973"
+    },
+    {
+      "name": "serp_google-flights-autocomplete-api",
+      "url": "https://serpapi.com/google-flights-autocomplete-api",
+      "status": "readable",
+      "chars": 8394,
+      "sha256": "661758931e4d7292689fe9792e67a6537fcaf61fd781d6d0a41b3fd0fa783855"
+    },
+    {
+      "name": "serp_google-flights-calendar-api",
+      "url": "https://serpapi.com/google-flights-calendar-api",
+      "status": "readable",
+      "chars": 11745,
+      "sha256": "6b007c87ffad6365af2d972721b4c46173fc6907d74853240973d049d6a15b1b"
+    },
+    {
+      "name": "serp_google-flights-deals-api",
+      "url": "https://serpapi.com/google-flights-deals-api",
+      "status": "readable",
+      "chars": 42765,
+      "sha256": "ed55aa08e0ca03197f3854edd8e893a554c32f49b9b0104895f7391799dfd8d4"
+    },
+    {
+      "name": "serp_google-forums-api",
+      "url": "https://serpapi.com/google-forums-api",
+      "status": "readable",
+      "chars": 22273,
+      "sha256": "4fef2322e1bceea4bb16ccd72a649f01b181a372e1af880900f9cf3b25ac775b"
+    },
+    {
+      "name": "serp_google-hotels-api",
+      "url": "https://serpapi.com/google-hotels-api",
+      "status": "readable",
+      "chars": 46329,
+      "sha256": "42f021dc43fdd7a9eb8146bfe989e51fe7de927795df8da76fae7f2fe6b9725f"
+    },
+    {
+      "name": "serp_google-hotels-autocomplete-api",
+      "url": "https://serpapi.com/google-hotels-autocomplete-api",
+      "status": "readable",
+      "chars": 7290,
+      "sha256": "88a06c9b4de2ed13edc9a387152864970c50e311a3355d8d737208cd2eb8f904"
+    },
+    {
+      "name": "serp_google-hotels-price-calendar-api",
+      "url": "https://serpapi.com/google-hotels-price-calendar-api",
+      "status": "readable",
+      "chars": 7719,
+      "sha256": "9ca9b21a6053b62bb6a5a36227c25432814358942b84943b19ed376fc3c1b37b"
+    },
+    {
+      "name": "serp_google-hotels-photos-api",
+      "url": "https://serpapi.com/google-hotels-photos-api",
+      "status": "readable",
+      "chars": 9014,
+      "sha256": "29a0dd0556ebe6b85f89d2bb615f10c9b8ba482258b82f1d54a807216c54b6cb"
+    },
+    {
+      "name": "serp_google-hotels-reviews-api",
+      "url": "https://serpapi.com/google-hotels-reviews-api",
+      "status": "readable",
+      "chars": 26362,
+      "sha256": "34f9a1b1d9e9806f0518d636519398c626bbd15929ba96b5ed14e1e43d574334"
+    },
+    {
+      "name": "serp_google-images-api",
+      "url": "https://serpapi.com/google-images-api",
+      "status": "readable",
+      "chars": 63503,
+      "sha256": "4bd9a399d0f2ff4aa9ef9a639a374f767313ef2cf781ff81f64412ac97d8f07f"
+    },
+    {
+      "name": "serp_google-images-light-api",
+      "url": "https://serpapi.com/google-images-light-api",
+      "status": "readable",
+      "chars": 23873,
+      "sha256": "01a4bfcd30ffc41c6967af37880c43ceb5b590aee9c7e01047d46c91936f7344"
+    },
+    {
+      "name": "serp_google-images-related-content-api",
+      "url": "https://serpapi.com/google-images-related-content-api",
+      "status": "readable",
+      "chars": 16766,
+      "sha256": "336686974b76b63a131337c0a191167ff7f9b14bf6f4ef687d7ef9176887152b"
+    },
+    {
+      "name": "serp_google-immersive-product-api",
+      "url": "https://serpapi.com/google-immersive-product-api",
+      "status": "readable",
+      "chars": 39322,
+      "sha256": "91df32b9527bb3913bf86d4af8c4fd4f77b6003fb08c33fc6981bab1f352eb63"
+    },
+    {
+      "name": "serp_google-jobs-api",
+      "url": "https://serpapi.com/google-jobs-api",
+      "status": "readable",
+      "chars": 55202,
+      "sha256": "8a44340bc7baaed129dcf5b7f3a6dec0111cab2cd3e6e089919373ca1a3a14a0"
+    },
+    {
+      "name": "serp_google-jobs-listing-api",
+      "url": "https://serpapi.com/google-jobs-listing-api",
+      "status": "readable",
+      "chars": 5298,
+      "sha256": "f6c1e17efbfb732df4fc7737cb8ae9f587fe9ec151c9250628ef61c15ef5f038"
+    },
+    {
+      "name": "serp_google-lens-api",
+      "url": "https://serpapi.com/google-lens-api",
+      "status": "readable",
+      "chars": 45204,
+      "sha256": "75e89869add7a94306e7a729e0d42dd2ecf4b15723477e176a48a8efd020260b"
+    },
+    {
+      "name": "serp_google-local-api",
+      "url": "https://serpapi.com/google-local-api",
+      "status": "readable",
+      "chars": 17277,
+      "sha256": "d070b0cbacaacea83a837b0ac6b33daebcfc3c30104cdcd721cd9aca65aba25a"
+    },
+    {
+      "name": "serp_google-local-services-api",
+      "url": "https://serpapi.com/google-local-services-api",
+      "status": "readable",
+      "chars": 11681,
+      "sha256": "cb499ec308d59261a66a2e0a557fe3fd98704c586d76ef164e1b5f411cab69e1"
+    },
+    {
+      "name": "serp_google-maps-api",
+      "url": "https://serpapi.com/google-maps-api",
+      "status": "readable",
+      "chars": 24254,
+      "sha256": "6741460242b52b24ba2ddfec5071b38d7ea461eca1f7b845821492a49ce703d4"
+    },
+    {
+      "name": "serp_google-maps-photos-api",
+      "url": "https://serpapi.com/google-maps-photos-api",
+      "status": "readable",
+      "chars": 8827,
+      "sha256": "df70f9be9c4c0655f4b71d9f4be81f24c51c80c635301d65460c1d285c7bfcc1"
+    },
+    {
+      "name": "serp_google-maps-photo-meta-api",
+      "url": "https://serpapi.com/google-maps-photo-meta-api",
+      "status": "readable",
+      "chars": 4171,
+      "sha256": "02162563c7e19ba5bd1c341f4f306926806c01654f9fb939723348e280950329"
+    },
+    {
+      "name": "serp_google-maps-autocomplete-api",
+      "url": "https://serpapi.com/google-maps-autocomplete-api",
+      "status": "readable",
+      "chars": 10648,
+      "sha256": "67cb24d1b50f2d1533b49e90e999fb654bfbac21c1d626467e2d2351de61d090"
+    },
+    {
+      "name": "serp_google-maps-directions-api",
+      "url": "https://serpapi.com/google-maps-directions-api",
+      "status": "readable",
+      "chars": 27706,
+      "sha256": "a0e9997797a2258f2a8e818d3f089b5a71570cb94b6ce417331fb6328b9a589f"
+    },
+    {
+      "name": "serp_google-maps-traffic-api",
+      "url": "https://serpapi.com/google-maps-traffic-api",
+      "status": "readable",
+      "chars": 10425,
+      "sha256": "59c7b614a0f9c4495d6a005b7875009436a188769cfc3db72d3b13aec6ac5800"
+    },
+    {
+      "name": "serp_google-maps-posts-api",
+      "url": "https://serpapi.com/google-maps-posts-api",
+      "status": "readable",
+      "chars": 9363,
+      "sha256": "6e3859b3d09d785c2d7aa4bdf9ecbe4f4539da7a506782981cdb57e0fff35a9a"
+    },
+    {
+      "name": "serp_google-maps-reviews-api",
+      "url": "https://serpapi.com/google-maps-reviews-api",
+      "status": "readable",
+      "chars": 40540,
+      "sha256": "105ce0aabd5d34fa3d84391bb3599618f5463964a07ffbf45a9642d31b66bf81"
+    },
+    {
+      "name": "serp_google-maps-contributor-reviews-api",
+      "url": "https://serpapi.com/google-maps-contributor-reviews-api",
+      "status": "readable",
+      "chars": 20728,
+      "sha256": "5055cff70852a229ddf501c20fe1a0a2a6ee5e606c5dab28bf2bf551aee99ef5"
+    },
+    {
+      "name": "serp_google-news-api",
+      "url": "https://serpapi.com/google-news-api",
+      "status": "readable",
+      "chars": 60425,
+      "sha256": "90ed4fd7ed1a411502a28c091c7fb71e3aa47fa3aa6289fc681642a7acfda9ee"
+    },
+    {
+      "name": "serp_google-news-light-api",
+      "url": "https://serpapi.com/google-news-light-api",
+      "status": "readable",
+      "chars": 10259,
+      "sha256": "72934f92869854051264d957a5c7100eb7395d94a3f0ea5e589b35dd3e347bbc"
+    },
+    {
+      "name": "serp_google-patents-api",
+      "url": "https://serpapi.com/google-patents-api",
+      "status": "readable",
+      "chars": 18437,
+      "sha256": "dbb29e6971c57eda57c580284a59fb9470a1d8bed84fde2949482bcc06243071"
+    },
+    {
+      "name": "serp_google-patents-details-api",
+      "url": "https://serpapi.com/google-patents-details-api",
+      "status": "readable",
+      "chars": 26832,
+      "sha256": "60c7a4ccd0586e4821880b4eddaefbe65c8c0fe851c269e12e6b2b656a724f2b"
+    },
+    {
+      "name": "serp_google-play-api",
+      "url": "https://serpapi.com/google-play-api",
+      "status": "readable",
+      "chars": 99458,
+      "sha256": "7f75b0fe3229068fef290681ac60c0ea0ae78e139d68810a85bda28d71544676"
+    },
+    {
+      "name": "serp_google-play-games",
+      "url": "https://serpapi.com/google-play-games",
+      "status": "readable",
+      "chars": 112053,
+      "sha256": "e8b18a0f4a84d6ec87ff17fea1e4baa21b33ee0a1c4a8e97a8324ac0f95ae1de"
+    },
+    {
+      "name": "serp_google-play-movies",
+      "url": "https://serpapi.com/google-play-movies",
+      "status": "readable",
+      "chars": 60179,
+      "sha256": "d82d931ac470faa37c77a9898eded3df82adea86e77b908dc8c3e38cb12f7546"
+    },
+    {
+      "name": "serp_google-play-books",
+      "url": "https://serpapi.com/google-play-books",
+      "status": "readable",
+      "chars": 92529,
+      "sha256": "3923e9ba2d968ad2e00adec3ed1b1faa712a0ff36caecb7429e975cfe7b9839b"
+    },
+    {
+      "name": "serp_google-play-product-api",
+      "url": "https://serpapi.com/google-play-product-api",
+      "status": "readable",
+      "chars": 41191,
+      "sha256": "f5041628a1139b9a3cac1e779ef5109a37463cce66f04b141d1f1a2a2d7a737f"
+    },
+    {
+      "name": "serp_google-product-api",
+      "url": "https://serpapi.com/google-product-api",
+      "status": "readable",
+      "chars": 61348,
+      "sha256": "3e874ca3bc836ae5417033d733cbf0b311df0d679b8003543d7ede0c5b9465dc"
+    },
+    {
+      "name": "serp_google-related-questions-api",
+      "url": "https://serpapi.com/google-related-questions-api",
+      "status": "readable",
+      "chars": 29565,
+      "sha256": "140e79d850d67da710217d0ac8213bb3e1e4f5c81bb0d761a4b21328b4f0d13e"
+    },
+    {
+      "name": "serp_google-reverse-image",
+      "url": "https://serpapi.com/google-reverse-image",
+      "status": "readable",
+      "chars": 42475,
+      "sha256": "4932b2e58931e2a6e1dfd337a2766cc97f25d946f015fd9344d66750685e9f25"
+    },
+    {
+      "name": "serp_google-scholar-api",
+      "url": "https://serpapi.com/google-scholar-api",
+      "status": "readable",
+      "chars": 40495,
+      "sha256": "85bddf400cff84b1b1b1946ab0a55f5269d27829e39746000ca37a18ea245d85"
+    },
+    {
+      "name": "serp_google-scholar-cite-api",
+      "url": "https://serpapi.com/google-scholar-cite-api",
+      "status": "readable",
+      "chars": 7270,
+      "sha256": "d18870cdcba68869a0ca5bbb14aa0a02ba9cbf98e9db65d989dbda13b2bba5b8"
+    },
+    {
+      "name": "serp_google-scholar-author-api",
+      "url": "https://serpapi.com/google-scholar-author-api",
+      "status": "readable",
+      "chars": 11446,
+      "sha256": "ce1bd4b0f03c39df4ecab63df75fcf5242b46a9e7fd59f6a0c151e21d9dda354"
+    },
+    {
+      "name": "serp_google-scholar-case-law-api",
+      "url": "https://serpapi.com/google-scholar-case-law-api",
+      "status": "readable",
+      "chars": 7344,
+      "sha256": "e77326bef9c20217269b3fa2d8b73debd4c672b1ad65fe6d5462c6ce89ecb453"
+    },
+    {
+      "name": "serp_google-shopping-api",
+      "url": "https://serpapi.com/google-shopping-api",
+      "status": "readable",
+      "chars": 19010,
+      "sha256": "c6a2c70116e5ec715c9a70bb1deafea89e4aeb8f7604f85d7fcbc232df049ae8"
+    },
+    {
+      "name": "serp_google-shopping-light-api",
+      "url": "https://serpapi.com/google-shopping-light-api",
+      "status": "readable",
+      "chars": 29287,
+      "sha256": "5826314b665f6c21ecb377188e7d4f56bfc2a1ca2e6c86961811c9d9a73ea0b3"
+    },
+    {
+      "name": "serp_google-shopping-filters-api",
+      "url": "https://serpapi.com/google-shopping-filters-api",
+      "status": "readable",
+      "chars": 9517,
+      "sha256": "4294567375f15eef527b474e59ceeedee9f48b99ec518e42f4b09c668b69c7f0"
+    },
+    {
+      "name": "serp_google-short-videos-api",
+      "url": "https://serpapi.com/google-short-videos-api",
+      "status": "readable",
+      "chars": 11024,
+      "sha256": "2571cb5b05bdad5bcec36439e49c060a1776c35d852404501394324b4396d05d"
+    },
+    {
+      "name": "serp_google-sports-api",
+      "url": "https://serpapi.com/google-sports-api",
+      "status": "readable",
+      "chars": 16857,
+      "sha256": "db3a705939d18e5d49f4ba748f7b7ad12440721155115554affe1a55136c9a3f"
+    },
+    {
+      "name": "serp_google-translate-api",
+      "url": "https://serpapi.com/google-translate-api",
+      "status": "readable",
+      "chars": 15492,
+      "sha256": "3c34d6e6ee5b543ca4dd27013ce54b302dd6f24778ddc75428724da6103c5e66"
+    },
+    {
+      "name": "serp_google-travel-explore-api",
+      "url": "https://serpapi.com/google-travel-explore-api",
+      "status": "readable",
+      "chars": 29895,
+      "sha256": "4fceb81b195813489b995ed5d61f87700529331d3339cefb99291eeffca7cc28"
+    },
+    {
+      "name": "serp_google-trends-api",
+      "url": "https://serpapi.com/google-trends-api",
+      "status": "readable",
+      "chars": 30605,
+      "sha256": "3c928c6c809ff69172a45de8812a01a296d9caf0b79f74c26b70c296a1a37b71"
+    },
+    {
+      "name": "serp_google-trends-autocomplete",
+      "url": "https://serpapi.com/google-trends-autocomplete",
+      "status": "readable",
+      "chars": 6233,
+      "sha256": "6d3db21dd0f28cdddcda05654b0cb50a92d2f68b7974838ce0d7719531083a33"
+    },
+    {
+      "name": "serp_google-trends-trending-now",
+      "url": "https://serpapi.com/google-trends-trending-now",
+      "status": "readable",
+      "chars": 18600,
+      "sha256": "808bed35bb0960d7d9aa7a2754ffa781f3dce83d3c7b548d5c8af9209d4a25f9"
+    },
+    {
+      "name": "serp_google-trends-news",
+      "url": "https://serpapi.com/google-trends-news",
+      "status": "readable",
+      "chars": 5726,
+      "sha256": "275cc158339334d1467c96fdb3dc56792330deedb4e97649208c25b1a21026a0"
+    },
+    {
+      "name": "serp_google-videos-api",
+      "url": "https://serpapi.com/google-videos-api",
+      "status": "readable",
+      "chars": 19029,
+      "sha256": "a016c120fd54dbe57edbfb3ca80fde419d5e067f9428890f939b40f9b01df00f"
+    },
+    {
+      "name": "serp_google-videos-light-api",
+      "url": "https://serpapi.com/google-videos-light-api",
+      "status": "readable",
+      "chars": 12128,
+      "sha256": "36a389f2be6c82435fa02f7497e18220b18edfaefe10bc5b6f935d4d3a93296f"
+    },
+    {
+      "name": "serp_airbnb-search-api",
+      "url": "https://serpapi.com/airbnb-search-api",
+      "status": "readable",
+      "chars": 38720,
+      "sha256": "3ddb857356510952c756c8a3e3588163a8e7ee1b0b25560a8d0005a0c63f2c3a"
+    },
+    {
+      "name": "serp_amazon-search-api",
+      "url": "https://serpapi.com/amazon-search-api",
+      "status": "readable",
+      "chars": 58621,
+      "sha256": "fe0635e4baf8293068fa337a5a134b2c8fd11f0ae287f5c79ed2dcf48d18c2c2"
+    },
+    {
+      "name": "serp_amazon-autocomplete-api",
+      "url": "https://serpapi.com/amazon-autocomplete-api",
+      "status": "readable",
+      "chars": 12934,
+      "sha256": "049bf97add366e77caaca02971ae088dad5fc62d039a569f3f458abfa3f67263"
+    },
+    {
+      "name": "serp_amazon-fresh-api",
+      "url": "https://serpapi.com/amazon-fresh-api",
+      "status": "readable",
+      "chars": 29732,
+      "sha256": "c44e03177738e6fe368649f82aacec049f4b0929f9280eea7269cbe6f488fac7"
+    },
+    {
+      "name": "serp_amazon-pharmacy-api",
+      "url": "https://serpapi.com/amazon-pharmacy-api",
+      "status": "readable",
+      "chars": 21121,
+      "sha256": "4228c9bc8062b7ffe02cebdf61a8947a4fc82efdc8e56b5dc6da882590cc44e4"
+    },
+    {
+      "name": "serp_amazon-product-api",
+      "url": "https://serpapi.com/amazon-product-api",
+      "status": "readable",
+      "chars": 105315,
+      "sha256": "375e637530d10e67313c2d40e2c9f270f81bfca603e8380025117173afa12978"
+    },
+    {
+      "name": "serp_amazon-promotion-api",
+      "url": "https://serpapi.com/amazon-promotion-api",
+      "status": "readable",
+      "chars": 12715,
+      "sha256": "45fcc2d365090fc969c611e46543b8c963a2f56e63f61cb3024042f53028d1b4"
+    },
+    {
+      "name": "serp_apple-app-store",
+      "url": "https://serpapi.com/apple-app-store",
+      "status": "readable",
+      "chars": 33828,
+      "sha256": "6f4420f5d17efdf7df356beefad7de5498328f57d31f7ed82addf0cfcbe2e709"
+    },
+    {
+      "name": "serp_apple-reviews",
+      "url": "https://serpapi.com/apple-reviews",
+      "status": "readable",
+      "chars": 20062,
+      "sha256": "4dd7bb07ca1dcf3afe6ba10b1a4baa1c95b94f71dc5425ba4140a31760ebcb1b"
+    },
+    {
+      "name": "serp_apple-product",
+      "url": "https://serpapi.com/apple-product",
+      "status": "readable",
+      "chars": 27197,
+      "sha256": "c55f2c56a3ea84de9e6dea70c9da3cc7b06f0e0b16497e6176259b6d6505aad3"
+    },
+    {
+      "name": "serp_apple-maps-api",
+      "url": "https://serpapi.com/apple-maps-api",
+      "status": "readable",
+      "chars": 33919,
+      "sha256": "94a4d25100b0eb885152d36a84607bd1c9bef3df361849c5874d4dd9cab61861"
+    },
+    {
+      "name": "serp_apple-maps-places-api",
+      "url": "https://serpapi.com/apple-maps-places-api",
+      "status": "readable",
+      "chars": 27951,
+      "sha256": "f70812b0aebaf529b217c7abd2d3ad4cfbb70f5544b1c96114eeef20ed73d292"
+    },
+    {
+      "name": "serp_autozone-search-api",
+      "url": "https://serpapi.com/autozone-search-api",
+      "status": "readable",
+      "chars": 19255,
+      "sha256": "7a5f2f48a86da67577efeb2f5fbd0bccf66dda67cbd373c2ca2926504296aa80"
+    },
+    {
+      "name": "serp_autozone-product-api",
+      "url": "https://serpapi.com/autozone-product-api",
+      "status": "readable",
+      "chars": 20468,
+      "sha256": "dfaa2129a7132df34c3692ec2471ac20ca32553eed2df70fa98b3c58bd495bb5"
+    },
+    {
+      "name": "serp_baidu-search-api",
+      "url": "https://serpapi.com/baidu-search-api",
+      "status": "readable",
+      "chars": 18672,
+      "sha256": "78e3068203ae476644e462c14f59243741fc37780fc3253827f1371c174de851"
+    },
+    {
+      "name": "serp_baidu-news-api",
+      "url": "https://serpapi.com/baidu-news-api",
+      "status": "readable",
+      "chars": 19623,
+      "sha256": "c439462202c974ea9702bb9365df3762d0d67a9cc7b2fa6c65d8f52a4ac10e82"
+    },
+    {
+      "name": "serp_baidu-maps-api",
+      "url": "https://serpapi.com/baidu-maps-api",
+      "status": "readable",
+      "chars": 18947,
+      "sha256": "b21aa5e670e9671ea86c974bc032107236fc0601bcfea3d246e6f58dd777bbe1"
+    },
+    {
+      "name": "serp_bing-search-api",
+      "url": "https://serpapi.com/bing-search-api",
+      "status": "readable",
+      "chars": 28042,
+      "sha256": "38f7fd14e1859b9ee2515724e5657cfd292618d74bf133cedc41d39e816c146e"
+    },
+    {
+      "name": "serp_bing-shopping-api",
+      "url": "https://serpapi.com/bing-shopping-api",
+      "status": "readable",
+      "chars": 49487,
+      "sha256": "a1bcfd16946bef216b25d38dbea360bd3ee22becb406f4bffcdca4ba3d90cbeb"
+    },
+    {
+      "name": "serp_bing-product-api",
+      "url": "https://serpapi.com/bing-product-api",
+      "status": "readable",
+      "chars": 13520,
+      "sha256": "e8b44eea0736df363d2db4be2ce7dcd6db8b90c05afa235e036d667ee5fcaf9d"
+    },
+    {
+      "name": "serp_bing-maps-api",
+      "url": "https://serpapi.com/bing-maps-api",
+      "status": "readable",
+      "chars": 31931,
+      "sha256": "3cbf9d2458ab431aa18a6ac41b784f3c1fe76ab80f6eea995cc21b28462959ff"
+    },
+    {
+      "name": "serp_bing-news-api",
+      "url": "https://serpapi.com/bing-news-api",
+      "status": "readable",
+      "chars": 24431,
+      "sha256": "7b11c3dfb4f5c0186a44dbd47f557794eb8ce7c9c1cc8a04d018293e2db20e1d"
+    },
+    {
+      "name": "serp_bing-reverse-image-api",
+      "url": "https://serpapi.com/bing-reverse-image-api",
+      "status": "readable",
+      "chars": 34619,
+      "sha256": "369b643029b3a8e7f9ee22e2f6f366f92296fbea9313e15d7f87e74c6ff6fe07"
+    },
+    {
+      "name": "serp_bing-videos-api",
+      "url": "https://serpapi.com/bing-videos-api",
+      "status": "readable",
+      "chars": 25000,
+      "sha256": "04d827ed81a80fdeeefa2add932c44cf3dca87646d8454c39d4a7c6a6d869c40"
+    },
+    {
+      "name": "serp_bing-copilot-api",
+      "url": "https://serpapi.com/bing-copilot-api",
+      "status": "readable",
+      "chars": 22138,
+      "sha256": "e3650058c864100b568455cbcc01674c22ec143c719a7ba9992469ba82ebd334"
+    },
+    {
+      "name": "serp_bing-images-api",
+      "url": "https://serpapi.com/bing-images-api",
+      "status": "readable",
+      "chars": 32029,
+      "sha256": "a38dc67c1c38257b55ab48cb570cdf9d67c9a2ea6b921af7e39a12af44e6f42f"
+    },
+    {
+      "name": "serp_booking-api",
+      "url": "https://serpapi.com/booking-api",
+      "status": "readable",
+      "chars": 47468,
+      "sha256": "17f1745be0a95d55c595edf7871424901741391157fa3b7c99443cdc5d12a377"
+    },
+    {
+      "name": "serp_brave-search-api",
+      "url": "https://serpapi.com/brave-search-api",
+      "status": "readable",
+      "chars": 43755,
+      "sha256": "5241ca4499e3753ddd34fba3367ef4ec695c0440424068332121a6b085716bc7"
+    },
+    {
+      "name": "serp_brave-ai-mode-api",
+      "url": "https://serpapi.com/brave-ai-mode-api",
+      "status": "readable",
+      "chars": 54562,
+      "sha256": "d79f956cd2af28751daf0b1ab57d5d66b5f2491a4560831fbabaff79fb68c5ef"
+    },
+    {
+      "name": "serp_brave-images-api",
+      "url": "https://serpapi.com/brave-images-api",
+      "status": "readable",
+      "chars": 10576,
+      "sha256": "b89bb2d9b8e564cd80166c1b6e17ebf69b44a96ea065e48bbb3dda74d2c69437"
+    },
+    {
+      "name": "serp_brave-news-api",
+      "url": "https://serpapi.com/brave-news-api",
+      "status": "readable",
+      "chars": 14256,
+      "sha256": "e2de8d55b6efa577efbb44db5ee792e5acc09b4ba29746176d018a2e85ced9de"
+    },
+    {
+      "name": "serp_brave-videos-api",
+      "url": "https://serpapi.com/brave-videos-api",
+      "status": "readable",
+      "chars": 16160,
+      "sha256": "c0807119871cb060ce050cf40ef27f04017343195ccbadb9326bdb6a6f6d16d9"
+    },
+    {
+      "name": "serp_doordash-search-api",
+      "url": "https://serpapi.com/doordash-search-api",
+      "status": "readable",
+      "chars": 28749,
+      "sha256": "03b7810621ba237cfac23dfacce0e60923b04853cc6041bd32b330b53ae6bbcb"
+    },
+    {
+      "name": "serp_duckduckgo-search-api",
+      "url": "https://serpapi.com/duckduckgo-search-api",
+      "status": "readable",
+      "chars": 28705,
+      "sha256": "cc1e5d0c93c13ae37531fa02d7031e4c37266262b7eb9f163a93e88c2f3a20b1"
+    },
+    {
+      "name": "serp_duckduckgo-search-assist-api",
+      "url": "https://serpapi.com/duckduckgo-search-assist-api",
+      "status": "readable",
+      "chars": 8181,
+      "sha256": "23c4290eddb7d03c399de9b203f86e2d2c9f5a8d1d1569433b6e68f1e64039ef"
+    },
+    {
+      "name": "serp_duck-ai-api",
+      "url": "https://serpapi.com/duck-ai-api",
+      "status": "readable",
+      "chars": 27619,
+      "sha256": "ce8f25c8ef1ca1217525f308ce5651f28d5b34bca48367f8cfa6bebcee252fbb"
+    },
+    {
+      "name": "serp_duckduckgo-maps-api",
+      "url": "https://serpapi.com/duckduckgo-maps-api",
+      "status": "readable",
+      "chars": 14729,
+      "sha256": "b377cc6641131e687cc9f485879472f94ea9fb8789f69130765f5bb9acf3461d"
+    },
+    {
+      "name": "serp_duckduckgo-news-api",
+      "url": "https://serpapi.com/duckduckgo-news-api",
+      "status": "readable",
+      "chars": 7460,
+      "sha256": "e793cdc553dff40321983949e9bf845cc33abeb9f82ba43a5f3dd2f54c722bd6"
+    },
+    {
+      "name": "serp_duckduckgo-shopping-api",
+      "url": "https://serpapi.com/duckduckgo-shopping-api",
+      "status": "readable",
+      "chars": 22490,
+      "sha256": "af29ed846e4b8078be2d663fa741e2bc5605058f51a0f1f83344281a6276eaef"
+    },
+    {
+      "name": "serp_duckduckgo-images-api",
+      "url": "https://serpapi.com/duckduckgo-images-api",
+      "status": "readable",
+      "chars": 19903,
+      "sha256": "f21ab44b6a0fbb188281e0b923c4f0eb0d424865fdbd02db3767272260f6feeb"
+    },
+    {
+      "name": "serp_duckduckgo-light-api",
+      "url": "https://serpapi.com/duckduckgo-light-api",
+      "status": "readable",
+      "chars": 12000,
+      "sha256": "3b5ecd36c6401e618246f77cd4e9464a56664412fc5c552f082ca2f487527f77"
+    },
+    {
+      "name": "serp_ebay-search-api",
+      "url": "https://serpapi.com/ebay-search-api",
+      "status": "readable",
+      "chars": 27229,
+      "sha256": "6681524142767978d02ca2204ceb5428326b0e102e50abaa948670e923a70c99"
+    },
+    {
+      "name": "serp_ebay-product-api",
+      "url": "https://serpapi.com/ebay-product-api",
+      "status": "readable",
+      "chars": 80469,
+      "sha256": "edb1d0969eacde8ccac56d21176795e8eca993006c0cd70ad0285bab93211198"
+    },
+    {
+      "name": "serp_ebay-seller-api",
+      "url": "https://serpapi.com/ebay-seller-api",
+      "status": "readable",
+      "chars": 17442,
+      "sha256": "3793fae1a1b7349ebcdb718039dfd8686484dc140085fb278ea22c7e41075f54"
+    },
+    {
+      "name": "serp_eventbrite-search-api",
+      "url": "https://serpapi.com/eventbrite-search-api",
+      "status": "readable",
+      "chars": 32543,
+      "sha256": "f5daf47b1bb2dc12084273df597c41fe324eb9e922f4404e014b924c052e55fe"
+    },
+    {
+      "name": "serp_facebook-marketplace-api",
+      "url": "https://serpapi.com/facebook-marketplace-api",
+      "status": "readable",
+      "chars": 50569,
+      "sha256": "2ff769df6d110a879283da3f0457dc0734ac3fc44d0dad973a3d0af5ca265a5a"
+    },
+    {
+      "name": "serp_facebook-profile-api",
+      "url": "https://serpapi.com/facebook-profile-api",
+      "status": "readable",
+      "chars": 22197,
+      "sha256": "a7d0aa5b981485aa03ab607d94ce765a2d1c5f2e27b5ca8877920212ad805d09"
+    },
+    {
+      "name": "serp_flightradar24-api",
+      "url": "https://serpapi.com/flightradar24-api",
+      "status": "readable",
+      "chars": 15982,
+      "sha256": "816b94a376bc21048209a21e1eecd96da31ebf11dce125c53a3f0052d8b7c675"
+    },
+    {
+      "name": "serp_glassdoor-jobs-api",
+      "url": "https://serpapi.com/glassdoor-jobs-api",
+      "status": "readable",
+      "chars": 15920,
+      "sha256": "f09ab98301ada9858df708b9c65a0b711b606f44671affb87ab253e003032ee7"
+    },
+    {
+      "name": "serp_glassdoor-companies-api",
+      "url": "https://serpapi.com/glassdoor-companies-api",
+      "status": "readable",
+      "chars": 13248,
+      "sha256": "dd5a6a97a32e271ae30c4a4400d056c1305929aef077b2baf326dd431ee7142f"
+    },
+    {
+      "name": "serp_glassdoor-reviews-api",
+      "url": "https://serpapi.com/glassdoor-reviews-api",
+      "status": "readable",
+      "chars": 18413,
+      "sha256": "f60303d80fee92945deb867f034002473509980918ec41f6754407c0e4adac3e"
+    },
+    {
+      "name": "serp_instagram-profile-api",
+      "url": "https://serpapi.com/instagram-profile-api",
+      "status": "readable",
+      "chars": 17723,
+      "sha256": "8ac30db24f4a04a697abf1cc25f45c0da4eb4a1b7b38064984a46d2d62acf024"
+    },
+    {
+      "name": "serp_indeed-jobs-api",
+      "url": "https://serpapi.com/indeed-jobs-api",
+      "status": "readable",
+      "chars": 17331,
+      "sha256": "996707d10113ad125d08c47f9e2677860823d312f230557e9eec1a803c7e0ba4"
+    },
+    {
+      "name": "serp_instagram-popular-api",
+      "url": "https://serpapi.com/instagram-popular-api",
+      "status": "readable",
+      "chars": 20167,
+      "sha256": "456e99982305d4f9ae74055bcfdbefbd262ad85c133e405b29c9dadfc339bd1e"
+    },
+    {
+      "name": "serp_meta-ad-library-api",
+      "url": "https://serpapi.com/meta-ad-library-api",
+      "status": "readable",
+      "chars": 64271,
+      "sha256": "fd8dad4a70fa9232597fbd98860602dfff64b376522226b7568c64a3553cbfbf"
+    },
+    {
+      "name": "serp_napa-search-api",
+      "url": "https://serpapi.com/napa-search-api",
+      "status": "readable",
+      "chars": 27780,
+      "sha256": "77cfff7fb473f48fc1f3d0da5be110d9265636f9f834f40a6f74be40d7f5d1fd"
+    },
+    {
+      "name": "serp_naver-search-api",
+      "url": "https://serpapi.com/naver-search-api",
+      "status": "readable",
+      "chars": 34955,
+      "sha256": "9ae56c38f72eb31e6acf07975e9c06eab56788931d3f3fd3e7a5ad27d79bab63"
+    },
+    {
+      "name": "serp_naver-ai-mode-api",
+      "url": "https://serpapi.com/naver-ai-mode-api",
+      "status": "readable",
+      "chars": 50343,
+      "sha256": "9039356c9a17f2e0c58cd340fab611f6ba343606439aafeaf431621db0351e81"
+    },
+    {
+      "name": "serp_naver-ai-overview-api",
+      "url": "https://serpapi.com/naver-ai-overview-api",
+      "status": "readable",
+      "chars": 28447,
+      "sha256": "d47206d3a3aa1b74ee5529ab77b83cee580f7aa1c14ec9595b941913aff7d52a"
+    },
+    {
+      "name": "serp_naver-knowledge-in-api",
+      "url": "https://serpapi.com/naver-knowledge-in-api",
+      "status": "readable",
+      "chars": 27574,
+      "sha256": "683880e3833baceff7a78ca0ff791926636e38a526f64678e9de1874370f2fe5"
+    },
+    {
+      "name": "serp_naver-maps-api",
+      "url": "https://serpapi.com/naver-maps-api",
+      "status": "readable",
+      "chars": 16790,
+      "sha256": "be1a6d270d0330d8f713e26edd43dda236b9c7339f6db745b7c12d63cf6b40d1"
+    },
+    {
+      "name": "serp_open-table-reviews-api",
+      "url": "https://serpapi.com/open-table-reviews-api",
+      "status": "readable",
+      "chars": 10764,
+      "sha256": "d9ba8cdc4bacbbeaa947d4eb49ed12716af4f59ee7c6ea9aeca446614ca89bd4"
+    },
+    {
+      "name": "serp_pinterest-search-api",
+      "url": "https://serpapi.com/pinterest-search-api",
+      "status": "readable",
+      "chars": 25182,
+      "sha256": "40934bdddf186ae2a7b3d022ef705de1709a30d665251c1aec34bcb75eb9f4cb"
+    },
+    {
+      "name": "serp_home-depot-search-api",
+      "url": "https://serpapi.com/home-depot-search-api",
+      "status": "readable",
+      "chars": 43059,
+      "sha256": "0091f53d95c5bc7a6427045be38cd1de75ba91acd5013ba7737f6183a6faa75c"
+    },
+    {
+      "name": "serp_home-depot-product",
+      "url": "https://serpapi.com/home-depot-product",
+      "status": "readable",
+      "chars": 27980,
+      "sha256": "94f2c6dde5239f86cff385b118ae02f34779b800b329066182d679039fe36f63"
+    },
+    {
+      "name": "serp_home-depot-product-reviews",
+      "url": "https://serpapi.com/home-depot-product-reviews",
+      "status": "readable",
+      "chars": 13204,
+      "sha256": "3409c970e24aeab6cddc36c16be69a8b27cf164f00ecc7fc306da8a572187364"
+    },
+    {
+      "name": "serp_target-search-api",
+      "url": "https://serpapi.com/target-search-api",
+      "status": "readable",
+      "chars": 38420,
+      "sha256": "9c8c0c00159c3f2fa6788a8c817572e65d7b861336af9b80dd157ef62998f753"
+    },
+    {
+      "name": "serp_tiktok-discover-api",
+      "url": "https://serpapi.com/tiktok-discover-api",
+      "status": "readable",
+      "chars": 13900,
+      "sha256": "75b2aa4ce2672ce1d6f0d8e369cf828d6a031e14129268d8d1b128c3ab2ce7b0"
+    },
+    {
+      "name": "serp_tiktok-shop-api",
+      "url": "https://serpapi.com/tiktok-shop-api",
+      "status": "readable",
+      "chars": 22621,
+      "sha256": "0bab565f2c32e4c9128771c82308229c6c353ba9de48a4776e3ad8a577ba9cd4"
+    },
+    {
+      "name": "serp_trader-joes-search-api",
+      "url": "https://serpapi.com/trader-joes-search-api",
+      "status": "readable",
+      "chars": 10899,
+      "sha256": "c153c493a081e4d2cc52463dd581e4d487b659a82e88c520d3151f45c5a0cccb"
+    },
+    {
+      "name": "serp_trader-joes-product-api",
+      "url": "https://serpapi.com/trader-joes-product-api",
+      "status": "readable",
+      "chars": 10234,
+      "sha256": "a71f7dedf5c2208c30ad1fa858063b3d44171b0ecf62407cb5d6e94da9e43505"
+    },
+    {
+      "name": "serp_tripadvisor-search-api",
+      "url": "https://serpapi.com/tripadvisor-search-api",
+      "status": "readable",
+      "chars": 39776,
+      "sha256": "bb335197eff9babbecb4ba93569ce20505bbda9005308362e3b6e6a92f49d44c"
+    },
+    {
+      "name": "serp_tripadvisor-place-api",
+      "url": "https://serpapi.com/tripadvisor-place-api",
+      "status": "readable",
+      "chars": 19451,
+      "sha256": "6673f36f7cf606030338c9ec7c016a6474ece91403cc6d86f02de99a87996b87"
+    },
+    {
+      "name": "serp_tripadvisor-reviews-api",
+      "url": "https://serpapi.com/tripadvisor-reviews-api",
+      "status": "readable",
+      "chars": 19535,
+      "sha256": "3033a2f8de8f11df76fb2fbb1d5ab46aa2a7a2756a528130e8389987a46e85b3"
+    },
+    {
+      "name": "serp_walmart-search-api",
+      "url": "https://serpapi.com/walmart-search-api",
+      "status": "readable",
+      "chars": 25981,
+      "sha256": "c369fb80c4b9836f2f50972d0831b5bbf5fa2829608c3366e5da0c79abe4d033"
+    },
+    {
+      "name": "serp_walmart-product-api",
+      "url": "https://serpapi.com/walmart-product-api",
+      "status": "readable",
+      "chars": 40714,
+      "sha256": "bd824ccf3d0cc30ef106a38d53ab93dc20273358af26fe348ea2aaf7b4787496"
+    },
+    {
+      "name": "serp_walmart-product-sellers-api",
+      "url": "https://serpapi.com/walmart-product-sellers-api",
+      "status": "readable",
+      "chars": 7333,
+      "sha256": "90691671bd15cfc5a22efedbbd4678f68b495cce72a96929f422d14cb7c98a63"
+    },
+    {
+      "name": "serp_walmart-product-reviews-api",
+      "url": "https://serpapi.com/walmart-product-reviews-api",
+      "status": "readable",
+      "chars": 11018,
+      "sha256": "69aa3988f863306de94065e8dc3fbcadd86d6ba0661e37ab619765f4d9890099"
+    },
+    {
+      "name": "serp_walmart-seller-api",
+      "url": "https://serpapi.com/walmart-seller-api",
+      "status": "readable",
+      "chars": 15555,
+      "sha256": "f4715cdf53ebdce8d764162eab118126ca855e1b3fbb9a2abe82a974b1684eda"
+    },
+    {
+      "name": "serp_yahoo-search-api",
+      "url": "https://serpapi.com/yahoo-search-api",
+      "status": "readable",
+      "chars": 68556,
+      "sha256": "01feac4bc574d94c33d4dc4910b6aafeda4270fad0ffa098cb3e04881899ed1e"
+    },
+    {
+      "name": "serp_yahoo-finance-api",
+      "url": "https://serpapi.com/yahoo-finance-api",
+      "status": "readable",
+      "chars": 45899,
+      "sha256": "d52d3b77c5d9bae7520a293a505fdd05916ca687fd9e6c7a18747c91d32df816"
+    },
+    {
+      "name": "serp_yahoo-videos-api",
+      "url": "https://serpapi.com/yahoo-videos-api",
+      "status": "readable",
+      "chars": 14392,
+      "sha256": "59ed34fe815e38a83d016aa3f6ed9d98dc15a2b754b49a4188d74423ed140600"
+    },
+    {
+      "name": "serp_yahoo-images-api",
+      "url": "https://serpapi.com/yahoo-images-api",
+      "status": "readable",
+      "chars": 16496,
+      "sha256": "c4e2c199482e912f47c1f0beadb8e677236d7490ad2d327c2556c2e8b8e97fb5"
+    },
+    {
+      "name": "serp_yahoo-trends-api",
+      "url": "https://serpapi.com/yahoo-trends-api",
+      "status": "readable",
+      "chars": 20280,
+      "sha256": "3a9c1ddb3561c2ce3c1ec1a48de1156f3ebd0c56207a6834cf27fb83ec28b15d"
+    },
+    {
+      "name": "serp_yandex-search-api",
+      "url": "https://serpapi.com/yandex-search-api",
+      "status": "readable",
+      "chars": 26963,
+      "sha256": "a6ae46600827e68da6463206698a928563ef2bd118a99400db5b1d3dbd3ae1ea"
+    },
+    {
+      "name": "serp_yandex-images-api",
+      "url": "https://serpapi.com/yandex-images-api",
+      "status": "readable",
+      "chars": 20738,
+      "sha256": "e593af214b0449c30ff1a1bf4a9ab87531273db963b0a8ad1ddbad1c8dcd20eb"
+    },
+    {
+      "name": "serp_yandex-videos-api",
+      "url": "https://serpapi.com/yandex-videos-api",
+      "status": "readable",
+      "chars": 7937,
+      "sha256": "3c190485926348edd5cdd2fcbc4f88b6a5b44b8d5c0e3fc9c172d789962ae9d7"
+    },
+    {
+      "name": "serp_yelp-search-api",
+      "url": "https://serpapi.com/yelp-search-api",
+      "status": "readable",
+      "chars": 10462,
+      "sha256": "692737047dc99d88434ca6182f04b975834b9750594ad8ded846243239357c62"
+    },
+    {
+      "name": "serp_yelp-place",
+      "url": "https://serpapi.com/yelp-place",
+      "status": "readable",
+      "chars": 19585,
+      "sha256": "9e51be5b1ca2742ecc10f00e0ac37b6dcf88616d58fd26035c8050506c382692"
+    },
+    {
+      "name": "serp_yelp-reviews-api",
+      "url": "https://serpapi.com/yelp-reviews-api",
+      "status": "readable",
+      "chars": 17284,
+      "sha256": "853edfd70798da0e6b15963505d235170352c4655e1efaaf472e1a4a32aab53b"
+    },
+    {
+      "name": "serp_youtube-search-api",
+      "url": "https://serpapi.com/youtube-search-api",
+      "status": "readable",
+      "chars": 34649,
+      "sha256": "01e25bdadfa9a39c3b13e22653d3b1f2d9f1b8f9ac926ef7e300c24adc69f55a"
+    },
+    {
+      "name": "serp_youtube-video-api",
+      "url": "https://serpapi.com/youtube-video-api",
+      "status": "readable",
+      "chars": 58027,
+      "sha256": "6922cce850eeb66f89d75b56988e532d94fff2b4fe3a7e264c845672e326e599"
+    },
+    {
+      "name": "serp_youtube-video-transcript",
+      "url": "https://serpapi.com/youtube-video-transcript",
+      "status": "readable",
+      "chars": 8179,
+      "sha256": "9abaacde5a29fd08f01aa274f6222f4dcdacb0d1fe0d27b7ad8736b89ee4adff"
+    },
+    {
+      "name": "serp_extract-api",
+      "url": "https://serpapi.com/extract-api",
+      "status": "readable",
+      "chars": 13100,
+      "sha256": "f746091a2245fcd5cb2b48ad293d1cf88e8c2460f35866ae04686897c02508c7"
+    },
+    {
+      "name": "serp_youtube-channel-api",
+      "url": "https://serpapi.com/youtube-channel-api",
+      "status": "readable",
+      "chars": 43404,
+      "sha256": "1dd4f9606da4bd45ece00795348801b462cb88ec02d3c5ec10e51c4de8d8fb74"
+    },
+    {
+      "name": "serp_youtube-music-api",
+      "url": "https://serpapi.com/youtube-music-api",
+      "status": "readable",
+      "chars": 16365,
+      "sha256": "227dac9134dc826645b8f44aa105c7c10048da337110f20013f8807a65871383"
+    },
+    {
+      "name": "serp_zillow-search-api",
+      "url": "https://serpapi.com/zillow-search-api",
+      "status": "readable",
+      "chars": 68327,
+      "sha256": "d5f5dee81c9b11a4c96f9cf101cdc3d87d8288279c1dd36ee52f4497e3ab0710"
+    },
+    {
+      "name": "serp_locations-api",
+      "url": "https://serpapi.com/locations-api",
+      "status": "readable",
+      "chars": 2800,
+      "sha256": "a59feef2c00dde62c4ecd061528e0f4abcdef37a15ae48cbbd36cb8ec9c6877d"
+    },
+    {
+      "name": "serp_local-pack",
+      "url": "https://serpapi.com/local-pack",
+      "status": "readable",
+      "chars": 19910,
+      "sha256": "32df0c1fec45cf37d7a2f8c9e1b1083e50377822b36cef97bf5fe932e5f11d4f"
+    },
+    {
+      "name": "serp_images-results",
+      "url": "https://serpapi.com/images-results",
+      "status": "readable",
+      "chars": 12566,
+      "sha256": "c948b08234ddcd91e728952dbb00b482ad9a00d021a6e2afbb798195fc8a8ccd"
+    },
+    {
+      "name": "serp_local-results",
+      "url": "https://serpapi.com/local-results",
+      "status": "readable",
+      "chars": 18588,
+      "sha256": "2e3281a76c4ade66042f0368b796999e6fbbed3b948064521f3bc0a180bfac34"
+    },
+    {
+      "name": "serp_videos-results",
+      "url": "https://serpapi.com/videos-results",
+      "status": "readable",
+      "chars": 6254,
+      "sha256": "8ca34f2063a1d979924ac044746576ba97900a3e3717f2a596348ec225963bff"
+    },
+    {
+      "name": "serp_news-results",
+      "url": "https://serpapi.com/news-results",
+      "status": "readable",
+      "chars": 13422,
+      "sha256": "5b47b2124b1ce53c31c21c1ca9b4bd71a793f45f85584a954690fe91f18432b1"
+    },
+    {
+      "name": "serp_shopping-results",
+      "url": "https://serpapi.com/shopping-results",
+      "status": "readable",
+      "chars": 28725,
+      "sha256": "516d769d1053be2a31da813c22d44cdae1456ccf2cd3067a31275751c51cbecc"
+    },
+    {
+      "name": "serp_search-archive-api",
+      "url": "https://serpapi.com/search-archive-api",
+      "status": "readable",
+      "chars": 1190,
+      "sha256": "bb195435311e6a88d40d36555a6bc22d7d4dc6138ecbe28cee0c30816e0f459b"
+    },
+    {
+      "name": "showcase",
+      "url": "https://serpapi.github.io/BuiltWithSerpApi/",
+      "status": "readable",
+      "chars": 328993,
+      "sha256": "0df0f6407e166cdb840b4ca198c802a5d19a54569d16832430a2acded001e3b2"
+    },
+    {
+      "name": "you-index",
+      "url": "https://you.com/docs/llms.txt",
+      "status": "readable",
+      "chars": 24197,
+      "sha256": "06b3efd6ebb99452de03cbf1454badf3b404e422c0a367117a2c6f2fb65856a1"
+    },
+    {
+      "name": "you-openapi",
+      "url": "https://you.com/docs/openapi.json",
+      "status": "readable",
+      "chars": 162,
+      "sha256": "57079e3fa2e80e6d9348441e8cc7d4a688bb46618d63040d8368dc9a3172c060",
+      "note": "HTTP success but HTML API selector, not JSON schema."
+    },
+    {
+      "name": "nex-index",
+      "url": "https://docs.nexconn.ai/llms.txt",
+      "status": "readable",
+      "chars": 165224,
+      "sha256": "978fbdc5d67bce0c1a774f100ba3f175ff6215c8faf91f12278b83545e8967b0"
+    },
+    {
+      "name": "nex-skill",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/SKILL.md",
+      "status": "readable",
+      "chars": 19718,
+      "sha256": "d0194c4366c1533922e0da960262a0bdae15e036798dc401f49d69162f28316e"
+    },
+    {
+      "name": "showcase-tree",
+      "url": "https://api.github.com/repos/serpapi/BuiltWithSerpApi/git/trees/main?recursive=1",
+      "status": "readable",
+      "chars": 14590,
+      "sha256": "5416a21c82e24039c269d0c5da7a334a531e2c86c2c925cec0b23e874299331f"
+    },
+    {
+      "name": "nex-tree",
+      "url": "https://api.github.com/repos/NexconnAI-Dev/nexconn-skills/git/trees/main?recursive=1",
+      "status": "readable",
+      "chars": 13385,
+      "sha256": "b30affe8aeb53c2275ccf615a38281b6443edddecea81ae902ab37a1a27f8c2d"
+    },
+    {
+      "name": "serp_direct-answer-box-api",
+      "url": "https://serpapi.com/direct-answer-box-api",
+      "status": "readable",
+      "chars": 72240,
+      "sha256": "a48d8b19747e8871d18e76e825e271a337bf4f146dbfeced57004e9fbf6ef12d"
+    },
+    {
+      "name": "serp_google-lens-about-this-image-api",
+      "url": "https://serpapi.com/google-lens-about-this-image-api",
+      "status": "readable",
+      "chars": 4982,
+      "sha256": "929dac82cf2fe3e0140c6a13ca1956e54b9a348f40407692fb2b175c9a9800bf"
+    },
+    {
+      "name": "serp_google-lens-exact-matches-api",
+      "url": "https://serpapi.com/google-lens-exact-matches-api",
+      "status": "readable",
+      "chars": 5678,
+      "sha256": "863b90a52f755861e3d2c854c80b351485933f29684a45993995cf76e1758a9e"
+    },
+    {
+      "name": "serp_google-lens-products-api",
+      "url": "https://serpapi.com/google-lens-products-api",
+      "status": "readable",
+      "chars": 5124,
+      "sha256": "519d2687d18c28979f3ffc575ba94e985516a33d6fd76fec85af12f1e010f768"
+    },
+    {
+      "name": "serp_google-lens-visual-matches-api",
+      "url": "https://serpapi.com/google-lens-visual-matches-api",
+      "status": "readable",
+      "chars": 5222,
+      "sha256": "53cf781b59644a7564a5d940f27824dd0505c515caf6a5bd6d83a9c025759c3c"
+    },
+    {
+      "name": "serp_naver-images-api",
+      "url": "https://serpapi.com/naver-images-api",
+      "status": "readable",
+      "chars": 4975,
+      "sha256": "1a83063c8fde0669da1fe5a379ac442e4aae121b18801f2931fae122909c9beb"
+    },
+    {
+      "name": "serp_search-index-api",
+      "url": "https://serpapi.com/search-index-api",
+      "status": "readable",
+      "chars": 17402,
+      "sha256": "7dbe7497c9c6bf1879f5ea863c8fa6310aaa24247924da2468a7a70700a0e23b"
+    },
+    {
+      "name": "serp_yandex-reverse-image-api",
+      "url": "https://serpapi.com/yandex-reverse-image-api",
+      "status": "readable",
+      "chars": 27000,
+      "sha256": "5a11b203e1799baa5a2257d093c7571292662e928720ccea7ea5fed1a7d2c863"
+    },
+    {
+      "name": "serp_account-api",
+      "url": "https://serpapi.com/account-api",
+      "status": "readable",
+      "chars": 1414,
+      "sha256": "1dced872a0357a85b715893d26c99a670b5568d619937fb759bb38773ed24602"
+    },
+    {
+      "name": "serp_image-api",
+      "url": "https://serpapi.com/image-api",
+      "status": "readable",
+      "chars": 1452,
+      "sha256": "13926e689c0f05a199e50b7f8009ae0f646b1973cfce2b8dc2e5bf687717012b"
+    },
+    {
+      "name": "serp_pixel-position-api",
+      "url": "https://serpapi.com/pixel-position-api",
+      "status": "readable",
+      "chars": 21304,
+      "sha256": "0765f00f378d0098994ab5f87ac47ad9177dee47ffdc61b9461300f5a4a899b2"
+    },
+    {
+      "name": "projects",
+      "url": "https://raw.githubusercontent.com/serpapi/BuiltWithSerpApi/main/src/_data/projects.json",
+      "status": "readable",
+      "chars": 641643,
+      "sha256": "7f5a17db052696a6d0025fc469498be39ebc69380fe904e4dbaa575872a12115"
+    },
+    {
+      "name": "serp-account",
+      "url": "https://serpapi.com/account-api",
+      "status": "readable",
+      "chars": 1414,
+      "sha256": "1dced872a0357a85b715893d26c99a670b5568d619937fb759bb38773ed24602"
+    },
+    {
+      "name": "serp-pricing",
+      "url": "https://serpapi.com/pricing",
+      "status": "readable",
+      "chars": 0,
+      "sha256": "9c1bf7639c4997f10753dad997fbbc9f8f1e8dceb53c31a32d24a7ce9b3eeb11"
+    },
+    {
+      "name": "serp-status",
+      "url": "https://serpapi.com/api-status-and-error-codes",
+      "status": "readable",
+      "chars": 6615,
+      "sha256": "de3e48120b6056df2d2de0f6b180c9e849660e99a5c07b38a841ea3ca1f93483"
+    },
+    {
+      "name": "you_quickstart.md",
+      "url": "https://you.com/docs/quickstart.md",
+      "status": "readable",
+      "chars": 36864,
+      "sha256": "79632ab76c640ed81564e8f506d4ba2a9548f72383bf131b354e7b0942c510d1"
+    },
+    {
+      "name": "you_choose-the-right-api.md",
+      "url": "https://you.com/docs/choose-the-right-api.md",
+      "status": "readable",
+      "chars": 13776,
+      "sha256": "e4eeee6678236cdc14a123aaaa6829616d595057dae34e16d894c6063e8cc802"
+    },
+    {
+      "name": "you_rate-limits.md",
+      "url": "https://you.com/docs/rate-limits.md",
+      "status": "readable",
+      "chars": 3829,
+      "sha256": "d457dcdb1ab47e511b323350195b3b9c5fb80a3689b95fce8945698d2e10d1e6"
+    },
+    {
+      "name": "you_guides_search_quickstart.md",
+      "url": "https://you.com/docs/guides/search/quickstart.md",
+      "status": "readable",
+      "chars": 8677,
+      "sha256": "1f3dcfc18e01ec261078c991263ee0f4901515b40c4fd92ed5b23027f6e5137c"
+    },
+    {
+      "name": "you_guides_search.md",
+      "url": "https://you.com/docs/guides/search.md",
+      "status": "readable",
+      "chars": 19572,
+      "sha256": "103453e2e7349c7642a9bec70de28ca3c553b3c154279e64b874c530b38f7e37"
+    },
+    {
+      "name": "you_guides_search_knowledge.md",
+      "url": "https://you.com/docs/guides/search/knowledge.md",
+      "status": "readable",
+      "chars": 21543,
+      "sha256": "6ff44b19f9e4761de4b4401eea3551ba1e7719c915da4319a58c8da7a193bf40"
+    },
+    {
+      "name": "you_guides_search_retrieve-page-content.md",
+      "url": "https://you.com/docs/guides/search/retrieve-page-content.md",
+      "status": "readable",
+      "chars": 21884,
+      "sha256": "9846da5ce3ba5946126602f5c310fe33d20ca03d87f15aeec1bcf9645622d12b"
+    },
+    {
+      "name": "you_guides_search_request-controls.md",
+      "url": "https://you.com/docs/guides/search/request-controls.md",
+      "status": "readable",
+      "chars": 7466,
+      "sha256": "24f7a42a0b0c53b86dbef641b58f5405272f91e22fa18457123a93b39985ff32"
+    },
+    {
+      "name": "you_guides_search_search-operators.md",
+      "url": "https://you.com/docs/guides/search/search-operators.md",
+      "status": "readable",
+      "chars": 8511,
+      "sha256": "37056871b1e3b2b323f72c4315bb6ea11b4bc2327cd809f4278c23102f9d4432"
+    },
+    {
+      "name": "you_guides_search_evaluate-us.md",
+      "url": "https://you.com/docs/guides/search/evaluate-us.md",
+      "status": "readable",
+      "chars": 12928,
+      "sha256": "ae35fa0ba5e2be18266916efe391499aaaab38282ccd4c9448b4a57d7c5ede5b"
+    },
+    {
+      "name": "you_guides_search_web-search-api-for-ai-agents.md",
+      "url": "https://you.com/docs/guides/search/web-search-api-for-ai-agents.md",
+      "status": "readable",
+      "chars": 13980,
+      "sha256": "5a8121ebe852bc581c3da77550e20989e196df5861755aa91eb86a8ae3ccbb87"
+    },
+    {
+      "name": "you_guides_search_grounding-llm-responses-with-citations.md",
+      "url": "https://you.com/docs/guides/search/grounding-llm-responses-with-citations.md",
+      "status": "readable",
+      "chars": 12592,
+      "sha256": "cdba5cd0322e52596d0a8cdadf913a237e9de1a4340f0312cf8b249361835732"
+    },
+    {
+      "name": "you_guides_search_live-news.md",
+      "url": "https://you.com/docs/guides/search/live-news.md",
+      "status": "readable",
+      "chars": 10265,
+      "sha256": "7dde0d9d0c4e4dd1f4521ec3fa8d7f1ab75b273119908d855685553334fbf3d8"
+    },
+    {
+      "name": "you_guides_extract_quickstart.md",
+      "url": "https://you.com/docs/guides/extract/quickstart.md",
+      "status": "readable",
+      "chars": 4463,
+      "sha256": "7e467f48a1420b77dbd645989d4c3b53d857656a28d369dbe21dbfd00057f87b"
+    },
+    {
+      "name": "you_guides_answer_quickstart.md",
+      "url": "https://you.com/docs/guides/answer/quickstart.md",
+      "status": "readable",
+      "chars": 3647,
+      "sha256": "f9449414573a819d9a1cd74c3b1c243f4801893aa59935d47ad6435c15e79002"
+    },
+    {
+      "name": "you_guides_answer.md",
+      "url": "https://you.com/docs/guides/answer.md",
+      "status": "readable",
+      "chars": 13592,
+      "sha256": "47deaa5bfdfd6514b0ae7341f571c037b6aaefb78afeab6a432c82dc79b39fa4"
+    },
+    {
+      "name": "you_guides_answer_search-controls.md",
+      "url": "https://you.com/docs/guides/answer/search-controls.md",
+      "status": "readable",
+      "chars": 6291,
+      "sha256": "4ebc89d7af74ad2efaa50224336e274fe18ffa4ccc35f06538cdc129b9688963"
+    },
+    {
+      "name": "you_guides_research_quickstart.md",
+      "url": "https://you.com/docs/guides/research/quickstart.md",
+      "status": "readable",
+      "chars": 3997,
+      "sha256": "d03d57a822aba57820191887782fc876af62e5a97a6d275107f3a3e3c031cd24"
+    },
+    {
+      "name": "you_guides_research.md",
+      "url": "https://you.com/docs/guides/research.md",
+      "status": "readable",
+      "chars": 22317,
+      "sha256": "44b27c222e3944d1c091ce01c14573b37738de6d11e8666ad46f46af887de6c4"
+    },
+    {
+      "name": "you_guides_research_background-requests.md",
+      "url": "https://you.com/docs/guides/research/background-requests.md",
+      "status": "readable",
+      "chars": 6122,
+      "sha256": "b5a9ae8837914d3c212f3af3227d73770b204e8ff0821dca1a848e31a158bcac"
+    },
+    {
+      "name": "you_guides_research_structured-output.md",
+      "url": "https://you.com/docs/guides/research/structured-output.md",
+      "status": "readable",
+      "chars": 10189,
+      "sha256": "dc44081f57a9dafeba97487cd28e74ff9adfeb322708b51e6c036a44df9aacb2"
+    },
+    {
+      "name": "you_guides_research_source-control.md",
+      "url": "https://you.com/docs/guides/research/source-control.md",
+      "status": "readable",
+      "chars": 4883,
+      "sha256": "bbffefe552aa8da008d014e1911fb18bf230f54900b5321270615a632794aace"
+    },
+    {
+      "name": "you_guides_finance-research_quickstart.md",
+      "url": "https://you.com/docs/guides/finance-research/quickstart.md",
+      "status": "readable",
+      "chars": 4103,
+      "sha256": "77e459b08b763892a3f3bcfa205e4f44a88dd461c0bd00f16dd92775ba88c0ec"
+    },
+    {
+      "name": "you_guides_inference-router_quickstart.md",
+      "url": "https://you.com/docs/guides/inference-router/quickstart.md",
+      "status": "readable",
+      "chars": 6461,
+      "sha256": "09a06eda173f16829d977b0eed5e29cdc858760eaa1c967fa9936a5f3e5f2325"
+    },
+    {
+      "name": "you_using-the-api_authentication.md",
+      "url": "https://you.com/docs/using-the-api/authentication.md",
+      "status": "readable",
+      "chars": 3637,
+      "sha256": "21d4fef2478acd66b5eb6d164d0035000f1d71ad129077185df1df3e942b92eb"
+    },
+    {
+      "name": "nex_chatsdk-web.md",
+      "url": "https://docs.nexconn.ai/chatsdk-web.md",
+      "status": "readable",
+      "chars": 7388,
+      "sha256": "cb8cd99f0ebef320e6cec6827869e83a60d96a50946800e5ca7695c67080cb05"
+    },
+    {
+      "name": "nex_chatsdk-web_build-with-ai_install-skills.md",
+      "url": "https://docs.nexconn.ai/chatsdk-web/build-with-ai/install-skills.md",
+      "status": "readable",
+      "chars": 4014,
+      "sha256": "81331825e31ff20e0e2f14d4efe81043dff6c6a1029efba13e65377ee010d930"
+    },
+    {
+      "name": "nex_chatsdk-web_build-with-ai_integration-guide.md",
+      "url": "https://docs.nexconn.ai/chatsdk-web/build-with-ai/integration-guide.md",
+      "status": "readable",
+      "chars": 7927,
+      "sha256": "f9ac5fdee156b983384b2e8ff4bbd3254c5c49b07e0f974dcbc9d43d486bafa2"
+    },
+    {
+      "name": "nex_chatsdk-web_community-channel_integration.md",
+      "url": "https://docs.nexconn.ai/chatsdk-web/community-channel/integration.md",
+      "status": "readable",
+      "chars": 5062,
+      "sha256": "7e15b79747994b349cacb56364c47774aa082e798721489188885b50cb0db08e"
+    },
+    {
+      "name": "nex_chatsdk-web_connection_connect.md",
+      "url": "https://docs.nexconn.ai/chatsdk-web/connection/connect.md",
+      "status": "readable",
+      "chars": 3022,
+      "sha256": "9d554d63cd78f5c9a55e63a87c73407f35c9a675b951695a97be8983f4c86706"
+    },
+    {
+      "name": "nex_chatsdk-web_message_receive.md",
+      "url": "https://docs.nexconn.ai/chatsdk-web/message/receive.md",
+      "status": "readable",
+      "chars": 3701,
+      "sha256": "b1add4fc27a8e0b3df805aec3e2046d616d57995a188e211a77aec123d07a612"
+    },
+    {
+      "name": "nex_chatsdk-web_message_send.md",
+      "url": "https://docs.nexconn.ai/chatsdk-web/message/send.md",
+      "status": "readable",
+      "chars": 5347,
+      "sha256": "6b44fd1ea27df7d1bf6b4616defa853cf67aa1dad7e97674a3059589c07d7598"
+    },
+    {
+      "name": "nex_chatui-web.md",
+      "url": "https://docs.nexconn.ai/chatui-web.md",
+      "status": "readable",
+      "chars": 14101,
+      "sha256": "58ce6a31bed0a20f88980309eb1f999345c9baf29d4fd6db14c2664d36d0063f"
+    },
+    {
+      "name": "nex_platform-chat-api_message_system_send-message-broadcast-online.md",
+      "url": "https://docs.nexconn.ai/platform-chat-api/message/system/send-message-broadcast-online.md",
+      "status": "readable",
+      "chars": 4427,
+      "sha256": "30a55a4ef1665236a87597fe782c0e7d1c598f743216cfccbb6f01834af13059"
+    },
+    {
+      "name": "nex_platform-chat-api_message_system_send-message-broadcast-to-all.md",
+      "url": "https://docs.nexconn.ai/platform-chat-api/message/system/send-message-broadcast-to-all.md",
+      "status": "readable",
+      "chars": 6414,
+      "sha256": "668280049192f1f304317cc6fcff522b22e1f4db53335877a181a06ec259d7f1"
+    },
+    {
+      "name": "nex_platform-chat-api_prepare-to-use-api_auth.md",
+      "url": "https://docs.nexconn.ai/platform-chat-api/prepare-to-use-api/auth.md",
+      "status": "readable",
+      "chars": 5627,
+      "sha256": "222f49f648b68da09c5746752279cae196c297dc8acc202b24b017f564d23fba"
+    },
+    {
+      "name": "nex_platform-chat-api_prepare-to-use-api_base-url.md",
+      "url": "https://docs.nexconn.ai/platform-chat-api/prepare-to-use-api/base-url.md",
+      "status": "readable",
+      "chars": 1927,
+      "sha256": "7d556acb1413c64876b58c42f3129271134751a74bf05ee80b08728ffe9590a3"
+    },
+    {
+      "name": "nex_platform-chat-api_prepare-to-use-api_chat-server-api-list.md",
+      "url": "https://docs.nexconn.ai/platform-chat-api/prepare-to-use-api/chat-server-api-list.md",
+      "status": "readable",
+      "chars": 39735,
+      "sha256": "51fb12d9c6798e21d91e89a735c6c75a7230ca2e48cfde8bd11da5c21dc5ad0b"
+    },
+    {
+      "name": "nex_platform-chat-api_prepare-to-use-api_limits.md",
+      "url": "https://docs.nexconn.ai/platform-chat-api/prepare-to-use-api/limits.md",
+      "status": "readable",
+      "chars": 1095,
+      "sha256": "8f5adc9a638f320b6a03f3bd01d71418ed8d57a550af1a1257edc02bb8412495"
+    },
+    {
+      "name": "nex_platform-chat-api_user_register.md",
+      "url": "https://docs.nexconn.ai/platform-chat-api/user/register.md",
+      "status": "readable",
+      "chars": 6334,
+      "sha256": "c2d81db02b6e4840c9886c3b39746c83104736420413a19d5ac728dbc532e87d"
+    },
+    {
+      "name": "nexrepo_README.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/README.md",
+      "status": "readable",
+      "chars": 4940,
+      "sha256": "e084183f6a44c1bb1749c4068771970ed9ec21c685906a7a54cfbb5de84a6eb0"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_api-references.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/api-references.md",
+      "status": "readable",
+      "chars": 499,
+      "sha256": "74b3c624382969e19b100acccb2078f7faee40930f721081fae45ab498c4c875"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_application-layer-rules.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/application-layer-rules.md",
+      "status": "readable",
+      "chars": 7059,
+      "sha256": "bd23e5372c61f28f6d01221f7539d6bdc7d513f2cf739b4321edeb22f50a3e7b"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_chat-ui-repositories.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/chat-ui-repositories.md",
+      "status": "readable",
+      "chars": 3993,
+      "sha256": "bb2a0b0512de441078c9adee6649b4b064e29d19bb19748306e8626b76f86a9a"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_credentials-and-token.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/credentials-and-token.md",
+      "status": "readable",
+      "chars": 5659,
+      "sha256": "b1a921ae8ade30104de44fd7d172e90b54f80b659154f159df5d57558f276588"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_feature-pattern-map.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/feature-pattern-map.md",
+      "status": "readable",
+      "chars": 7948,
+      "sha256": "e2c995cb537d81b9d5e12aadef89a5e86db191b6b12c13bde3c7de2c6b64717f"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_image-analysis-guide.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/image-analysis-guide.md",
+      "status": "readable",
+      "chars": 6999,
+      "sha256": "407847ef214677cf457d379cd904ca8f4fe62ff01d05c703e1f8ca0043c9d20e"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_integration-workflow.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/integration-workflow.md",
+      "status": "readable",
+      "chars": 16849,
+      "sha256": "a5bdb31274687c538363ae7a1285998e0d072c811ac90fbc25adc69faf0f03a5"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_platform-setup_android.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/platform-setup/android.md",
+      "status": "readable",
+      "chars": 1442,
+      "sha256": "f5dcdc181f6bff6bc787d58c9ef04e27916f879a4e9d5956bc829dce5a2edb0b"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_platform-setup_flutter.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/platform-setup/flutter.md",
+      "status": "readable",
+      "chars": 2449,
+      "sha256": "c1bfe68d33803a16973e2f4baa975e3405d65de2713cc9daf3ac4a1310588352"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_platform-setup_index.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/platform-setup/index.md",
+      "status": "readable",
+      "chars": 1866,
+      "sha256": "8e0ccdff4434a53b0baca4885c0c1f594f20d8ad6d2afc50189d4f87ea33be3e"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_platform-setup_ios.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/platform-setup/ios.md",
+      "status": "readable",
+      "chars": 1511,
+      "sha256": "49b0f90d4e08644a7a8ffc6c47eb79a93ce76a63bebbb91fc4857864650def16"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_platform-setup_web.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/platform-setup/web.md",
+      "status": "readable",
+      "chars": 1637,
+      "sha256": "fa8c8e2880e66e0913c65bef152e07c072d03c2689a4362191a2947b9b470368"
+    },
+    {
+      "name": "nexrepo_skills_nexconn-chat_references_sdk-integration-decision-framework.md",
+      "url": "https://raw.githubusercontent.com/NexconnAI-Dev/nexconn-skills/main/skills/nexconn-chat/references/sdk-integration-decision-framework.md",
+      "status": "readable",
+      "chars": 8389,
+      "sha256": "22dee051f649440445dd984c7a11c87f7321d61cafb2958a97c1fd562577754d"
+    },
+    {
+      "name": "nex-send-group",
+      "url": "https://docs.nexconn.ai/platform-chat-api/message/send-group.md",
+      "status": "readable",
+      "sha256": "0f903fa2cf2af7ecbf3e503f4febf5ffda68038292dc03cbfd6ecf9aaaa40d6d"
+    },
+    {
+      "name": "nex-chatui-quick",
+      "url": "https://docs.nexconn.ai/chatui-web/quickstart.md",
+      "status": "readable",
+      "sha256": "7e59777499cb080b4f715ed813c6e96eb77e447ad97c18faa142520e9c68c223"
+    },
+    {
+      "name": "you-answer-ref",
+      "url": "https://you.com/docs/api-reference/answer/v1-answer.md",
+      "status": "readable",
+      "sha256": "01cb3cbb41fe32a3e4b640ffad13f2b6284b5949afe2a63357c8045e62230534"
+    }
+  ]
+}

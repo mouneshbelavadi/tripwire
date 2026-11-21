@@ -1,0 +1,9 @@
+{
+  "date_ist": "2026-11-21",
+  "test_command": "python -m unittest discover -s scripts -p test_core.py -v",
+  "exit_code": 0,
+  "output": "test_credit_ceiling_persists (test_core.Proof.test_credit_ceiling_persists) ... ok\ntest_deadline (test_core.Proof.test_deadline) ... ok\ntest_empty_array_does_not_verify_fields (test_core.Proof.test_empty_array_does_not_verify_fields) ... ok\ntest_empty_route_unknown (test_core.Proof.test_empty_route_unknown) ... ok\ntest_incident_reordering (test_core.Proof.test_incident_reordering) ... ok\ntest_invalid_numeric (test_core.Proof.test_invalid_numeric) ... ok\ntest_missing_cannot_be_zero (test_core.Proof.test_missing_cannot_be_zero) ... ok\ntest_query_change (test_core.Proof.test_query_change) ... ok\ntest_recovery_hysteresis (test_core.Proof.test_recovery_hysteresis) ... ok\ntest_replay_cannot_confirm (test_core.Proof.test_replay_cannot_confirm) ... ok\ntest_route_reorder_not_change (test_core.Proof.test_route_reorder_not_change) ... ok\ntest_rule_change (test_core.Proof.test_rule_change) ... ok\ntest_same_cached_timestamp_cannot_confirm (test_core.Proof.test_same_cached_timestamp_cannot_confirm) ... ok\ntest_stale_cannot_alert (test_core.Proof.test_stale_cannot_alert) ... ok\ntest_two_fresh_breaches (test_core.Proof.test_two_fresh_breaches) ... ok\n\n----------------------------------------------------------------------\nRan 15 tests in 0.184s\n\nOK\n",
+  "live_provider_validation": "SKIPPED: credentials missing",
+  "serpapi_research_credits_used": 0,
+  "ui_validation": "NOT RUN: UI is a design specification, not an implemented frontend"
+}

@@ -1,0 +1,320 @@
+{
+  "serp_maps": [
+    {
+      "path": "search_metadata.id",
+      "type": "string",
+      "required_for": "observation identity",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "search_metadata.status",
+      "type": "string",
+      "required_for": "success gate",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "search_metadata.created_at",
+      "type": "string",
+      "required_for": "source freshness",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results",
+      "type": "array",
+      "required_for": "place results",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results[].title",
+      "type": "string",
+      "required_for": "place label",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results[].place_id",
+      "type": "string",
+      "required_for": "selected identity",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results[].data_id",
+      "type": "string",
+      "required_for": "optional alternate identity",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results[].address",
+      "type": "string",
+      "required_for": "optional display",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results[].gps_coordinates.latitude",
+      "type": "number",
+      "required_for": "destination coordinate",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results[].gps_coordinates.longitude",
+      "type": "number",
+      "required_for": "destination coordinate",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "local_results[].open_state",
+      "type": "string",
+      "required_for": "optional display only",
+      "source": "https://serpapi.com/google-maps-api",
+      "verification": "documentation_only"
+    }
+  ],
+  "serp_directions": [
+    {
+      "path": "search_metadata.id",
+      "type": "string",
+      "required_for": "observation identity",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "search_metadata.status",
+      "type": "string",
+      "required_for": "success gate",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "search_metadata.created_at",
+      "type": "string",
+      "required_for": "source freshness",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "directions",
+      "type": "array",
+      "required_for": "route results",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "directions[].travel_mode",
+      "type": "string",
+      "required_for": "mode filter",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "directions[].duration",
+      "type": "number",
+      "required_for": "threshold; units require live crosscheck",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "directions[].distance",
+      "type": "number",
+      "required_for": "optional distance",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "directions[].formatted_duration",
+      "type": "string",
+      "required_for": "unit crosscheck and display",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "directions[].formatted_distance",
+      "type": "string",
+      "required_for": "optional unit crosscheck",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "directions[].via",
+      "type": "string",
+      "required_for": "optional route label",
+      "source": "https://serpapi.com/google-maps-directions-api",
+      "verification": "documentation_only"
+    }
+  ],
+  "serp_traffic": [
+    {
+      "path": "search_metadata.id",
+      "type": "string",
+      "required_for": "observation identity",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "search_metadata.status",
+      "type": "string",
+      "required_for": "success gate",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "search_metadata.created_at",
+      "type": "string",
+      "required_for": "source freshness",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents",
+      "type": "array",
+      "required_for": "incident snapshot",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].incident_id",
+      "type": "string",
+      "required_for": "deduplication",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].type",
+      "type": "string",
+      "required_for": "change classification",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].title",
+      "type": "string",
+      "required_for": "display",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].gps_coordinates.latitude",
+      "type": "number",
+      "required_for": "optional map display",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].gps_coordinates.longitude",
+      "type": "number",
+      "required_for": "optional map display",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].description",
+      "type": "string",
+      "required_for": "optional context",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].details",
+      "type": "array",
+      "required_for": "optional context",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "traffic_incidents[].last_updated",
+      "type": "string",
+      "required_for": "optional source timestamp, not polling freshness",
+      "source": "https://serpapi.com/google-maps-traffic-api",
+      "verification": "documentation_only"
+    }
+  ],
+  "you_answer": [
+    {
+      "path": "answer",
+      "type": "string",
+      "required_for": "context paragraph",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "citations",
+      "type": "array",
+      "required_for": "citation list",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "citations[].source",
+      "type": "string",
+      "required_for": "source link",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "citations[].excerpts",
+      "type": "array",
+      "required_for": "optional evidence excerpt",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "results.web",
+      "type": "array",
+      "required_for": "optional evidence drawer",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "results.web[].url",
+      "type": "string",
+      "required_for": "optional evidence drawer",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "results.web[].title",
+      "type": "string",
+      "required_for": "optional evidence drawer",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "results.web[].snippets",
+      "type": "array",
+      "required_for": "optional evidence drawer",
+      "source": "https://you.com/docs/guides/answer",
+      "verification": "documentation_only"
+    }
+  ],
+  "nex_token": [
+    {
+      "path": "code",
+      "type": "number",
+      "required_for": "success gate equals zero",
+      "source": "https://docs.nexconn.ai/platform-chat-api/user/register",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "result.accessToken",
+      "type": "string",
+      "required_for": "private SDK credential",
+      "source": "https://docs.nexconn.ai/platform-chat-api/user/register",
+      "verification": "documentation_only"
+    },
+    {
+      "path": "result.userId",
+      "type": "string",
+      "required_for": "identity binding",
+      "source": "https://docs.nexconn.ai/platform-chat-api/user/register",
+      "verification": "documentation_only"
+    }
+  ]
+}
