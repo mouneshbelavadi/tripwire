@@ -83,7 +83,17 @@ PORT=3000
 ```
 > **Note on Simulation Mode:** If API keys are omitted or pending, the system cleanly boots in `SIMULATION` mode with full interactive controls, honest `CREDENTIALS PENDING` disclosures, and persistent `SIMULATED CHANGE` banners.
 
-### Build and Start
+### One-Click Launch (Windows)
+Double-click **`run.bat`** (or run `.\run.bat` in terminal).
+
+This single batch file automatically:
+1. Validates Node.js (v20+) and npm in your system.
+2. Creates `.env` from `.env.example` if it doesn't already exist.
+3. Automatically installs dependencies (`npm install`) if `node_modules` is missing.
+4. Compiles client and server production bundles (`npm run build`) so any redesign or code change is always up-to-date.
+5. Launches the background server on port 3000 and automatically opens `http://localhost:3000` in your default browser.
+
+### Manual Build and Start
 ```powershell
 # Typecheck TypeScript client and server
 npm run typecheck
@@ -92,7 +102,7 @@ npm run typecheck
 npm run build
 
 # Start production server
-npm run start:server
+npm start
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
