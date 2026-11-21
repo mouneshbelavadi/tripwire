@@ -3,7 +3,7 @@
  * Demonstrates clean invariant evaluation and All-Clear state for Kabir & Ananya (Paytm).
  */
 
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
@@ -96,10 +96,13 @@ async function callSafeCommuteApi() {
 }
 
 async function verifyObservationsAndRules() {
-  const res = await fetchWithTimeout(`${BASE_URL}/api/observations/pact/${PACT_ID}`, { method: 'GET' });
+  let res = await fetchWithTimeout(`${BASE_URL}/api/simulation/pact/${PACT_ID}`, { method: 'GET' }).catch(() => null);
+  if (!res || !res.ok) {
+    res = await fetchWithTimeout(`${BASE_URL}/api/observations/pact/${PACT_ID}`, { method: 'GET' });
+  }
 
   if (!res.ok) {
-    throw new Error(`Querying observations failed with HTTP ${res.status} at ${BASE_URL}/api/observations/pact/${PACT_ID}`);
+    throw new Error(`Querying observations failed with HTTP ${res.status} at ${BASE_URL}/api/simulation/pact/${PACT_ID}`);
   }
 
   let data;
@@ -122,19 +125,35 @@ async function verifyObservationsAndRules() {
 }
 
 function openBrowser(url) {
-  const cmd = process.platform === 'win32'
-    ? `start "" "${url}"`
-    : process.platform === 'darwin'
-    ? `open "${url}"`
-    : `xdg-open "${url}"`;
-  try {
-    exec(cmd, (err) => {
-      if (err) {
-        console.log(`  ${ANSI.gray}[Browser launcher note: ${err.message}]${ANSI.reset}`);
-      }
-    });
-  } catch (err) {
-    console.log(`  ${ANSI.yellow}[INFO] Please open ${url} in your browser.${ANSI.reset}`);
+  if (process.platform === 'win32') {
+    // Explicitly target Microsoft Edge on Windows, falling back to default browser
+    const winCmd = `start msedge "${url}" 2>nul || start microsoft-edge:"${url}" 2>nul || start "" "${url}"`;
+    try {
+      const child = spawn('cmd.exe', ['/c', winCmd], {
+        detached: true,
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      child.unref();
+      return child;
+    } catch (err) {
+      console.log(`  ${ANSI.gray}[Browser launcher note: ${err.message}]${ANSI.reset}`);
+    }
+  } else {
+    const cmd = process.platform === 'darwin'
+      ? `open "${url}"`
+      : `xdg-open "${url}"`;
+    try {
+      const child = exec(cmd, (err) => {
+        if (err) {
+          console.log(`  ${ANSI.gray}[Browser launcher note: ${err.message}]${ANSI.reset}`);
+        }
+      });
+      if (child && child.unref) child.unref();
+      return child;
+    } catch (err) {
+      console.log(`  ${ANSI.yellow}[INFO] Please open ${url} in your browser.${ANSI.reset}`);
+    }
   }
 }
 
@@ -239,6 +258,9 @@ async function run() {
   console.log(`${ANSI.brightGreen}${ANSI.bold}╔══════════════════════════════════════════════════════════════════════════════════╗${ANSI.reset}`);
   console.log(`${ANSI.brightGreen}${ANSI.bold}║              ✓ DEMO SUCCESSFUL: ALL INVARIANTS SATISFIED (10s)                   ║${ANSI.reset}`);
   console.log(`${ANSI.brightGreen}${ANSI.bold}╚══════════════════════════════════════════════════════════════════════════════════╝${ANSI.reset}`);
+
+  // Safety delay to allow detached browser process to initialize cleanly before Node exit
+  await sleep(1000);
 }
 
 run().catch((err) => {

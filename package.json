@@ -2,6 +2,9 @@
   "name": "office-pact",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.x"
+  },
   "type": "module",
   "scripts": {
     "dev:server": "tsx watch src/server/index.ts",

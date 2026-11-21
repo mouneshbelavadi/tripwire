@@ -54,6 +54,8 @@ export function DecisionTab({
     createdAtIst?: string;
   }> = receipt?.acknowledgements || [];
 
+  const decisions = acknowledgements;
+
   // Map choices by user_id
   const userChoicesMap = new Map<string, { decision: string; timeIst: string }>();
   for (const ack of acknowledgements) {
@@ -86,13 +88,35 @@ export function DecisionTab({
   }
 
   // Consensus Resolution Logic
-  const participantsList = pact.participants || [
-    { id: 'part_maya', user_id: 'user_maya', user_name: 'Maya', neighbourhood: 'Indiranagar', max_duration_s: 3600 },
-    { id: 'part_arjun', user_id: 'user_arjun', user_name: 'Arjun', neighbourhood: 'HSR Layout', max_duration_s: 3600 },
-  ];
+  const participantsList = pact.participants && pact.participants.length > 0
+    ? pact.participants
+    : [
+        { id: 'part_maya', user_id: 'user_maya', user_name: 'Maya', neighbourhood: 'Indiranagar', max_duration_s: 3600 },
+        { id: 'part_arjun', user_id: 'user_arjun', user_name: 'Arjun', neighbourhood: 'HSR Layout', max_duration_s: 3600 },
+      ];
 
-  const totalParticipants = participantsList.length;
-  const recordedChoices = participantsList.map((p) => userChoicesMap.get(p.user_id)).filter(Boolean);
+  // Include any participant from acknowledgements who might not be in pact.participants
+  const displayParticipants = [...participantsList];
+  for (const ack of acknowledgements) {
+    if (!displayParticipants.some((p) => p.user_id === ack.userId)) {
+      displayParticipants.push({
+        id: `part_${ack.userId}`,
+        pact_id: pact.id,
+        user_id: ack.userId,
+        user_name: ack.userName || ack.userId,
+        neighbourhood: 'Bangalore',
+        origin_lat: 12.9716,
+        origin_lon: 77.5946,
+        max_duration_s: 3600,
+        approval_version: pact.version,
+        approved_at: null,
+        is_approved: true,
+      });
+    }
+  }
+
+  const totalParticipants = displayParticipants.length;
+  const recordedChoices = displayParticipants.map((p) => userChoicesMap.get(p.user_id)).filter(Boolean);
   const uniqueDecisions = Array.from(new Set(recordedChoices.map((c) => c!.decision)));
 
   let isResolved = false;
@@ -101,7 +125,33 @@ export function DecisionTab({
   let resolvedAction: 'remote_fallback' | 'keep_plan' | 'discuss' | null = null;
   let resolvedLabel = '';
 
-  if (recordedChoices.length >= totalParticipants && uniqueDecisions.length === 1) {
+  if (
+    receipt?.consensus?.isResolved ||
+    receipt?.currentDecisionStatus === 'remote_chosen' ||
+    receipt?.currentDecisionStatus === 'plan_kept'
+  ) {
+    isResolved = true;
+    if (
+      receipt?.currentDecisionStatus === 'remote_chosen' ||
+      receipt?.consensus?.resolvedAction === 'remote' ||
+      receipt?.consensus?.resolvedAction === 'remote_fallback'
+    ) {
+      resolvedAction = 'remote_fallback';
+      resolvedLabel = 'Switch to remote Google Meet (agreed fallback)';
+    } else if (
+      receipt?.currentDecisionStatus === 'plan_kept' ||
+      receipt?.consensus?.resolvedAction === 'keep' ||
+      receipt?.consensus?.resolvedAction === 'keep_plan'
+    ) {
+      resolvedAction = 'keep_plan';
+      resolvedLabel = 'Maintain office meeting plan';
+    }
+  } else if (
+    receipt?.consensus?.needsDiscussion ||
+    receipt?.currentDecisionStatus === 'needs_discussion'
+  ) {
+    isNeedsDiscussion = true;
+  } else if (recordedChoices.length >= totalParticipants && uniqueDecisions.length === 1) {
     // Both choose the SAME action -> Resolved / Final!
     isResolved = true;
     resolvedAction = uniqueDecisions[0] as any;
@@ -115,29 +165,53 @@ export function DecisionTab({
     // Choices differ -> Needs discussion
     isNeedsDiscussion = true;
   } else {
-    // Only 1 person has chosen so far
+    // Only 1 person has chosen so far or pending
     isPending = true;
   }
 
   // Pre-filled discussion chat message
-  const p1 = pact.participants?.[0];
-  const p2 = pact.participants?.[1];
+  const p1 = displayParticipants[0];
+  const p2 = displayParticipants[1];
   const p1ChoiceObj = p1 ? userChoicesMap.get(p1.user_id) : undefined;
   const p2ChoiceObj = p2 ? userChoicesMap.get(p2.user_id) : undefined;
   const p1Name = p1?.user_name || 'Participant 1';
   const p2Name = p2?.user_name || 'Participant 2';
 
   const actionFriendly = (d?: string) => {
-    if (d === 'remote_fallback') return 'switch to remote';
-    if (d === 'keep_plan') return 'keep the plan';
+    if (d === 'remote_fallback' || d === 'remote') return 'switch to remote';
+    if (d === 'keep_plan' || d === 'keep') return 'keep the plan';
     if (d === 'discuss') return 'discuss in chat';
     return 'pending';
   };
 
+  // Bilateral participant choices resolution (supports Maya & Arjun as well as Kabir & Ananya)
+  const mayaChoiceObj =
+    decisions.find(
+      (d) =>
+        d.userId === 'user_maya' ||
+        d.userName?.toLowerCase().includes('maya') ||
+        d.userId === 'user_kabir' ||
+        d.userName?.toLowerCase().includes('kabir') ||
+        d.userId === p1?.user_id
+    ) || (p1ChoiceObj ? { userId: p1?.user_id || 'user_maya', userName: p1Name || 'Maya', decision: p1ChoiceObj.decision } : undefined);
+
+  const arjunChoiceObj =
+    decisions.find(
+      (d) =>
+        d.userId === 'user_arjun' ||
+        d.userName?.toLowerCase().includes('arjun') ||
+        d.userId === 'user_ananya' ||
+        d.userName?.toLowerCase().includes('ananya') ||
+        d.userId === p2?.user_id
+    ) || (p2ChoiceObj ? { userId: p2?.user_id || 'user_arjun', userName: p2Name || 'Arjun', decision: p2ChoiceObj.decision } : undefined);
+
+  const mayaDisplayName = mayaChoiceObj?.userName || p1Name || 'Maya';
+  const arjunDisplayName = arjunChoiceObj?.userName || p2Name || 'Arjun';
+
   const preFilledChatMessage = `⚠️ Commute breach on ${breachUserName}'s route (${check2Minutes} min reached, ${excessMinutes} min over ${limitMinutes} min limit). ${p1Name} voted to ${actionFriendly(
-    p1ChoiceObj?.decision
+    p1ChoiceObj?.decision || mayaChoiceObj?.decision
   )}, but ${p2Name} voted to ${actionFriendly(
-    p2ChoiceObj?.decision
+    p2ChoiceObj?.decision || arjunChoiceObj?.decision
   )}. Let's discuss our plan for today's meeting.`;
 
   // Submit decision
@@ -259,7 +333,7 @@ export function DecisionTab({
       )}
 
       {/* 2. AGREED FALLBACK ACTION DISPLAY */}
-      <div className="fallback-action-card">
+      <div className="fallback-action-card" data-testid="proposed-fallback-plan">
         <div className="fallback-card-header">
           <div className="fallback-badge-row">
             <span className="fallback-icon-symbol" style={{ display: 'inline-flex', alignItems: 'center' }}>
@@ -269,7 +343,7 @@ export function DecisionTab({
                 <line x1="12" y1="17" x2="12" y2="21" />
               </svg>
             </span>
-            <span className="fallback-title-label">Agreed Remote Fallback Action</span>
+            <span className="fallback-title-label">Proposed Remote Fallback Plan</span>
           </div>
           <span className="fallback-version-tag">RATIFIED IN v{pact.version}</span>
         </div>
@@ -290,7 +364,7 @@ export function DecisionTab({
           <div className="resolved-header-row">
             <span className="resolved-check-badge">✓ CONSENSUS REACHED · RESOLVED</span>
             <span className="resolved-time-tag">
-              {userChoicesMap.get('user_maya')?.timeIst || '08:52:14 IST'}
+              {receipt?.consensus?.resolvedAtIst || userChoicesMap.get('user_maya')?.timeIst || userChoicesMap.get('user_kabir')?.timeIst || recordedChoices[0]?.timeIst || '08:52:14 IST'}
             </span>
           </div>
           <div className="resolved-body-text">
@@ -314,7 +388,7 @@ export function DecisionTab({
             <span className="warning-status-pill">CONSENSUS REQUIRED</span>
           </div>
           <div className="warning-body-text">
-            Participant choices differ: <strong>Maya</strong> chose “{actionFriendly(mayaChoiceObj?.decision)}”, while <strong>Arjun</strong> chose “{actionFriendly(arjunChoiceObj?.decision)}”.
+            Participant choices differ: <strong>{mayaDisplayName}</strong> chose “{actionFriendly(mayaChoiceObj?.decision)}”, while <strong>{arjunDisplayName}</strong> chose “{actionFriendly(arjunChoiceObj?.decision)}”.
           </div>
 
           {/* Pre-filled Chat Message Box */}
@@ -377,7 +451,7 @@ export function DecisionTab({
         )}
 
         <div className="decision-buttons-grid">
-          {/* Button 1: Switch to remote (agreed fallback) */}
+          {/* Button 1: Switch to Remote (Primary Action) */}
           <button
             type="button"
             className={`btn-action-decision remote ${userChoicesMap.get(activeUser?.user_id || '')?.decision === 'remote_fallback' ? 'selected' : ''}`}
@@ -388,15 +462,15 @@ export function DecisionTab({
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></svg>
             </span>
             <div className="btn-text-slot">
-              <span className="btn-main-label">Switch to remote</span>
-              <span className="btn-sub-label">Agreed bilateral fallback</span>
+              <span className="btn-main-label">Switch to Remote</span>
+              <span className="btn-sub-label">Agreed bilateral fallback (Primary Action)</span>
             </div>
             {userChoicesMap.get(activeUser?.user_id || '')?.decision === 'remote_fallback' && (
               <span className="btn-voted-pill">Your Choice ✓</span>
             )}
           </button>
 
-          {/* Button 2: Keep the plan */}
+          {/* Button 2: Keep Plan */}
           <button
             type="button"
             className={`btn-action-decision keep ${userChoicesMap.get(activeUser?.user_id || '')?.decision === 'keep_plan' ? 'selected' : ''}`}
@@ -407,7 +481,7 @@ export function DecisionTab({
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></svg>
             </span>
             <div className="btn-text-slot">
-              <span className="btn-main-label">Keep the plan</span>
+              <span className="btn-main-label">Keep Plan</span>
               <span className="btn-sub-label">Maintain office meet</span>
             </div>
             {userChoicesMap.get(activeUser?.user_id || '')?.decision === 'keep_plan' && (
@@ -415,7 +489,7 @@ export function DecisionTab({
             )}
           </button>
 
-          {/* Button 3: Discuss in chat */}
+          {/* Button 3: Discuss in Chat */}
           <button
             type="button"
             className={`btn-action-decision discuss ${userChoicesMap.get(activeUser?.user_id || '')?.decision === 'discuss' ? 'selected' : ''}`}
@@ -426,7 +500,7 @@ export function DecisionTab({
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
             </span>
             <div className="btn-text-slot">
-              <span className="btn-main-label">Discuss in chat</span>
+              <span className="btn-main-label">Discuss in Chat</span>
               <span className="btn-sub-label">Open group channel</span>
             </div>
             {userChoicesMap.get(activeUser?.user_id || '')?.decision === 'discuss' && (
@@ -439,12 +513,12 @@ export function DecisionTab({
       {/* 5. PARTICIPANTS' CHOICES TABLE WITH IST TIMESTAMP */}
       <div className="participants-decision-status-card">
         <div className="card-title-row">
-          <h3 className="subcard-title">Participant Votes & IST Timestamps</h3>
+          <h3 className="subcard-title">Bilateral Participant Vote Badges & IST Timestamps</h3>
           <span className="subcard-hint">Consensus requires unanimous agreement</span>
         </div>
 
         <div className="participant-votes-grid">
-          {participantsList.map((p) => {
+          {displayParticipants.map((p) => {
             const voteInfo = userChoicesMap.get(p.user_id);
             const hasVoted = Boolean(voteInfo);
             const decisionType = voteInfo?.decision;
@@ -452,15 +526,15 @@ export function DecisionTab({
             let badgeClass = 'vote-pending';
             let badgeText = 'Awaiting decision...';
 
-            if (decisionType === 'remote_fallback') {
+            if (decisionType === 'remote_fallback' || decisionType === 'remote') {
               badgeClass = 'vote-remote';
-              badgeText = 'Switch to remote (agreed fallback)';
-            } else if (decisionType === 'keep_plan') {
+              badgeText = 'Switch to Remote (Agreed Fallback)';
+            } else if (decisionType === 'keep_plan' || decisionType === 'keep') {
               badgeClass = 'vote-keep';
-              badgeText = 'Keep the plan';
+              badgeText = 'Keep Plan';
             } else if (decisionType === 'discuss') {
               badgeClass = 'vote-discuss';
-              badgeText = 'Discuss in chat';
+              badgeText = 'Discuss in Chat';
             }
 
             return (

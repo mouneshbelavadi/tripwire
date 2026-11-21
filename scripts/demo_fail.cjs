@@ -10,7 +10,7 @@
  *  t=16s: Launches browser directly to http://localhost:3000/pacts/pact_paytm_google_anantha showing live alert receipt, decision line, and voting buttons.
  */
 
-const { exec } = require('child_process');
+const { exec, spawn } = require('child_process');
 
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
@@ -51,19 +51,35 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = REQUEST_TIMEOUT_M
 }
 
 function openBrowser(url) {
-  const cmd = process.platform === 'win32'
-    ? `start "" "${url}"`
-    : process.platform === 'darwin'
-    ? `open "${url}"`
-    : `xdg-open "${url}"`;
-  try {
-    exec(cmd, (err) => {
-      if (err) {
-        console.log(`  ${GRAY}[Browser launcher note: ${err.message}]${RESET}`);
-      }
-    });
-  } catch (err) {
-    console.log(`  ${GRAY}[Browser launcher note: ${err.message}]${RESET}`);
+  if (process.platform === 'win32') {
+    // Explicitly target Microsoft Edge on Windows, falling back to default browser
+    const winCmd = `start msedge "${url}" 2>nul || start microsoft-edge:"${url}" 2>nul || start "" "${url}"`;
+    try {
+      const child = spawn('cmd.exe', ['/c', winCmd], {
+        detached: true,
+        stdio: 'ignore',
+        windowsHide: true,
+      });
+      child.unref();
+      return child;
+    } catch (err) {
+      console.log(`  ${GRAY}[Browser launcher note: ${err.message}]${RESET}`);
+    }
+  } else {
+    const cmd = process.platform === 'darwin'
+      ? `open "${url}"`
+      : `xdg-open "${url}"`;
+    try {
+      const child = exec(cmd, (err) => {
+        if (err) {
+          console.log(`  ${GRAY}[Browser launcher note: ${err.message}]${RESET}`);
+        }
+      });
+      if (child && child.unref) child.unref();
+      return child;
+    } catch (err) {
+      console.log(`  ${GRAY}[Browser launcher note: ${err.message}]${RESET}`);
+    }
   }
 }
 
@@ -144,13 +160,14 @@ async function runScenario() {
   const step1Res = await res1.json();
 
   // Validate step1Res fields
+  const consecutive1 = step1Res?.ruleState?.consecutive ?? step1Res?.ruleState?.consecutive_breaches;
   if (
     !step1Res ||
     step1Res.step !== 1 ||
     step1Res.outcome !== 'confirming' ||
     typeof step1Res.durationMinutes !== 'number' ||
     !step1Res.ruleState ||
-    step1Res.ruleState.consecutive_breaches !== 1
+    consecutive1 !== 1
   ) {
     throw new Error(`Unmet scenario requirement - Step 1 response invalid: ${JSON.stringify(step1Res)}`);
   }
@@ -160,7 +177,7 @@ async function runScenario() {
   console.log(`  ${WHITE}Normal Baseline:${RESET}  42 min`);
   console.log(`  ${YELLOW}Commute Estimate:${RESET} ${step1Res.durationMinutes} min ${RED}${BOLD}(+${step1Delta} min over ${step1Res.limitMinutes}m agreed limit)${RESET}`);
   console.log(`  ${GRAY}[Deterministic Simulation Fixture] Provenance: synthetic observation injected into SQLite${RESET}`);
-  console.log(`  ${YELLOW}${BOLD}>> 1st Breach Recorded (Confirming ${step1Res.ruleState.consecutive_breaches}/2). Single breach NEVER alerts the team or cancels plans (Hysteresis invariant).${RESET}`);
+  console.log(`  ${YELLOW}${BOLD}>> 1st Breach Recorded (Confirming ${consecutive1}/2). Single breach NEVER alerts the team or cancels plans (Hysteresis invariant).${RESET}`);
   console.log(`  ${GRAY}System state: Entering 5-minute confirmation gate. No team notification dispatched yet.${RESET}`);
 
   console.log(`\n  ${GRAY}Pacing delay: Waiting for second fresh re-check at Bellandur bottleneck...${RESET}`);
@@ -188,6 +205,8 @@ async function runScenario() {
   const step2Res = await res2.json();
 
   // Validate step2Res fields
+  const consecutive2 = step2Res?.ruleState?.consecutive ?? step2Res?.ruleState?.consecutive_breaches;
+  const isActive2 = Boolean(step2Res?.ruleState?.active);
   if (
     !step2Res ||
     step2Res.step !== 2 ||
@@ -196,8 +215,8 @@ async function runScenario() {
     !step2Res.alertId ||
     typeof step2Res.durationMinutes !== 'number' ||
     !step2Res.ruleState ||
-    step2Res.ruleState.consecutive_breaches !== 2 ||
-    step2Res.ruleState.active !== 1
+    consecutive2 !== 2 ||
+    !isActive2
   ) {
     throw new Error(`Unmet scenario requirement - Step 2 response invalid: ${JSON.stringify(step2Res)}`);
   }
@@ -205,7 +224,7 @@ async function runScenario() {
   const step2Delta = step2Res.durationMinutes - step2Res.limitMinutes;
   console.log(`  ${WHITE}Location:${RESET}         Ecospace & Bellandur Central Junction`);
   console.log(`  ${RED}Commute Estimate:${RESET} ${step2Res.durationMinutes} min ${RED}${BOLD}(+${step2Delta} min over ${step2Res.limitMinutes}m agreed limit)${RESET}`);
-  console.log(`  ${RED}${BOLD}>> 2nd Consecutive Fresh Breach (${step2Res.ruleState.consecutive_breaches}/2) Confirmed! Outcome: "${step2Res.outcome}"${RESET}`);
+  console.log(`  ${RED}${BOLD}>> 2nd Consecutive Fresh Breach (${consecutive2}/2) Confirmed! Outcome: "${step2Res.outcome}"${RESET}`);
   console.log(`  ${GREEN}✓ Mathematical proof satisfied: Two distinct fresh checks exceeded limit.${RESET}`);
   console.log(`  ${GREEN}✓ Provenance: Synthetic fixture explicitly tagged [Deterministic Simulation Fixture].${RESET}`);
 
@@ -269,6 +288,9 @@ async function runScenario() {
   console.log(`${GREEN}${BOLD}✓ Breach fail demonstration sequence complete in ${totalSeconds}s!${RESET}`);
   console.log(`${WHITE}  Hackathon judges can now cast bilateral votes directly in the browser.${RESET}`);
   console.log(`${GREEN}${BOLD}======================================================================${RESET}\n`);
+
+  // Safety delay to allow detached browser process to initialize cleanly before Node exit
+  await sleep(1000);
 }
 
 runScenario().catch((err) => {

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import os from 'os';
 
 // Load .env if present (process env takes precedence)
 dotenv.config();
@@ -50,7 +51,7 @@ const mode: 'LIVE' | 'SIMULATION' | 'REPLAY' = isSerpConfigured
 export const config: ServerConfig = {
   port: Number(process.env.PORT) || 3000,
   environment: (process.env.NODE_ENV as any) || 'development',
-  databasePath: process.env.DATABASE_PATH || path.resolve(process.cwd(), 'officepact.sqlite3'),
+  databasePath: process.env.DATABASE_PATH || (process.env.VERCEL ? path.join(os.tmpdir(), 'officepact.sqlite3') : path.resolve(process.cwd(), 'officepact.sqlite3')),
   serpApi: {
     apiKey: serpApiKey,
     isConfigured: isSerpConfigured,
