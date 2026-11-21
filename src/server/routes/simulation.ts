@@ -50,6 +50,11 @@ simulationRouter.post('/trigger-breach', (req, res) => {
       return;
     }
 
+    // Ensure pact decision deadline is in the future
+    const fourHoursLater = new Date(Date.now() + 4 * 3600 * 1000).toISOString();
+    db.prepare("UPDATE pacts SET decision_deadline_utc = ? WHERE id = ?").run(fourHoursLater, pactId);
+    pact.decision_deadline_utc = fourHoursLater;
+
     const participant = db
       .prepare('SELECT * FROM participants WHERE pact_id = ? AND user_id = ?')
       .get(pactId, userId) as any;
@@ -200,7 +205,8 @@ simulationRouter.post('/state/set', (req, res) => {
     db.prepare("DELETE FROM alerts WHERE pact_id != ?").run(pactId);
     db.prepare("DELETE FROM participants WHERE pact_id != ?").run(pactId);
     db.prepare("DELETE FROM pacts WHERE id != ?").run(pactId);
-    db.prepare("UPDATE pacts SET updated_at = datetime('now') WHERE id = ?").run(pactId);
+    const fourHoursLater = new Date(Date.now() + 4 * 3600 * 1000).toISOString();
+    db.prepare("UPDATE pacts SET updated_at = datetime('now'), decision_deadline_utc = ? WHERE id = ?").run(fourHoursLater, pactId);
 
     // Clean alerts & outbox for pristine state rendering
     db.prepare('DELETE FROM outbox').run();
@@ -222,11 +228,11 @@ simulationRouter.post('/state/set', (req, res) => {
 
     if (targetState === 'draft') {
       db.prepare("UPDATE pacts SET status = 'draft' WHERE id = ?").run(pactId);
-      db.prepare("UPDATE participants SET approval_version = NULL, approved_at = NULL WHERE pact_id = ?").run(pactId);
+      db.prepare("UPDATE participants SET approval_version = NULL, approved_at = NULL, max_duration_s = 3600 WHERE pact_id = ?").run(pactId);
       db.prepare("DELETE FROM rule_states WHERE watch_id = ?").run(mayaWatchId);
     } else if (targetState === 'armed') {
       db.prepare("UPDATE pacts SET status = 'armed' WHERE id = ?").run(pactId);
-      db.prepare("UPDATE participants SET approval_version = ?, approved_at = datetime('now') WHERE pact_id = ?").run(pact.version, pactId);
+      db.prepare("UPDATE participants SET approval_version = ?, approved_at = datetime('now'), max_duration_s = 3600 WHERE pact_id = ?").run(pact.version, pactId);
       db.prepare(`
         INSERT INTO rule_states (watch_id, pact_version, last_source_at, consecutive_breaches, active, episode_id, updated_at)
         VALUES (?, ?, ?, 0, 0, NULL, datetime('now'))
@@ -237,7 +243,7 @@ simulationRouter.post('/state/set', (req, res) => {
           active = 0,
           episode_id = NULL,
           updated_at = excluded.updated_at
-      `).run(mayaWatchId, pact.version, nowSec);
+      `).run(mayaWatchId, pact.version, nowSec - 180);
     } else if (targetState === 'confirming') {
       db.prepare("UPDATE pacts SET status = 'armed' WHERE id = ?").run(pactId);
       db.prepare("UPDATE participants SET approval_version = ?, approved_at = datetime('now') WHERE pact_id = ?").run(pact.version, pactId);

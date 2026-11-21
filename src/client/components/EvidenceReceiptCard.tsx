@@ -48,6 +48,16 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
 
   return (
     <div className="evidence-receipt-container">
+      {/* Persistent SIMULATED CHANGE banner for controlled breach */}
+      {receipt.evidence.provenance === 'synthetic' && (
+        <div className="simulation-banner" role="alert">
+          <span className="simulation-banner-badge">SIMULATED CHANGE</span>
+          <span className="simulation-banner-text">
+            This breach was generated from controlled synthetic observations for demonstration. Real road conditions have not been asserted.
+          </span>
+        </div>
+      )}
+
       {/* Receipt Header */}
       <div className="receipt-header">
         <div className="receipt-title-row">

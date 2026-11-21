@@ -1911,6 +1911,37 @@
   border: 1px solid var(--caution-ink);
 }
 
+/* Persistent SIMULATED CHANGE Banner */
+.simulation-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: var(--caution-wash);
+  color: var(--caution-ink);
+  border: 1px solid var(--caution-ink);
+  border-radius: var(--radius-control);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.simulation-banner-badge {
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: var(--caution-ink);
+  color: #FFFFFF;
+  padding: 2px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.simulation-banner-text {
+  flex: 1;
+}
+
 /* Activity Record Section */
 .activity-record-section {
   margin-top: var(--space-6);
