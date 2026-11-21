@@ -23,9 +23,11 @@ Traditional navigation platforms (Google Maps, Waze, Apple Maps) notify only the
 4. **Define Strict Commute Thresholds & Decision Deadline:** Each participant sets their maximum acceptable commute limit (e.g., 60 minutes) and an agreed decision deadline (e.g., 09:30 IST). Number inputs feature automatic zero-stripping (resolving `060` inputs) and quick preset pills (`[30m] [45m] [60m] [75m] [90m]`).
 5. **Interactive Mapping & Live Corridors:** High-resolution **Esri World Street Map** displays departure origins, workplace destination, and live dashed commute corridor lines with zero 403 errors or watermarks.
 6. **Automated Background Watcher:** A persistent background worker polls live commute durations via **SerpApi (Google Maps Directions & Traffic Incidents)**.
-7. **Deterministic Tripwire Invariants:** If live driving duration for *either* person exceeds their agreed threshold on **two consecutive, source-fresh checks** before the deadline, an alert fires and automatically triggers the ratified team fallback (*"Switch to remote Google Meet and cancel cab"*).
-8. **Shared Bilateral Consensus:** Both participants confirm the decision within the app. If choices conflict, a "Needs Discussion" state is established with an automated briefing in team chat. Zero credit mentions or budget gauges are exposed to users.
-9. **Single-Click Pitch Demo Batches:** Two dedicated batch files—`succes.bat` (~10s rapid All-Clear proof) and `fail.bat` (~16s observable breach & alert proof)—enable rapid, repeatable live presentations for hackathon judges with automatic server health management.
+7. **Deterministic Tripwire Invariants:** If live driving duration for *either* person exceeds their agreed threshold on **two consecutive, source-fresh checks** before the deadline, an alert fires and immediately engages the team fallback consensus gate.
+8. **Interactive Fallback Options Menu:** When an alert trips, users are not forced into an automatic unilateral redirect. An actionable menu (`FallbackOptionsGrid.tsx`) empowers members to select their preferred response: *"Switch to Google Meet"*, *"Cancel the cab"*, *"Cancel the meeting"*, *"Maintain Office Plan"*, or *"Discuss in Team Chat"*.
+9. **Celebratory "Arrived Onsite" Progression:** For successful all-clear commutes, the dashboard dynamically transitions to an arrived onsite banner with a visual time-stepper and immediate workspace access button (*"Continue Work & Open Strategy Session"*).
+10. **Single-Click Pitch Demo Batches:** Two dedicated, hardened batch files—`succes.bat` (~10s rapid All-Clear proof) and `fail.bat` (~16s observable breach & fallback options proof)—automatically manage server health and launch Microsoft Edge directly to the live verification pages.
+11. **Production Cloud Serverless Deployment:** Live on Vercel at `https://tripwire-nu-one.vercel.app/` with Express serverless API rewrites, ephemeral SQLite storage, and synchronized GitHub continuous integration.
 
 ---
 
@@ -117,21 +119,35 @@ Each corporate tenant operates with data partitioned at the application layer:
   1. `comp_paytm`: **Paytm (One97 Communications)**, Code: `PAYTM`, ID: `PAYTM-CORP-01`
   2. `comp_acme`: **Acme Technologies**, Code: `ACME`, ID: `ACME-CORP-01`
   3. `comp_google`: **Google Bengaluru**, Code: `GOOG`, ID: `GOOG-BLR-01`
-  4. Additional seeds: Microsoft, Amazon, Infosys, Flipkart, Swiggy, Uber.
-- **Team Members:** Filtered by `company_id`. For example, in Paytm:
-  - `user_ananya`: Ananya (Indiranagar)
-  - `user_kabir`: Kabir (HSR Layout)
+  4. Additional seeds: Microsoft (`MSFT-IN-01`), Amazon (`AMZN-BLR-01`), Infosys (`INFY-EC-01`), Flipkart (`FLPK-BLR-01`), Swiggy (`SWIG-BLR-01`), Uber (`UBER-BLR-01`).
+- **Team Members & Corporate Badges:** Stored in `team_members` table with dedicated `employee_id TEXT` column. Filtered by `company_id`:
+  - **Paytm:** Kabir (`PAYTM-EMP-01`, HSR Layout), Ananya (`PAYTM-EMP-02`, Indiranagar)
+  - **Google:** Sundar (`GOOG-EMP-01`, Whitefield), Priya (`GOOG-EMP-02`, Koramangala)
+  - **Acme:** Maya (`ACME-EMP-01`, Indiranagar), Arjun (`ACME-EMP-02`, HSR Layout)
+  - **Microsoft:** Vikram (`MSFT-EMP-01`, Bellandur), Neha (`MSFT-EMP-02`, Indiranagar)
+  - **Amazon:** Rahul (`AMZN-EMP-01`, HSR Layout), Divya (`AMZN-EMP-02`, Sarjapur Road)
 - **Pacts & Agreements:** Every pact carries a `company_id`. Pacts created under Paytm are isolated from Acme or Google via SQL `WHERE company_id = ?` query clauses.
 - **Team Chat Channels:** Each company has its dedicated team channel (`#channel_comp_paytm_office_pact`). Colleagues see messages filtered by corporate company ID.
+- **Header Session Switcher (`TopBar.tsx`):** Renders colleague identity as `{user_name} ({employee_id})` (e.g., `Kabir (PAYTM-EMP-01)`), enabling immediate visual context during evaluations.
 
-### 4.2 Corporate Authentication Flow (`/login`) — Identity Simulation vs Hardened Auth
-- The login flow (`/login`) and session resolution (`/api/auth/session`) are designed as an **enterprise identity simulation**:
-  1. Users submit Company Legal Name / Corporate ID and Employee Name.
-  2. The backend looks up or auto-provisions the company and member records without requiring passwords, multi-factor authentication, or cryptographic proofs.
+### 4.2 Corporate Authentication Flow (`/login`) — Discrete 4-Field Identity Simulation
+- The login flow (`/login`) and session resolution (`/api/auth/session`) are designed as an **enterprise multi-tenant identity simulation**:
+  1. **Discrete Form Inputs:** The form collects four distinct parameters:
+     - Field 1: **Company Legal Name**
+     - Field 2: **Company ID (Corporate Workspace Key)**
+     - Field 3: **Employee Full Name** (e.g. `Kabir Verma`, `Ananya Sharma`)
+     - Field 4: **Employee ID (Corporate Badge / Staff ID)** (e.g. `PAYTM-EMP-01`, `PAYTM-EMP-02`) with auto-fill prefixing when selecting corporate quick-tiles.
+  2. The backend looks up by `employee_id` or `user_name` or auto-provisions the company and member records, persisting `employee_id` into SQLite.
   3. Active identity is conveyed across API requests via HTTP headers: `x-company-id` and `x-user-id`.
   4. **Deferred Production Auth Work:** This is not credential-backed enterprise authentication. There is no password hashing (bcrypt), OAuth2/OIDC provider flow, or cryptographically signed session tokens (JWT/Paseto).
 
-### 4.3 Tenant Isolation Realities & Architectural Gaps
+### 4.3 Enterprise Admin Console (`/admin`) & Employee Directory
+Accessible at `http://localhost:3000/admin`:
+- **Company Registration:** Provisions new corporate tenancies, issuing generated Corporate IDs (`<TICKER>-CORP-01`) and seeding an initial lead administrator (`<TICKER>-EMP-01`).
+- **Employee Provisioning:** Dedicated form accepting Employee Full Name, custom or auto-generated Employee ID (`<TICKER>-EMP-XX`), Role, and Departure Hub.
+- **Corporate Employee Directory:** Live directory table (`GET /api/admin/employees`, `GET /api/admin/companies/:id/employees`) displaying Employee Name, styled monospace Employee ID badge with copy button, Company Workspace, Role, Departure Hub, and System User ID.
+
+### 4.4 Tenant Isolation Realities & Architectural Gaps
 While standard application endpoints filter by `company_id`, the system currently has several tenant boundary gaps that require hardening prior to enterprise multi-tenant deployment:
 1. **Server-Sent Events Stream (`GET /api/stream`):** Connects to a global in-memory `EventBus` and broadcasts all domain events (observations, alerts, decisions, chat messages) globally across all connected clients without per-tenant stream filtering.
 2. **Enterprise Admin Console (`/admin` and `/api/admin/*`):** These routes have no role-based access control (RBAC) or session authentication checks; any client can view tenant metrics or provision entities.
@@ -139,14 +155,21 @@ While standard application endpoints filter by `company_id`, the system currentl
 
 ---
 
-## 5. Proposed Fallback Directives vs Real External Actions
+## 5. Interactive Fallback Options vs Real External Actions
 
-When a tripwire breach occurs or when participants unanimously confirm remote work, the application proposes a team fallback directive:
-> *"Switch to remote Google Meet and cancel cab"*
+When a tripwire breach occurs or when participants unanimously confirm remote work, the application engages an interactive fallback choice matrix rather than forcing a unilateral redirect:
 
-### Scope Boundary Clarification:
-- **What the system does:** The system updates pact and alert states in SQLite, records participant votes in `acknowledgements`, computes consensus status, generates cryptographic breach receipts, and dispatches automated status updates to the company team chat channel (`team_messages`).
-- **What the system DOES NOT do:** The system does **not** call the Google Calendar API or Google Meet API to provision meeting URLs, nor does it interface with third-party ride-hailing APIs (e.g. Uber or Ola) to automatically book or cancel vehicles. Fallback directives are human-executable team alignment instructions, not direct third-party transactional automation.
+### 5.1 Selectable Fallback Options Grid (`FallbackOptionsGrid.tsx`)
+Members are presented with 5 distinct, selectable options:
+1. **Go to Google Meet:** Switch the in-person sync to an immediate Google Meet video call.
+2. **Cancel the cab:** Abort active ride-hailing bookings to eliminate unnecessary transit expenditure.
+3. **Cancel the meeting:** Stand down the meeting entirely and reschedule asynchronously.
+4. **Maintain Office Plan:** Consciously choose to brave traffic and maintain the in-person workplace arrangement.
+5. **Discuss in Team Chat:** Immediately open the company's shared consensus channel to debate alternatives.
+
+### 5.2 Scope Boundary Clarification:
+- **What the system does:** The system updates pact and alert states in SQLite, records participant votes in `acknowledgements`, computes consensus status, generates cryptographic breach receipts, presents the selectable fallback options grid, and dispatches automated status updates to the company team chat channel (`team_messages`).
+- **What the system DOES NOT do:** The system does **not** directly call the Google Calendar API or Google Meet API to provision meeting URLs, nor does it interface with third-party ride-hailing APIs (e.g. Uber or Ola) to automatically book or cancel vehicles. Fallback directives are human-executable team alignment instructions, not direct third-party transactional automation.
 
 ---
 
@@ -206,14 +229,14 @@ Judges cannot wait 60 minutes during a pitch demo to observe commute monitoring 
 ```cmd
 succes.bat
 ```
-- **Scenario:** Normal commute conditions for Kabir & Ananya (Paytm @ Google Anantha).
+- **Scenario:** Normal commute conditions for Kabir [PAYTM-EMP-01] & Ananya [PAYTM-EMP-02] (Paytm @ Google Anantha).
 - **Corridor Estimates:** Indiranagar: 38 min, HSR Layout: 34 min (both well within agreed 60m threshold).
 - **Pacing Timeline:**
   - `t = 0s`: Bilateral pact armed in SQLite (Paytm @ Google Anantha, 60m threshold).
   - `t = 3s`: Directions queries dispatched for both commuter corridors.
   - `t = 6s`: Invariant evaluation confirms zero breaches recorded ($0/2$).
   - `t = 9s`: All-Clear confirmed, logged to SQLite, and sent to `#channel_comp_paytm_office_pact`.
-  - `t = 10s`: Automatically opens `http://localhost:3000` showing the **Green "All clear" Dashboard** (0 alerts needing decision, 1 active monitored pact).
+  - `t = 10s`: Automatically opens **Microsoft Edge** directly to `http://localhost:3000` showing the **Celebratory "Commute Succeeded · Team Arrived Onsite" Banner** with corridor progression stepper and *"Continue Work & Open Strategy Session"* action button.
 
 ---
 
@@ -221,7 +244,7 @@ succes.bat
 ```cmd
 fail.bat
 ```
-- **Scenario:** Severe Outer Ring Road congestion triggers the 2-breach hysteresis tripwire.
+- **Scenario:** Severe Outer Ring Road congestion triggers the 2-breach hysteresis tripwire for Kabir [PAYTM-EMP-01].
 - **Pacing Timeline:**
   - `t = 0s`: **[Phase 1]** Bilateral pact armed cleanly. Pacing delay allows judges to observe the armed baseline state.
   - `t = 4s`: **[Phase 2]** Outer Ring Road traffic spike detected. Kabir's commute jumps from 34m to **68m (+8m over limit)**.
@@ -230,11 +253,10 @@ fail.bat
     - Terminal confirms **2/2 Consecutive Fresh Breaches**.
   - `t = 14s`: **[Phase 4]** **Tripwire Alert Triggered!**
     - Cryptographic breach receipt generated with SHA-256 hash and Bangalore Traffic Police incident citations.
-    - Automatic remote fallback proposed: *"Switch to remote Google Meet and cancel cab"*.
     - Outbox delivery dispatched to `#channel_comp_paytm_office_pact`.
-  - `t = 16s`: **[Phase 5]** Automatically launches browser directly to:
+  - `t = 16s`: **[Phase 5]** Automatically launches **Microsoft Edge** directly to:
     `http://localhost:3000/pacts/pact_paytm_google_anantha`
-    displaying the **Live Cryptographic Breach Receipt, Stepper Alert Gate, and Bilateral Voting Buttons** (`Switch to Remote`, `Keep Plan`, `Discuss in Chat`).
+    displaying the **Live Cryptographic Breach Receipt, Stepper Alert Gate, and Selectable Fallback Options Grid (`FallbackOptionsGrid.tsx`)** allowing members to choose between Google Meet, Cab Cancellation, Meeting Reschedule, Maintaining Office Plan, or Team Chat Consensus.
 
 ---
 
@@ -250,16 +272,14 @@ The test suite and build pipeline were audited during this evaluation pass:
 
 | Verification Target | Command | Result | Audit Findings & Notes |
 |---|---|---|---|
-| **Python Invariant Proofs** | `python scripts/test_core.py` | **19/19 PASSED** (0.153s) | Verifies 2-breach gate, deduplication, replay rejection, staleness, unknown handling, recovery margin, and credit estimation. |
+| **Python Invariant Proofs** | `python scripts/test_core.py` | **19/19 PASSED** (0.118s) | Verifies 2-breach gate, deduplication, replay rejection, staleness, unknown handling, recovery margin, and credit estimation. |
 | **Server TypeScript Tests** | `npx tsx src/server/tests/test_tripwire_core.ts` | **21/21 PASSED** | Verifies TypeScript port of domain invariants, query hash normalization, and SQLite persistence. |
-| **Client Production Build** | `npm run build:client` | **BUILD CLEAN** (3.53s) | Vite 6.1.0 bundles client without errors (`dist/client/assets`). |
+| **Isolated Release Verification** | `npx tsx scripts/verify_release_isolated.ts` | **43/43 PASSED** (0.49s) | Verifies 5 complete suites: Core Invariants, Decision Resolution, Stateful Lifecycle, Multi-Tenant Security Gates, and Sandboxed DB Cleanup. |
+| **Client Production Build** | `npm run build:client` | **BUILD CLEAN** (1.83s) | Vite 6.1.0 bundles client without errors (`dist/client/assets`). |
 | **Server TypeScript Build** | `npm run build:server` | **0 ERRORS** | Compiles server via `tsc -p tsconfig.server.json` cleanly into `dist/server/`. |
-| **Full Typecheck** | `npm run typecheck` | **2 TS ERRORS DETECTED** | `tsc --noEmit` flags 2 undeclared variable errors in `src/client/components/DecisionTab.tsx` (`mayaChoiceObj`, `arjunChoiceObj`). *Vite build passes because esbuild strips types without typechecking.* |
-| **Safe Commute Batch** | `succes.bat` | **10.1s EXECUTION** | Cleanly executes baseline check and launches dashboard. |
-| **Breach Fail Batch** | `fail.bat` | **16.1s EXECUTION** | Verified pacing and browser launch to alert view. |
-
-> [!WARNING]
-> While `npm run build` succeeds (since Vite ignores type errors), running strict `npm run typecheck` currently fails due to two undeclared variables in `DecisionTab.tsx`. Per subagent constraints, application code was not modified.
+| **Full Workspace Typecheck** | `npm run typecheck` | **0 ERRORS PASSED** | Both client `tsc --noEmit` and server `tsc -p tsconfig.server.json --noEmit` pass with zero errors. |
+| **Safe Commute Batch** | `succes.bat` | **10.1s EXECUTION** | Cleanly executes baseline check and launches Microsoft Edge to arrived onsite dashboard. |
+| **Breach Fail Batch** | `fail.bat` | **16.1s EXECUTION** | Verified pacing and launches Microsoft Edge to cryptographic receipt and fallback options grid. |
 
 ---
 
@@ -282,24 +302,51 @@ The test suite and build pipeline were audited during this evaluation pass:
 
 ---
 
-## 11. Key File Locations & Reference Map
+## 11. Vercel Cloud Serverless Deployment & GitHub Synchronization
+
+### 11.1 Deployment Endpoints & Source Repository
+- **Production Vercel URL:** [`https://tripwire-nu-one.vercel.app/`](https://tripwire-nu-one.vercel.app/)
+- **GitHub Repository:** [`https://github.com/mouneshbelavadi/tripwire.git`](https://github.com/mouneshbelavadi/tripwire.git) (Continuous deployment linked to `master` and `main` branches).
+
+### 11.2 Serverless Architecture & Routing (`vercel.json`)
+On Vercel, the application runs as a hybrid Serverless API + Static SPA:
+1. **Routing Manifest (`vercel.json`):**
+   - Routes `/api/(.*)` to the serverless function export `api/index.ts`.
+   - Routes all non-asset requests (`^(?!.*\\.[^/]+$).*$`) to `/index.html` for client-side React Router navigation.
+   - Sets static asset output directory to `dist/client`.
+2. **Serverless Entrypoint (`api/index.ts`):**
+   - Wraps the Express application and routes (`authRouter`, `adminRouter`, `pactRouter`, `placesRouter`, `simulationRouter`, `healthRouter`) as an asynchronous Vercel serverless request listener.
+3. **Writable Storage Fallback (`src/server/config.ts`):**
+   - Serverless containers operate with a read-only root filesystem. When `process.env.VERCEL` is detected, `DATABASE_PATH` automatically defaults to `path.join(os.tmpdir(), 'officepact.sqlite3')`, ensuring writable SQLite database initialization in cloud environments.
+4. **Node.js Engine Specification (`package.json`):**
+   - Configured `"engines": { "node": ">=22.x" }` to support native `node:sqlite` in modern Node runtimes.
+
+---
+
+## 12. Key File Locations & Reference Map
 
 | Component / Logic | File Path |
 |---|---|
 | **Pitch Batch: Safe Commute** | [`succes.bat`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/succes.bat) |
 | **Pitch Batch: Breach Fail** | [`fail.bat`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/fail.bat) |
+| **Standard App Runner** | [`run.bat`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/run.bat) |
 | **Success Demo Script** | [`scripts/demo_success.cjs`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/scripts/demo_success.cjs) |
 | **Breach Demo Script** | [`scripts/demo_fail.cjs`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/scripts/demo_fail.cjs) |
+| **Demo Pitch Runbook** | [`DEMO_RUNBOOK.md`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/DEMO_RUNBOOK.md) |
 | **Domain Invariants Core** | [`src/server/domain/tripwireCore.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/domain/tripwireCore.ts) |
 | **Python Invariant Proofs** | [`scripts/tripwire_core.py`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/scripts/tripwire_core.py) / [`scripts/test_core.py`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/scripts/test_core.py) |
+| **Isolated Release Verification** | [`scripts/verify_release_isolated.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/scripts/verify_release_isolated.ts) |
 | **Observation Service** | [`src/server/domain/observationService.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/domain/observationService.ts) |
 | **Receipt Service** | [`src/server/domain/receiptService.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/domain/receiptService.ts) |
 | **Simulation Routes** | [`src/server/routes/simulation.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/routes/simulation.ts) |
 | **Corporate Auth Route** | [`src/server/routes/auth.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/routes/auth.ts) |
 | **Admin Console Route** | [`src/server/routes/admin.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/routes/admin.ts) |
+| **Vercel Serverless Entry** | [`api/index.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/api/index.ts) |
+| **Vercel Manifest** | [`vercel.json`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/vercel.json) |
 | **Server Configuration** | [`src/server/config.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/config.ts) |
 | **Database Initialization** | [`src/server/db.ts`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/server/db.ts) |
 | **Corporate Login Page** | [`src/client/pages/LoginPage.tsx`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/client/pages/LoginPage.tsx) |
 | **Enterprise Admin Page** | [`src/client/pages/AdminPage.tsx`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/client/pages/AdminPage.tsx) |
-| **Pact Detail & Stepper Page** | [`src/client/pages/PactDetailPage.tsx`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/client/pages/PactDetailPage.tsx) |
+| **Pact Detail Page** | [`src/client/pages/PactDetailPage.tsx`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/client/pages/PactDetailPage.tsx) |
+| **Selectable Fallback Grid** | [`src/client/components/FallbackOptionsGrid.tsx`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/client/components/FallbackOptionsGrid.tsx) |
 | **Dashboard Page** | [`src/client/pages/DashboardPage.tsx`](file:///c:/Users/moune/OneDrive/Desktop/Office-Pact-Handoff/src/client/pages/DashboardPage.tsx) |
