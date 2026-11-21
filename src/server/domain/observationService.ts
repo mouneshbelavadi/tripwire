@@ -104,8 +104,10 @@ export class ObservationService {
         .get(input.watchId) as any;
 
       // In-memory reconstruction of rule state
+      // Per domain invariants: A change in pact_version establishes a clean new baseline
+      const isSameVersion = existingStateRow && existingStateRow.pact_version === input.pactVersion;
       const seenIds = new Set<string>();
-      if (existingStateRow) {
+      if (isSameVersion) {
         // Load recent seen IDs from previous observations for this watch (excluding current observation)
         const recentObs = db
           .prepare('SELECT id FROM observations WHERE watch_id = ? AND id != ? ORDER BY received_at DESC LIMIT 50')
@@ -115,7 +117,7 @@ export class ObservationService {
         }
       }
 
-      const ruleState: RuleState = existingStateRow
+      const ruleState: RuleState = isSameVersion
         ? {
             watchId: input.watchId,
             ruleVersion: existingStateRow.pact_version,

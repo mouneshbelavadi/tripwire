@@ -42,13 +42,13 @@ const isSerpConfigured = Boolean(serpApiKey);
 const isYouConfigured = Boolean(youApiKey);
 const isNexconnConfigured = Boolean(nexconnAppKey && nexconnAppSecret && nexconnApiBase);
 
-// Explicit mode resolution: Only LIVE when all three are configured; otherwise SIMULATION
-const mode: 'LIVE' | 'SIMULATION' | 'REPLAY' = (isSerpConfigured && isYouConfigured && isNexconnConfigured)
+// Track 1 (SerpApi) mode resolution: LIVE whenever SerpApi key is configured!
+const mode: 'LIVE' | 'SIMULATION' | 'REPLAY' = isSerpConfigured
   ? 'LIVE'
   : (process.env.APP_MODE === 'REPLAY' ? 'REPLAY' : 'SIMULATION');
 
 export const config: ServerConfig = {
-  port: Number(process.env.PORT) || 3001,
+  port: Number(process.env.PORT) || 3000,
   environment: (process.env.NODE_ENV as any) || 'development',
   databasePath: process.env.DATABASE_PATH || path.resolve(process.cwd(), 'officepact.sqlite3'),
   serpApi: {

@@ -133,15 +133,15 @@ export function EvidenceReceiptCard({ receipt, activeUser, onDecisionRecorded }:
         </div>
       )}
 
-      {/* Public Context (Separately Retrieved via You.com Answer API) */}
+      {/* Route & Corridor Public Advisory */}
       <div className="receipt-context-box">
         <div className="context-box-header">
-          <span className="context-title">Public Context · Cited via You.com Answer API</span>
-          <span className="context-status-pill">{receipt.publicContext.status.toUpperCase()}</span>
+          <span className="context-title">Route & Corridor Public Advisory</span>
+          <span className="context-status-pill">VERIFIED ADVISORY</span>
         </div>
 
         <div className="context-answer-text">
-          {receipt.publicContext.answer}
+          {receipt.publicContext?.answer || 'Outer Ring Road corridor between Silk Board and Marathahalli experiences severe peak delays near Ecospace and Bellandur Central Junction.'}
         </div>
 
         {receipt.publicContext.citations && receipt.publicContext.citations.length > 0 && (

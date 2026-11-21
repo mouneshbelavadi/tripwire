@@ -1,9 +1,89 @@
 import { Router } from 'express';
 import { ObservationService } from '../domain/observationService.js';
 import { createSyntheticBreachSequence } from '../fixtures/syntheticBreach.js';
-import { getDb } from '../db.js';
+import { getDb, getCreditUsage } from '../db.js';
+import { config } from '../config.js';
+import { SerpApiProvider } from '../providers/serpapi.js';
 
 export const simulationRouter = Router();
+
+// POST /api/simulation/check-live - Dispatches real live SerpApi Directions checks
+simulationRouter.post('/check-live', async (req, res) => {
+  try {
+    const db = getDb();
+    const pactId = req.body.pact_id || 'pact_bellandur_01';
+    const pact = db.prepare('SELECT * FROM pacts WHERE id = ?').get(pactId) as any;
+    if (!pact) {
+      res.status(404).json({ error: 'Pact not found' });
+      return;
+    }
+
+    if (!config.serpApi.isConfigured) {
+      res.status(400).json({ error: 'SERPAPI_API_KEY is not configured in .env' });
+      return;
+    }
+
+    // Ensure pact deadline is in future
+    const fourHoursLater = new Date(Date.now() + 4 * 3600 * 1000).toISOString();
+    db.prepare("UPDATE pacts SET decision_deadline_utc = ? WHERE id = ?").run(fourHoursLater, pactId);
+    pact.decision_deadline_utc = fourHoursLater;
+
+    const participants = db.prepare('SELECT * FROM participants WHERE pact_id = ?').all(pactId) as any[];
+    const liveResults = [];
+
+    for (const p of participants) {
+      const watchId = `watch_route_${pactId}_${p.user_id}`;
+      // Query Google Maps Directions via SerpApi
+      const payload = await SerpApiProvider.search({
+        engine: 'google_maps_directions',
+        params: {
+          start_coords: `${p.origin_lat},${p.origin_lon}`,
+          end_coords: `${pact.destination_lat},${pact.destination_lon}`,
+          travel_mode: '0', // Driving
+          distance_unit: '0', // km
+          gl: 'in',
+          hl: 'en',
+          no_cache: 'true',
+        },
+        label: watchId,
+      });
+
+      const obsResult = ObservationService.processRouteObservation({
+        watchId,
+        pactId,
+        participantId: p.id,
+        userId: p.user_id,
+        rawPayload: payload,
+        sourceTimestampUtc: payload.search_metadata?.created_at || new Date().toISOString(),
+        provenance: 'live',
+        limitSeconds: p.max_duration_s,
+        deadlineUtc: pact.decision_deadline_utc,
+        pactVersion: pact.version,
+        queryParams: { start_coords: `${p.origin_lat},${p.origin_lon}`, end_coords: `${pact.destination_lat},${pact.destination_lon}` },
+      });
+
+      liveResults.push({
+        userName: p.user_name,
+        neighbourhood: p.neighbourhood,
+        durationMinutes: Math.round(obsResult.fastestDrivingSeconds! / 60),
+        limitMinutes: Math.round(p.max_duration_s / 60),
+        outcome: obsResult.outcome,
+        alertCreated: obsResult.alertCreated,
+        alertId: obsResult.alertId,
+      });
+    }
+
+    const creditUsage = getCreditUsage();
+
+    res.json({
+      message: `Live SerpApi check completed for ${participants.length} routes.`,
+      creditUsage,
+      results: liveResults,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // GET /api/observations/pact/:pactId - Returns recent observations and rule states for a pact
 simulationRouter.get('/pact/:pactId', (req, res) => {

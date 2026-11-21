@@ -158,6 +158,15 @@ export function initSchema(db: DatabaseSync): void {
       expires_at TEXT NOT NULL,
       heartbeat_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS team_messages (
+      id TEXT PRIMARY KEY,
+      channel_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      text TEXT NOT NULL,
+      sent_time INTEGER NOT NULL
+    );
   `);
 }
 
@@ -173,6 +182,18 @@ export function seedInitialData(db: DatabaseSync): void {
         ('m_maya', ?, 'user_maya', 'Maya', 'creator', 'Indiranagar', 12.9784, 77.6408, 'nex_maya', 'group_office_pact'),
         ('m_arjun', ?, 'user_arjun', 'Arjun', 'participant', 'HSR Layout', 12.9121, 77.6446, 'nex_arjun', 'group_office_pact')
     `).run(teamId, teamId);
+  }
+
+  // Seed initial team messages if none exist
+  const existingMsgs = db.prepare('SELECT COUNT(*) as count FROM team_messages').get() as { count: number };
+  if (existingMsgs && existingMsgs.count === 0) {
+    const now = Date.now();
+    db.prepare(`
+      INSERT INTO team_messages (id, channel_id, user_id, user_name, text, sent_time)
+      VALUES
+        ('msg_init_1', 'group_office_pact', 'user_maya', 'Maya', 'Hey Arjun! Set up our Bellandur pact with a 60m threshold. Let us check commute estimates before leaving.', ?),
+        ('msg_init_2', 'group_office_pact', 'user_arjun', 'Arjun', 'Sounds good Maya! Outer Ring Road can crawl in the morning. If estimates exceed 60m, let us switch to remote.', ?)
+    `).run(now - 120000, now - 60000);
   }
 
   // Seed initial draft pact if none exists
@@ -213,7 +234,7 @@ export function reserveCredit(label: string, cap: number = 40): number {
   const db = getDb();
   db.exec('BEGIN IMMEDIATE');
   try {
-    const row = db.prepare('SELECT COUNT(*) as count FROM credit_attempts WHERE state != "aborted"').get() as { count: number };
+    const row = db.prepare("SELECT COUNT(*) as count FROM credit_attempts WHERE state != 'aborted'").get() as { count: number };
     const count = row ? Number(row.count) : 0;
     if (count >= cap) {
       throw new Error(`SerpApi credit ceiling reached: ${count} >= ${cap}`);

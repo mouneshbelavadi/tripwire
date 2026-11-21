@@ -123,24 +123,34 @@ export function PactEditorModal({ pact, onClose, onSave, onOpenVenueSearch }: Pa
 
           <div className="form-group">
             <label>Per-Participant Commute Thresholds (Minutes)</label>
-            {pact.participants.map((p) => (
-              <div key={p.user_id} className="participant-threshold-input">
-                <span>{p.user_name} ({p.neighbourhood}):</span>
-                <input
-                  type="number"
-                  min="15"
-                  max="180"
-                  step="5"
-                  value={limits[p.user_id] ?? 60}
-                  onChange={(e) =>
-                    setLimits({ ...limits, [p.user_id]: Number(e.target.value) })
-                  }
-                  required
-                  aria-label={`${p.user_name} commute limit in minutes`}
-                />
-                <span>min</span>
-              </div>
-            ))}
+            {pact.participants.map((p) => {
+              const currentVal = limits[p.user_id] ?? Math.round(p.max_duration_s / 60);
+              return (
+                <div key={p.user_id} className="participant-threshold-input">
+                  <span>{p.user_name} ({p.neighbourhood}):</span>
+                  <input
+                    type="number"
+                    min="15"
+                    max="180"
+                    step="5"
+                    value={currentVal === 0 ? '' : currentVal}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/^0+(?=\d)/, '');
+                      const num = clean === '' ? 0 : parseInt(clean, 10);
+                      setLimits({ ...limits, [p.user_id]: isNaN(num) ? 60 : num });
+                    }}
+                    onBlur={() => {
+                      const val = limits[p.user_id] || 60;
+                      const clamped = Math.max(15, Math.min(180, val));
+                      setLimits({ ...limits, [p.user_id]: clamped });
+                    }}
+                    required
+                    aria-label={`${p.user_name} commute limit in minutes`}
+                  />
+                  <span>min</span>
+                </div>
+              );
+            })}
           </div>
 
           <div className="form-group">

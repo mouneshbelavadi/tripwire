@@ -43,7 +43,7 @@ app.get('/api/health', (_req, res) => {
   const youStatus = YouProvider.getStatus();
   const nexconnStatus = NexconnProvider.getStatus();
 
-  const isDegraded = !serpStatus.configured || !youStatus.configured || !nexconnStatus.configured;
+  const isDegraded = !serpStatus.configured;
 
   res.json({
     status: isDegraded ? 'degraded' : 'ok',

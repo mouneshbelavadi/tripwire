@@ -66,6 +66,25 @@ export function EvidencePanel({
     },
   ];
 
+  const handleCheckLive = async () => {
+    setLoadingAction('live');
+    try {
+      const res = await fetch('/api/simulation/check-live', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pact_id: pact.id }),
+      });
+      const data = await res.json();
+      setSimulationResult(data);
+      onRefresh();
+    } catch (err: any) {
+      console.error('Live SerpApi check failed:', err);
+      setSimulationResult({ message: `Live check failed: ${err.message}` });
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   const handleTriggerBreach = async () => {
     setLoadingAction('breach');
     try {
@@ -236,6 +255,16 @@ export function EvidencePanel({
         <div className="simulation-btn-row">
           <button
             type="button"
+            className="btn-primary"
+            onClick={handleCheckLive}
+            disabled={loadingAction !== null}
+            style={{ background: 'var(--pact-green)', color: '#fff' }}
+          >
+            {loadingAction === 'live' ? 'Querying SerpApi...' : '⚡ Run Live Commute Check (SerpApi)'}
+          </button>
+
+          <button
+            type="button"
             className="btn-secondary"
             onClick={handleTriggerBreach}
             disabled={loadingAction !== null}
@@ -249,7 +278,7 @@ export function EvidencePanel({
             onClick={handleReplayDedup}
             disabled={loadingAction !== null}
           >
-            {loadingAction === 'replay' ? 'Replaying...' : 'Replay Identical Check (Proof of Deduplication)'}
+            {loadingAction === 'replay' ? 'Replaying...' : 'Replay Identical Check (Deduplication Proof)'}
           </button>
         </div>
 
@@ -323,6 +352,15 @@ export function EvidencePanel({
               <div className="feedback-steps">
                 <div>Check 1 (68m): Outcome = <code>{simulationResult.step1.outcome}</code></div>
                 <div>Check 2 (72m): Outcome = <code>{simulationResult.step2.outcome}</code> (Alert Created: {simulationResult.step2.alertCreated ? 'YES' : 'NO'})</div>
+              </div>
+            )}
+            {simulationResult.results && (
+              <div className="feedback-steps" style={{ marginTop: '8px' }}>
+                {simulationResult.results.map((r: any, idx: number) => (
+                  <div key={idx} style={{ marginBottom: '4px' }}>
+                    📍 <strong>{r.userName} ({r.neighbourhood}):</strong> Google Maps Driving = <strong>{r.durationMinutes} min</strong> (Threshold: {r.limitMinutes} min) → Outcome: <code>{r.outcome}</code>
+                  </div>
+                ))}
               </div>
             )}
             {simulationResult.isRejected && (

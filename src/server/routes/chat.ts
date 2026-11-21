@@ -87,3 +87,61 @@ chatRouter.post('/token', async (req, res) => {
     res.status(500).json({ error: err.message, sponsorIntegration: 'incomplete' });
   }
 });
+
+// GET /api/chat/messages - Returns team channel messages
+chatRouter.get('/messages', (_req, res) => {
+  try {
+    const db = getDb();
+    const rows = db.prepare('SELECT * FROM team_messages WHERE channel_id = ? ORDER BY sent_time ASC').all(TEST_GROUP_ID) as any[];
+    res.json({
+      messages: rows.map((r) => ({
+        id: r.id,
+        senderId: r.user_id,
+        senderName: r.user_name,
+        text: r.text,
+        sentTime: r.sent_time,
+      })),
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/chat/messages - Send message to team channel
+chatRouter.post('/messages', (req, res) => {
+  try {
+    const userId = (req.headers['x-user-id'] as string) || getActiveUserId();
+    const { text } = req.body;
+    if (!text || typeof text !== 'string') {
+      res.status(400).json({ error: 'Message text required' });
+      return;
+    }
+
+    const db = getDb();
+    const member = db.prepare('SELECT user_id, user_name FROM team_members WHERE user_id = ?').get(userId) as any;
+    if (!member) {
+      res.status(403).json({ error: `Forbidden: User ${userId} is not in team.` });
+      return;
+    }
+
+    const msgId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const nowEpoch = Date.now();
+
+    db.prepare(`
+      INSERT INTO team_messages (id, channel_id, user_id, user_name, text, sent_time)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(msgId, TEST_GROUP_ID, member.user_id, member.user_name, text.trim(), nowEpoch);
+
+    res.json({
+      message: {
+        id: msgId,
+        senderId: member.user_id,
+        senderName: member.user_name,
+        text: text.trim(),
+        sentTime: nowEpoch,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
